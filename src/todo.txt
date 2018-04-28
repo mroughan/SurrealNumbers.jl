@@ -5,3 +5,30 @@ division
 	    by divisor of n
 	    or power of 2
 	- can we do this natively, or does it require conversion to reals and back    
+
+functions
+	isinf
+	isnan
+	
+	better round
+	floor
+	ceil
+	trunc
+
+	div
+	rem
+	mod
+	mod1
+	gcd
+	lcm
+
+	abs2
+
+	math functions -- this is hard
+	     log
+	     exp
+	     powers
+	     trig
+
+
+	     

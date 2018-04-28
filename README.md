@@ -227,14 +227,21 @@ e.g. `sign` and `abs` are implemented using native surreal arithmetic and operat
     sign(x::SurrealFinite) = x<zero(x) ? -one(x) : x>zero(x) ? one(x) : zero(x)
     abs(x::SurrealFinite) = x<zero(x) ? -x : x
 
-The other is somewhat of a cheat. It involves converting the number to
-a real, and then using the appropriate operation on that field. I have
-tried to avoid that approach when possible. 
+The other approach is somewhat of a cheat. It involves converting the
+number to a real, and then using the appropriate operation on that
+field. I have tried to avoid that approach when possible. At the
+moment, only the `simplify` function uses this approach. But if I am
+going to do more complex math functions, e.g., logs or trig functions,
+I think I will have to take this approach.
 
-
-
-The `show` command is designed to show the full structure unless there is a "shorthand" defined for a surreal (most of the simple conversions will set this up). This aids in viewing the surreals succintly, but sometimes we want to see deeper. In the case where shorthand is defined we can use the command `pf` to see deeper, but it will stop at the first layer below with a shorthand. The command `pff` will plot the entire thing, but that is almost impossible to understand for non-trivial surreals, so we also provide a "tree-view" using ?????
-
+The `show` command is designed to show the full structure unless there
+is a "shorthand" defined for a surreal (most of the simple conversions
+will set this up). This aids in viewing the surreals succintly, but
+sometimes we want to see deeper. In the case where shorthand is
+defined we can use the command `pf` to see deeper, but it will stop at
+the first layer below with a shorthand. The command `pff` will plot
+the entire thing, but that is almost impossible to understand for
+non-trivial surreals, so we also provide a "tree-view" using ?????
 
 
 ###  Uniquely surreal functions
