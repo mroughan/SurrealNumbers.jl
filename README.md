@@ -27,7 +27,7 @@ recursively from the very start. The nice part is that they use only
 set operations.
 
 The definition is as follows: a surreal number $x$ is an ordered pair of
-sets of surreal numbers (call them $$X_L$$ and $X_R$) such that every
+sets of surreal numbers (call them $X_L$ and $X_R$) such that every
 member of the left set is $\leq$ all of the members of the right set.
 
 There is a starting point -- we can always use empty sets -- as so the
@@ -130,11 +130,12 @@ could create to represent any given real number, we have to chose
 one. Call that the *canonical* form. We could define it in several
 ways, but the standard is
 
-+ zero => 
++ zero => 0 = <{} | {} >
 
-+ integer n => 
++ integers n => n+1 = <{n} | {} >
 
-+ dyadic fraction => $x = \frac{ n }{ 2^k }$
++ dyadic fraction => x = \frac{ n }{ 2^k } becomes
+     < { x - 1/2^{k-1} } | (x + 1/2^{k-1} } >
 
 + negative number => use the identity that $-x = <-X_R | -X_L>$
 
