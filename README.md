@@ -19,7 +19,7 @@ task that would be painful to do in Matlab but "easy" to do in
 Julia. It might also be helpful, I hope, for someone trying to learn
 about Surreal numbers. 
 
-## Background -- Surreal Numbers
+## Background: the Surreal Numbers
 
 Surreal numbers aren't numbers as we are taught, but they have many of
 the same properties. The tricky thing is that they are defined
@@ -27,13 +27,15 @@ recursively from the very start. The nice part is that they use only
 set operations.
 
 The definition is as follows: a surreal number $x$ is an ordered pair of
-sets of surreal numbers (call them `$X_L$` and $X_R$) such that every
+sets of surreal numbers (call them $$X_L$$ and $X_R$) such that every
 member of the left set is $\leq$ all of the members of the right set.
 
 There is a starting point -- we can always use empty sets -- as so the
 first surreal number (usually denoted zero, because it will turn out
-to be the additive identity) is $<\{\} | \{\}>$, where I will use thi
+to be the additive identity) is $<\{\} | \{\}>$, where I will use this
 angle bracket and pipe notation to denote $x = < X_L | X_R>$.
+
+Then on the "second day" a new generation of surreals can be created in terms of the initial case. On the third day we create a new generation and so on. Each has a meaning corresponding to traditional numbers in order to place a consistent interpretation on standard mathematical operators defined on the surreals.
 
 Just to reiterate, the tricky things is that everything is
 recursive. Even comparitors like $\leq$, and hence, we can't even know
