@@ -27,7 +27,7 @@ recursively from the very start. The nice part is that they use only
 set operations.
 
 The definition is as follows: a surreal number $x$ is an ordered pair of
-sets of surreal numbers (call them $X_L$ and $X_R$) such that every
+sets of surreal numbers (call them `$X_L$` and $X_R$) such that every
 member of the left set is $\leq$ all of the members of the right set.
 
 There is a starting point -- we can always use empty sets -- as so the
