@@ -222,12 +222,9 @@ I probably haven't implemented all of these, but hopefully enough that
 any others can be easily added.
 
 There are two approaches: one is to use intrinsic surreal arithmetic,
-e.g. `sign` and `abs` are implemented using
+e.g. `sign` and `abs` are implemented using native surreal arithmetic and operators. The result is that they looks almost exactly like it would for any other number.
 
     sign(x::SurrealFinite) = x<zero(x) ? -one(x) : x>zero(x) ? one(x) : zero(x)
-
-Sometimes this is so simple that the function looks almost exactly like it would for any other number, e.g., `sign` above or `abs`
-
     abs(x::SurrealFinite) = x<zero(x) ? -x : x
 
 The other is somewhat of a cheat. It involves converting the number to
