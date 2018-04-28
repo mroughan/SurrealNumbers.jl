@@ -116,7 +116,7 @@ forms that equate to the same real number. Thus there are sets of
 forms that are equivalent in the sense that $x \equiv y$ if and only
 if $x \leq y$ and $y \leq x$.
 
-I think of this loosely as the parallel between rationals, e.g., we can have
+I think of this loosely by analogy to the rationals, e.g., we can have
 
     2 // 4 == 1 // 2
 
@@ -222,9 +222,13 @@ I probably haven't implemented all of these, but hopefully enough that
 any others can be easily added.
 
 There are two approaches: one is to use intrinsic surreal arithmetic,
-e.g. `sign` is implemented using
+e.g. `sign` and `abs` are implemented using
 
-    sign(x)
+    sign(x::SurrealFinite) = x<zero(x) ? -one(x) : x>zero(x) ? one(x) : zero(x)
+
+Sometimes this is so simple that the function looks almost exactly like it would for any other number, e.g., `sign` above or `abs`
+
+    abs(x::SurrealFinite) = x<zero(x) ? -x : x
 
 The other is somewhat of a cheat. It involves converting the number to
 a real, and then using the appropriate operation on that field. I have
