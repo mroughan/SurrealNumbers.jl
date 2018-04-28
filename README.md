@@ -116,6 +116,12 @@ forms that equate to the same real number. Thus there are sets of
 forms that are equivalent in the sense that $x \equiv y$ if and only
 if $x \leq y$ and $y \leq x$.
 
+I think of this loosely as the parallel between rationals, e.g., we can have
+
+    2 // 4 == 1 // 2
+
+but it seemed to distinguish equality from equivalence here. It allows us to test when two surreal forms are the same thing, not just equivalent to the same number. Maybe later we should reduce this to an equality relation. 
+
 BTW, here we hit one of the weirdnesses of Julia; 99\% of the time,
 you can redefine operators and comparators to do whatever you like on
 your new type. But you can't redefine $===$ or $\equiv$. The blog I
@@ -124,7 +130,7 @@ might cause problems if a user broke it.
 
 \url{}
 
-Anyway, I have defined $\simeq$ to do the same thing, check for
+Anyway, I have defined *congruence* $\cong$ to do the same thing, check for
 equivalence. However, as there are many possible surreal forms we
 could create to represent any given real number, we have to chose
 one. Call that the *canonical* form. We could define it in several
@@ -263,10 +269,9 @@ surreals, i.e., the transfinite numbers that can be represented this
 way. I'll get to that one day, time gods willing.
 
 There are other implementations of the surreals. For instance
-
+ 
 + Coq https://dl.acm.org/citation.cfm?id=2150520
 + Coq https://github.com/pirapira/surreal
-+ 
 + Haskell https://github.com/Lacaranian/surreal (only integers)
 + Haskell https://github.com/serialhex/Surreal-Numbers (not quite working)
 + Haskell https://github.com/elfakyn/Haskell-surreals (only integers)
@@ -286,25 +291,9 @@ code here.
 
 
 
-
-
-
-
-
-
-shorthand
-
-
 ### More information about Surreals
 
 + https://www.ics.uci.edu/~eppstein/cgt/surreal.html
-
-
-
-
-### Parallels
-
-2 // 4 == 1 // 2
 
 
 ### Final notes
