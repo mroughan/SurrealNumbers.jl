@@ -1,3 +1,5 @@
+<script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+
 # SurrealNumbers
 
 [![Build Status](https://travis-ci.org/mroughan/SurrealNumbers.jl.svg?branch=master)](https://travis-ci.org/mroughan/SurrealNumbers.jl)
