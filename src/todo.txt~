@@ -1,0 +1,20 @@
+
+# need
+#   convert from Ration non-dyadic
+#   convert to Real/Rat/Int (must be linked to simplify routine)
+#       finite sequences are all dyadic points
+#          can get upper bound of X_L and lower of X_R
+#   division and reciprocals 
+#   recognise and simplify, give names
+#       perhaps, starting from Int
+#   find simplest (earliest generation) form in equivalence class
+#      sort(unique( )) when creating, to reduce growth of bits
+#      other simplification rules???
+#        can just replace X_L with max(X_L) and X_R with min(X_R) ????
+#
+#   work on transfinites
+#         separate files
+#
+#   promote to use convert from numbers to surreals for calculations
+#
+####### 

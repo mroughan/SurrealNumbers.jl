@@ -1,0 +1,19 @@
+
+# need
+#   convert from Ration non-dyadic
+#   division and reciprocals  - infinite set cases
+#
+#   find simplest (earliest generation) form in equivalence class
+#        can just replace X_L with max(X_L) and X_R with min(X_R) ????
+# 
+#      - most of a above didn't work, but can convert to Rational and back
+#      - in fact could do this for everything, bu kind of cheating
+#
+#   work on transfinites
+#         separate files
+#
+#   promote to use convert from numbers to surreals for calculations
+#      promote rationals and floats and ints to Surreals for calculations
+#  
+####### 
+
