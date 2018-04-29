@@ -11,13 +11,16 @@
 
 This is a slightly crazy package implementing some parts of the
 Surreal Number system invented by John Horton Conway, and explained by
-Knuth in "Surreal Numbers: How Two Ex-Students Turned on to Pure Mathematics and Found Total Happiness."
+Knuth in "Surreal Numbers: How Two Ex-Students Turned on to Pure
+Mathematics and Found Total Happiness."
 
 It isn't intended to be useful, so much as educational. It was
 educational for me to write, in terms of learning Julia. I wanted a
 task that would be painful to do in Matlab but "easy" to do in
 Julia. It might also be helpful, I hope, for someone trying to learn
-about Surreal numbers. 
+about Surreal numbers. I certainly did learn a lot about them that
+would have been easily brushed to the side if I had only gone through
+the theorems.
 
 ## Background: the Surreal Numbers
 
@@ -221,6 +224,21 @@ using arrays instead of sets for $X_L$ and $X_R$ is appealling). Thus we can wri
 
 once addition is defined on the scalar surreal type, without any additional definitions, and this is particular appealling here as the scalar addition operator is recursively defined in terms of the vector+scalar addition `.+`. 
 
+Mutiplication was a bit of a bugbear to get right because I misinterpreted the definition. The definition of multiplication had terms like
+
+    X_L y + x Y_L - X_L Y_L
+
+I assumed the `+` operator in this definition was the standard
+addition, but it isn't. Instead the entire expression should be
+interpreted as "for all pairs of elements from X_L and Y_L perform the
+above computation, and form a set from the results." That's easy
+enough to do once you work out what you are trying to do. There is
+another underlying problem which is that canonical forms all have sets
+with 1 or 0 elements, and my broken multiplication worked for them. It
+was only when I created products of non-canonical forms that I saw
+problems, and then only when I had cleaned out another
+misunderstanding from the code.
+
 The one interesting thing to note is that the definitions often
 generate non-canonical forms. Part of the aim of this package was to
 let people experiment and see such things. It is otherwise far to
@@ -386,9 +404,14 @@ code here.
 
 + https://www.ics.uci.edu/~eppstein/cgt/surreal.html
 
+### Reference
+
+### Examples
 
 ### Final notes
 
-The package comes with a set of examples of its use in the tests directory.
+One final point. This would have been a lot easier if I knew more
+Julia, or more about the surreals. Trying to build something to learn
+about two moving parts at once wasn't a brilliant idea :)
 
 
