@@ -31,4 +31,8 @@ functions
 	     trig
 
 
+
+add some automatically generated random tests
+
+
 	     

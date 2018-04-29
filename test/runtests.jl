@@ -64,8 +64,11 @@ end
     @test x22/x1 ≅ x22
     @test x4/x1 ≅ x4
     @test float(x1/x4) == float(x1)/float(x4)
+
+    @test convert(SurrealFinite, 6)/ convert(SurrealFinite, 3) ≅ convert(SurrealFinite, 2)
 end
-    
+
+
 @testset "generation function" begin
     @test generation(x0) == 0
     @test generation(x1) == 1
