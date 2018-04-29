@@ -49,7 +49,7 @@ numbers. There are many out there better than I can write, e.g.,
 + https://conservancy.umn.edu/bitstream/handle/11299/174778/Hebert_umn_0130M_15912.pdf?sequence=1
 + https://libarynth.org/_media/surreal_numbers.pdf
 + https://math.stackexchange.com/questions/816540/proof-of-conways-simplicity-rule-for-surreal-numbers
-+
++ http://www.math.harvard.edu/~knill/teaching/mathe320_2015_fall/blog15/surreal1.pdf
 + 
 
 The purpose here is simply to introduce the key reasons for
