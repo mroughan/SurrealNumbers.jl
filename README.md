@@ -62,19 +62,22 @@ achieve high performance. But it's *so* easy in Julia.
 
 On the other hand, while surreals use sets, and Julia has a Set type,
 I didn't find that easy to work with. As a type, it doesn't seem to
-have all the bells and whistles I would expect from sets. However,
-there is an easy out. Although the surreals use sets, i.e., order of
-the elements is not important, almost all texts do write these sets in
-order. So I felt justified in putting these elements into sorted
-arrays. It works nicely, as long as you make sure to only put unique
-entries into the array, and this is a little more tricky for surreals
-for reasons we will get to in a moment.
+have all the bells and whistles I would expect from sets.
 
-...
+I could have added these, but Julia creates a whole suite of array
+functions almost automagically when you define scalars so using arrays
+was a low pain way to get things working. That is, although the
+surreals use sets, i.e., order of the elements is not important,
+almost all texts do write these sets in order. So I felt justified in
+putting these elements into sorted arrays. It works nicely, as long as
+you make sure to only put unique entries into the array, and this is a
+little more tricky for surreals for reasons we will get to in a
+moment.
 
+Someone may correct me about the best way to do this, but for the
+moment, using arrays seemed like a low pain way to get surreals working. 
 
-
-## Icky bits
+## Icky bits -- implementation details
 
 The surreals include all real numbers (and infinity and epsilon and
 others). However, many of these require infinitely large sets $X_L$
