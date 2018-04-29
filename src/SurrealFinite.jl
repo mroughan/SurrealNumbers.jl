@@ -171,7 +171,7 @@ function <(X::Array{SurrealFinite}, Y::Array{SurrealFinite} )
     else
         for x in X
             for y in Y 
-                if ! (x < y) 
+                if !( x < y )
                     return false
                 end 
             end
@@ -202,41 +202,49 @@ function -(x::SurrealFinite)
         SurrealFinite("-"*x.shorthand, -x.X_R, -x.X_L )
     end 
 end  
-function /(x::SurrealFinite)
-    # not sure if I can do reciprocals with finite sequences
-    
+function /(x::SurrealFinite, y::SurrealFinite)
+    xr = convert(Rational, x)
+    yr = convert(Rational, y) 
+    if y ≅ zero(y)
+        error(InexactError)
+    elseif isinteger(log2(abs(yr)))
+        return x * convert(SurrealFinite,  1 // yr) 
+    elseif isinteger(xr.num / yr)
+        return convert(SurrealFinite,  (xr.num/yr) // xr.den) 
+    else
+        error(InexactError)        
+    end
 end
 
 # binary operators
 +(x::SurrealFinite, y::SurrealFinite) = SurrealFinite([x.X_L .+ y; x .+ y.X_L],
                                                       [x.X_R .+ y; x .+ y.X_R] )
+# can't do like this because of empty arrays I think
+#+(x::SurrealFinite, y::SurrealFinite) = SurrealFinite([x.X_L + y.X_L],
+#                                                      [x.X_R + y.X_R] )
++(X::Array{SurrealFinite}, Y::Array{SurrealFinite}) = vec([s+t for s in X, t in Y])
+ 
 -(x::SurrealFinite, y::SurrealFinite) = x + -y
+-(X::Array{SurrealFinite}, Y::Array{SurrealFinite}) = X + -Y
+
 function *(x::SurrealFinite, y::SurrealFinite)
     XL = x.X_L
     XR = x.X_R
     YL = y.X_L
     YR = y.X_R
-    left = [ XL*y .+ x*YL .- XL*YL;
-             XR*y .+ x*YR .- XR*YR
-            ]
-    right = [ XL*y .+ x*YR .- XL*YR;
-              XR*y .+ x*YL .- XR*YL 
-             ]
+    tmp1 = vec([s*y + x*t - s*t for s in XL, t in YL])
+    tmp2 = vec([s*y + x*t - s*t for s in XR, t in YR])
+    tmp3 = vec([s*y + x*t - s*t for s in XL, t in YR])
+    tmp4 = vec([s*y + x*t - s*t for s in XR, t in YL])
+
+    left  = [ tmp1; tmp2]
+    right = [ tmp3; tmp4]
     return SurrealFinite("", left, right)
 end
-function *(x::SurrealFinite, Y::Array{SurrealFinite})
-    return [ x*s for s in Y ]
-end
-function *(X::Array{SurrealFinite}, y::SurrealFinite)
-    return [ s*y for s in X ]
-end
-function *(X::Array{SurrealFinite}, Y::Array{SurrealFinite})
-    # return [ X*s for s in Y ]
-    return vec([s*t for s in X, t in Y])
-end
+*(x::SurrealFinite, Y::Array{SurrealFinite}) = return [ x*s for s in Y ]
+*(X::Array{SurrealFinite}, y::SurrealFinite) = y*X
+*(X::Array{SurrealFinite}, Y::Array{SurrealFinite}) = vec([s*t for s in X, t in Y])
 
-# /(x::SurrealFinite, y::SurrealFinite) = 1
-# not sure if I can do division with finite sequences
 
 function pf(x::SurrealFinite) 
     print("<", x.X_L, ":", x.X_R, ">") 
@@ -323,7 +331,6 @@ function floor(s::SurrealFinite)
         return floor(s - one(s)) + one(s)
     end
 end
-
 
 function ceil(s::SurrealFinite)
     if zero(s) <= s < one(s) 

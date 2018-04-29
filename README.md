@@ -50,6 +50,8 @@ numbers. There are many out there better than I can write, e.g.,
 + https://libarynth.org/_media/surreal_numbers.pdf
 + https://math.stackexchange.com/questions/816540/proof-of-conways-simplicity-rule-for-surreal-numbers
 + http://www.math.harvard.edu/~knill/teaching/mathe320_2015_fall/blog15/surreal1.pdf
++ https://www.cut-the-knot.org/WhatIs/Infinity/SurrealNumbers.shtml
++ https://www.whitman.edu/Documents/Academics/Mathematics/Grimm.pdf
 + 
 
 The purpose here is simply to introduce the key reasons for
@@ -225,8 +227,6 @@ let people experiment and see such things. It is otherwise far to
 laborious to calculate anything but the very simplest cases (none of
 the above texts do any but the simplest). 
 
-...
-
 The other pieces are the standard things you expect to be able to do
 with numbers, e.g. round, sign, isinteger, ...
 
@@ -245,6 +245,23 @@ field. I have tried to avoid that approach when possible. At the
 moment, only the `simplify` function uses this approach. But if I am
 going to do more complex math functions, e.g., logs or trig functions,
 I think I will have to take this approach.
+
+The cheat is a part of one of the pieces of this that is truly hard
+(in Julia), namely division. Division is well-defined on the surreals,
+but as even simple divisions such as 1/3 result in non-dyadic rational
+numbers, and hence have a infinite representations as a surreal, the
+class of "finite" surreals defined here is not *closed* under
+division. Eventually, this can be solved by outputting a non-finite
+surreal, but for the moment I have only implemented division when
+dividing by $2^k$ or by a divisor of the numerator of the dyadic. The
+first is easy (it can be implemented in terms of multiplication). The
+second (at the moment) requires the cheat (see below) of converting
+back into a rational number, but in either case the check to see which
+case requires the conversion. Some work is needed here.
+
+
+Other functions ...
+
 
 The `show` command is designed to show the full structure unless there
 is a "shorthand" defined for a surreal (most of the simple conversions

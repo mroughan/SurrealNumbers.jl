@@ -56,6 +56,14 @@ end
     @test x1 + x0 == x1
     @test x1*x1 ≅ x1
     @test x0*x1 ≅ x0
+
+    @test x4*x0 ≅ x0 # this case broke things before
+
+    @test x11/one(x11) ≅ -x1
+    @test x22 / x22 ≅ one(x22)
+    @test x22/x1 ≅ x22
+    @test x4/x1 ≅ x4
+    @test float(x1/x4) == float(x1)/float(x4)
 end
     
 @testset "generation function" begin
@@ -83,6 +91,8 @@ end
     # convert(SurrealFinite, 1122342342.23422522)
 end
 
+A = [x0, x1]
+B = [x11, x4]
 X = [ x0, x1, x1, x11, x1, x11, x23]
 Y = copy(X)
 unique2!(Y) 
@@ -90,6 +100,10 @@ unique2!(Y)
     @test all( sort(X) .≅ convert.(SurrealFinite, [-1, -1, 0, 1, 1, 1, 2] ))
     @test all( unique(X) .≅ convert.(SurrealFinite, [0, 1, -1, 2] ))
     # @test all( Y .≅ convert.(SurrealFinite, [-1, 0, 1, 2] ))
+
+    float.(A + B)
+    float.(A - B)
+    float.(A + ϕ)
 end
 
 @testset "simple functions" begin
