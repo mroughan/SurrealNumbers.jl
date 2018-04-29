@@ -224,7 +224,7 @@ using arrays instead of sets for $X_L$ and $X_R$ is appealling). Thus we can wri
 
 once addition is defined on the scalar surreal type, without any additional definitions, and this is particular appealling here as the scalar addition operator is recursively defined in terms of the vector+scalar addition `.+`. 
 
-Mutiplication was a bit of a bugbear to get right because I misinterpreted the definition. The definition of multiplication had terms like
+Mutiplication was a bit of a bugbear to get right because I misinterpreted the definition. The definition of multiplication of $x=<X_L|X_R>$ and $y=<Y_L|Y_R>$ had terms like
 
     X_L y + x Y_L - X_L Y_L
 
