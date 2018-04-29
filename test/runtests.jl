@@ -146,13 +146,12 @@ g4 = SurrealFinite( [convert(SurrealFinite,3)], [convert(SurrealFinite,17)] )
     @test float( g4 ) == 4.0
 
     @test all(convert.(SurrealFinite, [-1, 0, 1, 2] ) == [ convert(SurrealFinite, i) for i=-1:2 ])
-
 end
-
 
 @testset "promotion" begin
     @test 1.0 + x1 == 2.0
 end
+
 
 
 

@@ -11,10 +11,10 @@ struct SurrealFinite <: Surreal
         # X_L = isempty(X_L) ? ϕ : [maximum(X_L)]
         # X_R = isempty(X_R) ? ϕ : [minimum(X_R)]
         if X_L < X_R
-            return new(shorthand, X_L, X_R) 
+            return new(shorthand, X_L, X_R)
         else 
             error("Must have X_L < X_R")
-        end 
+        end
     end
 end 
 SurrealFinite(shorthand::String, X_L::Array, X_R::Array ) =
@@ -150,6 +150,7 @@ function <=(x::SurrealFinite, y::SurrealFinite)
 
     return true
 end
+# comparisons between arrays are all-to-all, so don't have to tbe the same size
 function <=(X::Array{SurrealFinite}, Y::Array{SurrealFinite} )
     if isempty(X) || isempty(Y)
         return true
@@ -157,6 +158,20 @@ function <=(X::Array{SurrealFinite}, Y::Array{SurrealFinite} )
         for x in X
             for y in Y
                 if ! (x <= y) 
+                    return false
+                end 
+            end
+        end
+        return true
+    end
+end 
+function <(X::Array{SurrealFinite}, Y::Array{SurrealFinite} )
+    if isempty(X) || isempty(Y)
+        return true
+    else
+        for x in X
+            for y in Y 
+                if ! (x < y) 
                     return false
                 end 
             end
