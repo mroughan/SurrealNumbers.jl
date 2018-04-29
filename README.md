@@ -95,6 +95,10 @@ This is a pretty rich set by itself, but it doesn't cover even the
 entire set of Rationals; only the *dyadic* rationals. So a few words
 on them seem in order.
 
+The plan is to add a `SurrealTrans` for the transfinites and other
+surreals with infinite representations. But that is a little harder to
+do, so I leave that for the moment.
+
 ### Dyadic numbers
 
 The dyadic rational numbers are those that have a denumerator that is
@@ -111,8 +115,9 @@ integer (the *significand*) multiplied by 2 to the power of a (binary)
 exponent (just called the *exponent*). Thus all (finite) floating
 point numbers have a finite surreal representation.
 
-
-
+I did start writing a type for dyadics, but I'm not sure what it would
+be useful for, so it didn't get far (I realise the irony here -- the
+surreals themselves aren't exactly useful).
 
 ### Converting a number to a surreal
 
