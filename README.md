@@ -420,20 +420,20 @@ Some examples of code are included here to make a little of this more real.
 
 Let's start by creating some surreals
 
-      x1 = SurrealFinite("1", [x0], ϕ)
-      x11 = SurrealFinite("-1", ϕ,  [x0])
-      x4 = SurrealFinite( [x11],  [x1,x0])
-      x5 = SurrealFinite( [x11,x0,x4],  [x1])
-      x21  = SurrealFinite("2", [x1],  ϕ)
-      x22  = SurrealFinite( [x0, x1],  ϕ)
-      x23  = SurrealFinite( [x11,x1],  ϕ)
-      x24  = SurrealFinite( [x11,x0,x1],  ϕ)
-      x25 = [x11,x0,x1] ≀ ϕ
-      z = zero(x1)
-      z = zero(SurrealFinite)
-      z = one(x1)
-      s1 = convert(SurrealFinite, 1//2)
-      s2 = convert(SurrealFinite, 3//4)
+    x1 = SurrealFinite("1", [x0], ϕ)
+    x11 = SurrealFinite("-1", ϕ,  [x0])
+    x4 = SurrealFinite( [x11],  [x1,x0])
+    x5 = SurrealFinite( [x11,x0,x4],  [x1])
+    x21  = SurrealFinite("2", [x1],  ϕ)
+    x22  = SurrealFinite( [x0, x1],  ϕ)
+    x23  = SurrealFinite( [x11,x1],  ϕ)
+    x24  = SurrealFinite( [x11,x0,x1],  ϕ)
+    x25 = [x11,x0,x1] ≀ ϕ
+    z = zero(x1)
+    z = zero(SurrealFinite)
+    z = one(x1)
+    s1 = convert(SurrealFinite, 1//2)
+    s2 = convert(SurrealFinite, 3//4)
 
 You can check the values using `float` to convert them back to
 standard floating point numbers. Note that ϕ is shorthand for an empty array of surreal numbers, which is quite helpful in many places.
