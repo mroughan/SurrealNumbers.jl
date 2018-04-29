@@ -28,7 +28,7 @@ set operations.
 
 The definition is as follows: a surreal number $x$ is an ordered pair of
 sets of surreal numbers (call them $X_L$ and $X_R$) such that every
-member of the left set is < all of the members of the right set.
+member of the left set is `<` all of the members of the right set.
 
 There is a starting point -- we can always use empty sets -- as so the
 first surreal number (usually denoted zero, because it will turn out
@@ -38,7 +38,7 @@ angle bracket and pipe notation to denote $x = < X_L | X_R>$.
 Then on the "second day" a new generation of surreals can be created in terms of the initial case. On the third day we create a new generation and so on. Each has a meaning corresponding to traditional numbers in order to place a consistent interpretation on standard mathematical operators defined on the surreals.
 
 Just to reiterate, the tricky things is that everything is
-recursive. Even comparitors like $\leq$, and hence, we can't even know
+recursive. Even comparitors like `<`, and hence, we can't even know
 if something is a valid surreal in its own right, but only through
 recursively investigating its component sets. 
 
