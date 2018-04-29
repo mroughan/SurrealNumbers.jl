@@ -1,18 +1,18 @@
 transfinites and ordinals
 
+convert to dot to draw pictures
+
 division
 	- should be able to divide n//2^k
 	    by divisor of n
 	    or power of 2
-	- can we do this natively, or does it require conversion to reals and back    
+	- can we do this natively - currently requires conversion to reals and back    
 
+	- more testing needed
+	
 functions
-	isinf
-	isnan
 	
 	better round
-	floor
-	ceil
 	trunc
 
 	div
@@ -22,17 +22,16 @@ functions
 	gcd
 	lcm
 
-	abs2
+	abs2 -- free
 
 	math functions -- this is hard
 	     log
 	     exp
 	     powers
 	     trig
-
-
-
+	     
 add some automatically generated random tests
+
 
 
 	     

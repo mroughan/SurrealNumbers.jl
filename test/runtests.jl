@@ -132,7 +132,12 @@ end
     @test isinteger(x22) == true
     @test isinteger(s1) == false
     @test isinteger( convert(SurrealFinite,2)*convert(SurrealFinite,2) ) == true
+
+    @test isinf(s1) == false
+    @test isnan(s1) == false
+    @test isfinite(s1) 
 end
+
 
 @testset "simplifications" begin
     @test simplify(x22) ≅ x22 

@@ -290,7 +290,7 @@ function simplify(s::SurrealFinite)
 end
 
 sign(x::SurrealFinite) = x<zero(x) ? -one(x) : x>zero(x) ? one(x) : zero(x)
-abs(x::SurrealFinite) = x<zero(x) ? -x : x
+# abs(x::SurrealFinite) = x<zero(x) ? -x : x
  
 function unique2!( X::Array{SurrealFinite} )
     # our own unique that is based on ≅
@@ -357,4 +357,8 @@ function round(s::SurrealFinite)
         return -ones(s)
     end
 end
+
+isinf(s::SurrealFinite) = false
+isnan(s::SurrealFinite) = false
+isfinite(s::SurrealFinite) = true
 

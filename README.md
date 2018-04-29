@@ -239,7 +239,7 @@ multiplication worked for them. It was only when I created products of
 non-canonical forms that I saw problems, and then only when I had
 cleaned out another misunderstanding from the code.
 
-The one interesting thing to note is that the definitions often
+The one interesting thing to note is that even simple computations often
 generate non-canonical forms. Part of the aim of this package was to
 let people experiment and see such things. It is otherwise far to
 laborious to calculate anything but the very simplest cases (none of
@@ -257,12 +257,18 @@ e.g. `sign` and `abs` are implemented using native surreal arithmetic and operat
     sign(x::SurrealFinite) = x<zero(x) ? -one(x) : x>zero(x) ? one(x) : zero(x)
     abs(x::SurrealFinite) = x<zero(x) ? -x : x
 
-The other approach is somewhat of a cheat. It involves converting the
-number to a real, and then using the appropriate operation on that
-field. I have tried to avoid that approach when possible. At the
-moment, only the `simplify` function uses this approach. But if I am
-going to do more complex math functions, e.g., logs or trig functions,
-I think I will have to take this approach.
+Actually, I don't even have to define `abs` as I get this for free
+beacuse Julia has a similar operation defined `abs(x::Real)` for all
+real numbers. This is a great feature of Julia's type hierarchy and
+multiple dispatch function selection.
+
+The other approach to function definition is somewhat of a cheat. It
+involves converting the number to a real, and then using the
+appropriate operation on that field. I have tried to avoid that
+approach when possible. At the moment, only the `simplify` function
+uses this approach. But if I am going to do more complex math
+functions, e.g., logs or trig functions, I think I will have to take
+this approach.
 
 The cheat is a part of one of the pieces of this that is truly hard
 (in Julia), namely division. Division is well-defined on the surreals,
