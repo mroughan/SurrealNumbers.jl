@@ -55,7 +55,7 @@ numbers. There are many out there better than I can write, e.g.,
 + http://www.math.harvard.edu/~knill/teaching/mathe320_2015_fall/blog15/surreal1.pdf
 + https://www.cut-the-knot.org/WhatIs/Infinity/SurrealNumbers.shtml
 + https://www.whitman.edu/Documents/Academics/Mathematics/Grimm.pdf
-+ 
++ https://www.tondering.dk/download/sur16.pdf
 
 The purpose here is simply to introduce the key reasons for
 implementing this in Julia -- it enables users to define
@@ -333,7 +333,7 @@ e.g.,
    [ convert(SurrealFinite, i) for i=-1:2 ]
 
 Or we could construct and iterator for the same thing (once `floor`
-and some promotion rules) are defined, i.e., 
+and some promotion rules are defined), e.g.., the iterator from -1 to 2 is  
 
    convert(SurrealFinite, -1 ):convert(SurrealFinite, 2)
 
@@ -341,12 +341,12 @@ However, in order to use arrays as sets we need, in the constructor
 for a surreal to reduce the "set" to a sorted array containing unique
 elements. Julia has nice sort and unique functions, but they rely on
 hash functions, so we have to add a hash. These need to be recursive,
-and work for arrays of surreals as well. The hash function says that
+and work for arrays of surreals as well. The hash function help says that
 we should implement such for new types such that `isequal(x,y)`
 implies `hash(x)==hash(y)`, with a second argument to be mixed in the
 results. This is linked to the idea that we should separate the == and
-the *congruent* comparisons -- my hash is based on two forms being
-equal, not being equivalent. In any case, Julia's syntaax is again
+the *congruent* comparisons -- my hash is based on two forms being 
+equal, not being equivalent. In any case, Julia's syntax is again
 simple and concise for specifying the hashes need.  The approach I
 adoped was the following (which may well not be the best, but seems to
 work).
@@ -369,7 +369,7 @@ https://docs.julialang.org/en/stable/manual/style-guide/
 In any case, `unique2!` also uses sort, but then crudely eliminates
 duplicates based on congruence. It is then called as part of the
 constructor for a surreal, which also checks the condition that $X_L <
-X_R$, i.e., no element of $X_R$ is $\leq$ and element of $X_L$.
+X_R$, i.e., no element of $X_R$ is $\leq$ an element of $X_L$.
 
 ## Other comments
 
@@ -404,20 +404,26 @@ it here. Moreover, most of these are at least as incomplete as the
 code here.
 
 
-
-
 ### More information about Surreals
 
 + https://www.ics.uci.edu/~eppstein/cgt/surreal.html
 
-### Reference
 
-### Examples
+### More Examples
+
+Some examples of code are included here to make a little of this more real. 
 
 ### Final notes
 
 One final point. This would have been a lot easier if I knew more
 Julia, or more about the surreals. Trying to build something to learn
 about two moving parts at once wasn't a brilliant idea :)
+
+But I was correct in thinking that (at least for me) this would have
+been almost impossible to build in Matlab. And at the least, it would
+have required a good deal more work without all the automagical pieces
+of Julia helping.
+
+
 
 
