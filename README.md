@@ -453,7 +453,7 @@ Try printing them out in various forms:
 #### 
 
 
-### Final notes
+## Final notes
 
 One final point. This would have been a lot easier if I knew more
 Julia, or more about the surreals. Trying to build something to learn
