@@ -335,7 +335,7 @@ e.g.,
 Or we could construct and iterator for the same thing (once `floor`
 and some promotion rules are defined), e.g.., the iterator from -1 to 2 is  
 
-   convert(SurrealFinite, -1 ):convert(SurrealFinite, 2)
+    convert(SurrealFinite, -1 ):convert(SurrealFinite, 2)
 
 However, in order to use arrays as sets we need, in the constructor
 for a surreal to reduce the "set" to a sorted array containing unique
