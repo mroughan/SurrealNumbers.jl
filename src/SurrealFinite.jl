@@ -243,9 +243,7 @@ function *(x::SurrealFinite, y::SurrealFinite)
 end
 *(x::SurrealFinite, Y::Array{SurrealFinite}) = return [ x*s for s in Y ]
 *(X::Array{SurrealFinite}, y::SurrealFinite) = y*X
-*(X::Array{SurrealFinite}, Y::Array{SurrealFinite}) = vec([s*t for s in X, t in Y])
-
-
+ 
 function pf(x::SurrealFinite) 
     print("<", x.X_L, ":", x.X_R, ">") 
 end

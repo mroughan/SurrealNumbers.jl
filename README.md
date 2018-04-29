@@ -229,15 +229,15 @@ Mutiplication was a bit of a bugbear to get right because I misinterpreted the d
     X_L y + x Y_L - X_L Y_L
 
 I assumed the `+` operator in this definition was the standard
-addition, but it isn't. Instead the entire expression should be
-interpreted as "for all pairs of elements from X_L and Y_L perform the
-above computation, and form a set from the results." That's easy
-enough to do once you work out what you are trying to do. There is
-another underlying problem which is that canonical forms all have sets
-with 1 or 0 elements, and my broken multiplication worked for them. It
-was only when I created products of non-canonical forms that I saw
-problems, and then only when I had cleaned out another
-misunderstanding from the code.
+(surreal) addition of sets of surreals, but it isn't. Instead the
+entire expression should be interpreted as "for all pairs of elements
+from X_L and Y_L perform the above computation, and form a set from
+the results." That's easy enough to do once you work out what you are
+trying to do. There is another underlying problem which is that
+canonical forms all have sets with 1 or 0 elements, and my broken
+multiplication worked for them. It was only when I created products of
+non-canonical forms that I saw problems, and then only when I had
+cleaned out another misunderstanding from the code.
 
 The one interesting thing to note is that the definitions often
 generate non-canonical forms. Part of the aim of this package was to
