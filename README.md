@@ -86,10 +86,14 @@ evaluation), but they aren't fleshed out yet so for the moment, I will
 restrict myself to finite surreals, i.e., surreals with finite sets
 $X_L$ and $X_R$. 
 
+So the type `Surreal` is an abstract type (a subtype of `Real`) with
+at present only one useful subtype `SurrealFinite`, where finite
+(here) means that the representation is finite, not that the number
+itself is finite. 
+
 This is a pretty rich set by itself, but it doesn't cover even the
 entire set of Rationals; only the *dyadic* rationals. So a few words
 on them seem in order.
-
 
 ### Dyadic numbers
 
