@@ -415,9 +415,6 @@ Some examples of code are included here to make a little of this more real.
 
 #### Creating surreals
 
-
-#### Operations on surreals and arrays of surreals
-
 Let's start by creating some surreals
 
     x1 = SurrealFinite("1", [x0], ϕ)
@@ -443,6 +440,10 @@ Try printing them out in various forms:
     print("s1 = ", s1, " = " )
     pf(s1)
     println()
+
+
+#### Operations on surreals and arrays of surreals
+
 
 #### Simple functions
 
