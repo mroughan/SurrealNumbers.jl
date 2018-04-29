@@ -10,10 +10,10 @@ struct SurrealFinite <: Surreal
         # X_R = sort( unique( X_R ) )
         # X_L = isempty(X_L) ? ϕ : [maximum(X_L)]
         # X_R = isempty(X_R) ? ϕ : [minimum(X_R)]
-        if X_L <= X_R
+        if X_L < X_R
             return new(shorthand, X_L, X_R) 
         else 
-            error("Must have X_L <= X_R")
+            error("Must have X_L < X_R")
         end 
     end
 end 
@@ -120,13 +120,13 @@ function convert(::Type{Rational}, s::SurrealFinite )
     end
 end
 
-function convert(::Type{AbstractFloat}, s::SurrealFinite )  
-    return float( convert(Rational, s) )
-end
- 
-promote_rule(::Type{Float64}, ::Type{SurrealFinite}) = SurrealFinite
-promote_rule(::Type{Float32}, ::Type{SurrealFinite}) = SurrealFinite
-# prolly need some more of these
+# some catch alls
+convert(::Type{AbstractFloat}, s::SurrealFinite ) = float( convert(Rational, s) )
+convert(::Type{Integer}, s::SurrealFinite ) = Int( convert(Rational, s) )
+## convert{T<:Real}(::Type{T}, s::SurrealFinite ) =  convert(T, convert(Rational, s) )
+
+# promote all numbers to surreals for calculations
+promote_rule{T<:Real}(::Type{T}, ::Type{SurrealFinite}) = SurrealFinite
 
 ϕ = Array{SurrealFinite,1}(0) # empty array of SurrealFinites
 zero(::SurrealFinite) = SurrealFinite("0", ϕ, ϕ )
@@ -270,7 +270,7 @@ end
 
 sign(x::SurrealFinite) = x<zero(x) ? -one(x) : x>zero(x) ? one(x) : zero(x)
 abs(x::SurrealFinite) = x<zero(x) ? -x : x
-
+ 
 function unique2!( X::Array{SurrealFinite} )
     # our own unique that is based on ≅
     sort!(X)
@@ -298,6 +298,28 @@ function isinteger(s::SurrealFinite)
         return false
     end
 end
+
+function floor(s::SurrealFinite)
+    if zero(s) <= s < one(s) 
+        return zero(s)
+    elseif s < zero(s)
+        return floor(s + one(s)) - one(s)
+    elseif s >= one(s)
+        return floor(s - one(s)) + one(s)
+    end
+end
+
+
+function ceil(s::SurrealFinite)
+    if zero(s) <= s < one(s) 
+        return zero(s)
+    elseif s < zero(s)
+        return ceil(s + one(s)) - one(s)
+    elseif s >= one(s)
+        return ceil(s - one(s)) + one(s)
+    end
+end
+
 
 # not the more general form of rounding defined in Julia
 function round(s::SurrealFinite)

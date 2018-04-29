@@ -103,6 +103,14 @@ end
     @test round(x4) ≇ x4
     @test round(-x4) ≇ -x4 
 
+    @test floor(x22) ≅ x22 
+    @test floor(x4) ≅ -one(x4)
+    @test floor(x4) ≇ x4
+    @test floor(-x4) ≇ -x4
+    @test floor(-x4) == zero(x4)
+
+    # add some for ceil as well
+    
     @test isinteger(x0) == true
     @test isinteger(x22) == true
     @test isinteger(s1) == false
@@ -136,6 +144,9 @@ g4 = SurrealFinite( [convert(SurrealFinite,3)], [convert(SurrealFinite,17)] )
     @test float( x4 ) == -0.5
     @test float( s2 ) == 0.75
     @test float( g4 ) == 4.0
+
+    @test all(convert.(SurrealFinite, [-1, 0, 1, 2] ) == [ convert(SurrealFinite, i) for i=-1:2 ])
+
 end
 
 

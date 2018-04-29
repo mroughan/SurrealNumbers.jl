@@ -263,6 +263,60 @@ Generation comes from Knuth's story (also called birthday)
 
 Important as $x = <X_L | X_R>$ is the simplest number such that $X_L \leq x \leq X_R$.
 
+### Arrays of Surreals
+
+We mentioned arrays of surreals earlier -- they are used in the
+implementation instead of sets. One of the nice things about Julia us
+that you get many of the array operators and functions for free when
+you create scalar operators. So, for instance, you can write
+
+    convert.(SurrealFinite, [-1, 0, 1, 2] )
+
+which will broadcasts the convert function across the array of
+integers to create an array containing the respective
+surreals. Likewise, we can use *comprehensions* to construct arrays,
+e.g.,
+
+   [ convert(SurrealFinite, i) for i=-1:2 ]
+
+Or we could construct and iterator for the same thing (once `floor`
+and some promotion rules) are defined, i.e., 
+
+   convert(SurrealFinite, -1 ):convert(SurrealFinite, 2)
+
+However, in order to use arrays as sets we need, in the constructor
+for a surreal to reduce the "set" to a sorted array containing unique
+elements. Julia has nice sort and unique functions, but they rely on
+hash functions, so we have to add a hash. These need to be recursive,
+and work for arrays of surreals as well. The hash function says that
+we should implement such for new types such that `isequal(x,y)`
+implies `hash(x)==hash(y)`, with a second argument to be mixed in the
+results. This is linked to the idea that we should separate the == and
+the *congruent* comparisons -- my hash is based on two forms being
+equal, not being equivalent. In any case, Julia's syntaax is again
+simple and concise for specifying the hashes need.  The approach I
+adoped was the following (which may well not be the best, but seems to
+work).
+
+    hash(x::SurrealFinite, h::UInt) = hash( hash(x.X_L, h) * hash(x.X_R, h), h )
+    hash(X::Array{SurrealFinite}, h::UInt) = isempty(X) ? hash(0) : hash( hash(X[1]) * hash( X[2:end]), h )
+
+Having set this up, I realised that when specifying the component sets
+of a surreal, I actually did want my unique function to only include
+one element from each equivalence class, i.e., I could have used
+congruences as equality, but in general these are short lists (with
+lots of recursion internally, but the arrays themselves are short), so
+I just wrote my own unique function, `unique2!`. Yes I know the name
+isn't great, but for newbies note that the ! is not a `'not` symbols
+here. In Julia's idiom this signifies that the function modifies its
+arguments.
+
+https://docs.julialang.org/en/stable/manual/style-guide/
+
+In any case, `unique2!` also uses sort, but then crudely eliminates
+duplicates based on congruence. It is then called as part of the
+constructor for a surreal, which also checks the condition that $X_L <
+X_R$, i.e., no element of $X_R$ is $\leq$ and element of $X_L$.
 
 ## Other comments
 
