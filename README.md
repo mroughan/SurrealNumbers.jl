@@ -323,19 +323,19 @@ implementation instead of sets. One of the nice things about Julia us
 that you get many of the array operators and functions for free when
 you create scalar operators. So, for instance, you can write
 
-    convert.(SurrealFinite, [-1, 0, 1, 2] )
+     convert.(SurrealFinite, [-1, 0, 1, 2] )
 
 which will broadcasts the convert function across the array of
 integers to create an array containing the respective
 surreals. Likewise, we can use *comprehensions* to construct arrays,
 e.g.,
 
-   [ convert(SurrealFinite, i) for i=-1:2 ]
+     [ convert(SurrealFinite, i) for i=-1:2 ]
 
 Or we could construct and iterator for the same thing (once `floor`
 and some promotion rules are defined), e.g.., the iterator from -1 to 2 is  
 
-    convert(SurrealFinite, -1 ):convert(SurrealFinite, 2)
+     convert(SurrealFinite, -1 ):convert(SurrealFinite, 2)
 
 However, in order to use arrays as sets we need, in the constructor
 for a surreal to reduce the "set" to a sorted array containing unique
