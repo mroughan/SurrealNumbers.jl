@@ -2,29 +2,22 @@ struct SurrealFinite <: Surreal
     shorthand::String
     X_L :: Array{SurrealFinite,1} 
     X_R :: Array{SurrealFinite,1} 
-    # constructor should check that X_L <= X_R 
+    # constructor should check that X_L < X_R
     function SurrealFinite(shorthand::String, X_L::Array{SurrealFinite}, X_R::Array{SurrealFinite})
-        unique2!( X_L ) 
-        unique2!( X_R )
-        # X_L = sort( unique( X_L ) )
-        # X_R = sort( unique( X_R ) )
-        # X_L = isempty(X_L) ? ϕ : [maximum(X_L)]
-        # X_R = isempty(X_R) ? ϕ : [minimum(X_R)]
+        unique2!( X_L ) # make elements unique and sort them in increasing order
+        unique2!( X_R ) # make elements unique and sort them in increasing order
         if X_L < X_R
             return new(shorthand, X_L, X_R)
         else 
-            error("Must have X_L < X_R")
+            error("Surreal number must have X_L < X_R.")
         end
     end
-end 
+end
 SurrealFinite(shorthand::String, X_L::Array, X_R::Array ) =
     SurrealFinite( shorthand, convert(Array{SurrealFinite},X_L), convert(Array{SurrealFinite},X_R) )
 SurrealFinite(X_L::Array, X_R::Array ) =
     SurrealFinite( "", convert(Array{SurrealFinite},X_L), convert(Array{SurrealFinite},X_R) )
 ≀(X_L::Array, X_R::Array ) = SurrealFinite(X_L::Array, X_R::Array )
-
-# convert(::Type{Array{SurrealFinite}}, x::Array{Any}) = [ convert(SurrealFinite,x[i]) for i=1:length(x) ]
-# convert(::Type{Array{Real}},    x::Array{Any}) = [ convert(Real,x[i]) for i=1:length(x) ]
 
 hash(x::SurrealFinite, h::UInt) = hash( hash(x.X_L, h) * hash(x.X_R, h), h )
 hash(X::Array{SurrealFinite}, h::UInt) = isempty(X) ? hash(0) : hash( hash(X[1]) * hash( X[2:end]), h )
@@ -43,19 +36,18 @@ function convert(::Type{SurrealFinite}, n::Int )
 end 
 function convert(::Type{SurrealFinite}, r::Rational )  
     if isinteger(r) 
-        # integers
         return convert(SurrealFinite, convert(Int64,r) )
     elseif isinteger( log2(r.den) )
-        # powers of 2 in denominator
+        # Non-integer dyadic numbers
         n = convert(Int64, round( log2(r.den) ))
         if abs(r) + n < 60 # 60 is a bit arbitrary -- could experiment more on real limits
             return SurrealFinite("$r", [convert(SurrealFinite, r - 1//2^n)], [convert(SurrealFinite, r + 1//2^n)] )
         else 
-            error("generation too large")
+            error("Generation too large")
         end 
     else 
-        # error("we can't do these yet as they require infinite sets")
-        return convert(SurrealFinite, r.num) // convert(SurrealFinite, r.den)
+        error("we can't do these yet as they require infinite sets")
+        # return convert(SurrealFinite, r.num) // convert(SurrealFinite, r.den)
     end  
 end
 function convert(::Type{SurrealFinite}, f::Float64 ) 
@@ -90,17 +82,15 @@ function convert(::Type{Rational}, s::SurrealFinite )
         return -convert(Rational, -s)
     elseif s > one(s)
         convert(Rational, s - one(s) ) + 1 
-    else
-        # do a binary search from top down, first valid is the one
-        # xl = convert(Rational, maximum(s.X_L))
-        # yl = convert(Rational, minimum(s.X_R))
+    else # 0 < x < 1
+        # do a binary search from top down, first valid is the simplest
         xl = maximum(s.X_L)
         xr = minimum(s.X_R)
         not_end = true
         k = 0
         a = 0
         b = 1
-        while not_end && k < 24
+        while not_end && k < 24 # 24 is arbitrary, but it would be painful to go lower
             k += 1
             d = (b+a) // 2
             # print("k=$k, a=$a, b=$b, d=$d \n")
@@ -131,11 +121,12 @@ promote_rule{T<:Real}(::Type{T}, ::Type{SurrealFinite}) = SurrealFinite
 ϕ = Array{SurrealFinite,1}(0) # empty array of SurrealFinites
 zero(::SurrealFinite) = SurrealFinite("0", ϕ, ϕ )
 one(::SurrealFinite) = SurrealFinite("1", [ zero(SurrealFinite) ], ϕ )
-# ↑ = one(SurrealFinite)  # cause error???
+# ↑ = one(SurrealFinite)  # this causes an error???
 # ↓ = -one(SurrealFinite) 
-    
+
 # relations
-#    rewrite in terms of max/min, or really sup/inf
+#   these are written in terms of the definition, but could
+#   rewrite in terms of max/min to make marginally faster
 function <=(x::SurrealFinite, y::SurrealFinite)
     for t in x.X_L
         if y <= t
@@ -147,17 +138,25 @@ function <=(x::SurrealFinite, y::SurrealFinite)
             return false
         end
     end
-
-    return true
+    return true 
 end
-# comparisons between arrays are all-to-all, so don't have to tbe the same size
+<(x::SurrealFinite, y::SurrealFinite) = x<=y && !(y≅x)
+# ===(x::SurrealFinite, y::SurrealFinite) = x<=y && y<x # causes an error
+≅(x::SurrealFinite, y::SurrealFinite) = x<=y && y<=x
+≇(x::SurrealFinite, y::SurrealFinite) = !( x ≅ y ) 
+==(x::SurrealFinite, y::SurrealFinite) = size(x.X_L) == size(y.X_L) &&
+                                         size(x.X_R) == size(y.X_R) &&
+                                         all(x.X_L .== y.X_L) &&
+                                         all(x.X_R .== y.X_R)  
+
+# comparisons between arrays are all-to-all, so don't have to be the same size
 function <=(X::Array{SurrealFinite}, Y::Array{SurrealFinite} )
     if isempty(X) || isempty(Y)
         return true
     else
         for x in X
             for y in Y
-                if ! (x <= y) 
+                if !(x <= y) 
                     return false
                 end 
             end
@@ -179,16 +178,6 @@ function <(X::Array{SurrealFinite}, Y::Array{SurrealFinite} )
         return true
     end
 end 
-# ===(x::SurrealFinite, y::SurrealFinite) = x<=y && y<x # causes an error
-≅(x::SurrealFinite, y::SurrealFinite) = x<=y && y<=x
-
-≇(x::SurrealFinite, y::SurrealFinite) = !( x ≅ y ) 
-
-==(x::SurrealFinite, y::SurrealFinite) = size(x.X_L) == size(y.X_L) &&
-                             size(x.X_R) == size(y.X_R) &&
-                             all(x.X_L .== y.X_L) &&
-                             all(x.X_R .== y.X_R)  
-<(x::SurrealFinite, y::SurrealFinite) = x<=y && !(y≅x)
 
 # unary operators
 function -(x::SurrealFinite)
@@ -243,14 +232,10 @@ function *(x::SurrealFinite, y::SurrealFinite)
 end
 *(x::SurrealFinite, Y::Array{SurrealFinite}) = return [ x*s for s in Y ]
 *(X::Array{SurrealFinite}, y::SurrealFinite) = y*X
- 
-function pf(x::SurrealFinite) 
-    print("<", x.X_L, ":", x.X_R, ">") 
-end
-function pff(x::SurrealFinite)
-    # tmp = isempty(x.X_L) ? ϕ : pff(x.X_L)
-    print("<", pff.(x.X_L), ":", pff.(x.X_R), ">") 
-end 
+
+# print commands
+pf(x::SurrealFinite) = print("<", x.X_L, ":", x.X_R, ">") 
+pff(x::SurrealFinite) = print("<", pff.(x.X_L), ":", pff.(x.X_R), ">") 
 function show(io::IO, x::SurrealFinite)
     if x.shorthand != ""
         print_with_color(:bold, io, x.shorthand ) # could be :red
@@ -262,36 +247,22 @@ function show(io::IO, X::Array{SurrealFinite})
     print(io, "{", join(X, ", "), "}")
 end
 
-
+# generation or birth day calculation
 function generation(x::SurrealFinite)
     if x≅zero(x)
         return 0
     else
-        gen = 0
-        for z in x.X_L
-            tmp = generation(z)
-            if tmp > gen
-                gen = tmp
-            end
-        end
-        for z in x.X_R
-            tmp = generation(z)
-            if tmp > gen
-                gen = tmp
-            end
-        end
-        return gen+1
+        return max( maximum( generation.( [x.X_L; 0]) ),
+                    maximum( generation.( [x.X_R; 0]) )) + 1
     end
 end 
 
-function canonicalise(s::SurrealFinite)
-    # this is a bit of a cheat, but I'm not smart enough to work out how to do it otherwise
-    return convert(SurrealFinite, convert(Rational, s))
-end
+# this is a bit of a cheat, but I'm not smart enough to work out how to do it otherwise
+canonicalise(s::SurrealFinite) = convert(SurrealFinite, convert(Rational, s))
 
 sign(x::SurrealFinite) = x<zero(x) ? -one(x) : x>zero(x) ? one(x) : zero(x)
 # abs(x::SurrealFinite) = x<zero(x) ? -x : x
- 
+
 function unique2!( X::Array{SurrealFinite} )
     # our own unique that is based on ≅
     sort!(X)
@@ -303,10 +274,6 @@ function unique2!( X::Array{SurrealFinite} )
         i += 1
     end
 end
-
-# old versions that required transform back to real
-# isinteger(s::SurrealFinite) = isinteger( convert(AbstractFloat, s) )
-# round(s::SurrealFinite) = convert(SurrealFinite, round( convert(AbstractFloat, s) ))
 
 function isinteger(s::SurrealFinite)
     if s ≅ zero(s) 
@@ -341,7 +308,7 @@ function ceil(s::SurrealFinite)
 end
 
 
-# not the more general form of rounding defined in Julia
+# not the more general form of rounding defined in Julia -- should fix
 function round(s::SurrealFinite)
     if s ≅ zero(s) 
         return s

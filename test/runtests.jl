@@ -104,9 +104,10 @@ unique2!(Y)
     @test all( unique(X) .≅ convert.(SurrealFinite, [0, 1, -1, 2] ))
     # @test all( Y .≅ convert.(SurrealFinite, [-1, 0, 1, 2] ))
 
-    float.(A + B)
-    float.(A - B)
-    float.(A + ϕ)
+    @test all( sort(float.(A + B)) .== [-1.0, -0.5, 0.0, 0.5])
+    @test all( sort(float.(A - B)) .== [0.5, 1.0, 1.5, 2.0])
+    @test A + ϕ == ϕ
+    @test ϕ - B == ϕ
 end
 
 @testset "simple functions" begin
