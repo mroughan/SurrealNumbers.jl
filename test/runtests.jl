@@ -50,7 +50,7 @@ end
 @testset "basic operators" begin
     @test -x1 == x11
     @test - -x0 == x0
-    @test - -x4 == x4
+    @test - -x4 == x4 
     @test x1 + x11 ≅ x0
     @test x1 - x1 ≅ x0
     @test x1 + x0 == x1
@@ -140,10 +140,10 @@ end
 
 
 @testset "simplifications" begin
-    @test simplify(x22) ≅ x22 
-    @test simplify( convert(SurrealFinite,2)*convert(SurrealFinite,2) ) ≅ convert(SurrealFinite,4)
-    @test simplify(convert(SurrealFinite,2)*convert(SurrealFinite,2) ) != convert(SurrealFinite,2)*convert(SurrealFinite,2)
-    @test simplify(convert(SurrealFinite,2)*convert(SurrealFinite,2) ) ≅ convert(SurrealFinite,2)*convert(SurrealFinite,2)
+    @test canonicalise(x22) ≅ x22 
+    @test canonicalise( convert(SurrealFinite,2)*convert(SurrealFinite,2) ) ≅ convert(SurrealFinite,4)
+    @test canonicalise(convert(SurrealFinite,2)*convert(SurrealFinite,2) ) != convert(SurrealFinite,2)*convert(SurrealFinite,2)
+    @test canonicalise(convert(SurrealFinite,2)*convert(SurrealFinite,2) ) ≅ convert(SurrealFinite,2)*convert(SurrealFinite,2)
 end
 
 g3 = SurrealFinite( [ 7//16 ], [ 15//16 ] )

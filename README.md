@@ -188,6 +188,10 @@ Note, often in texts it is written $X \not \leq Y$ whereas I am writing $X > Y$.
 
   check this
 
+Conway's approach is to define a Surreal $<X_L|X_R>$ to be the
+simplest $x$ that satisfies $X_L < x < X_R$, where simplest means
+comes from the earliest generation. 
+
 The secret of the conversion is again to use recursion, but that is not quite enough in this case. We use several tricks along the way: 
 
 + If $x$ is equivalent to a known surreal such as 0 or 1, we convert directly
@@ -301,20 +305,22 @@ non-trivial surreals, so we also provide a "tree-view" using ?????
 
 There are two pieces that are unique to surreals:
 
- + generation: the generation of a surreal is 1 + the generation of
-               the surreals used to construct it. Again this is easy
-               to implement recursively.
+**Generation:** the generation of a surreal is 1 + the generation of
+the surreals used to construct it. Again this is easy to implement
+recursively.  Generation comes from Knuth's story where it's called
+the "birth day" of the surreal. Generation can be thought of as a
+function $\rho(\cdot)$
+
+	       \[ \rho(x) = \sup_{i \in X_L \cup X_R} \big[ \rho(i) + 1 \big] \]
  
- + simplify: convert a surreal into its equivalent canonical form. The
-             easiest way to implement this was to use a similar cheat
-             to that above, i.e., convert to a real, and then convert
-             back to the equivalent surreal in canonical form.
+Generation is important as $x = <X_L | X_R>$ is defined to be the
+simplest number such that $X_L < x < X_R$.
 
-	     This should probably be call canonicalise
+**Canonicalise:** convert a surreal into its equivalent canonical
+form. The easiest way to implement this was to use a similar cheat to
+that above, i.e., convert to a real, and then convert back to the
+equivalent surreal in canonical form.
 
-Generation comes from Knuth's story (also called birthday)
-
-Important as $x = <X_L | X_R>$ is the simplest number such that $X_L \leq x \leq X_R$.
 
 ### Arrays of Surreals
 
@@ -323,7 +329,7 @@ implementation instead of sets. One of the nice things about Julia us
 that you get many of the array operators and functions for free when
 you create scalar operators. So, for instance, you can write
 
-     convert.(SurrealFinite, [-1, 0, 1, 2] )
+      convert.(SurrealFinite, [-1, 0, 1, 2] )
 
 which will broadcasts the convert function across the array of
 integers to create an array containing the respective
@@ -335,7 +341,7 @@ e.g.,
 Or we could construct and iterator for the same thing (once `floor`
 and some promotion rules are defined), e.g.., the iterator from -1 to 2 is  
 
-     convert(SurrealFinite, -1 ):convert(SurrealFinite, 2)
+      convert(SurrealFinite, -1 ):convert(SurrealFinite, 2)
 
 However, in order to use arrays as sets we need, in the constructor
 for a surreal to reduce the "set" to a sorted array containing unique
@@ -401,7 +407,9 @@ There are other implementations of the surreals. For instance
 And some of these languages might be more appropriate in some ways for
 this task. But I wanted to learn Julia, and see how far I could take
 it here. Moreover, most of these are at least as incomplete as the
-code here.
+code here. For instance, none (as far as I am aware) implement
+division (the Julia toolkit here has a very limited version of
+division included). 
 
 
 ### More information about Surreals

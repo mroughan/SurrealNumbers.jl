@@ -284,8 +284,8 @@ function generation(x::SurrealFinite)
     end
 end 
 
-function simplify(s::SurrealFinite)
-    # this is a bit of a cheap, but also simplify isn't unique otherwise
+function canonicalise(s::SurrealFinite)
+    # this is a bit of a cheat, but I'm not smart enough to work out how to do it otherwise
     return convert(SurrealFinite, convert(Rational, s))
 end
 

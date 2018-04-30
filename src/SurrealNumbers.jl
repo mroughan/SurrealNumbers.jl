@@ -4,9 +4,9 @@ importall Base
 
 export Surreal, SurrealFinite, Dyadic
 export <=, zero, one, ==, ≅, ≇, <, -, +, *, ϕ, ≀, ↑, ↓, 
-    convert, promote, hash, pf, pff, show, generation, simplify, sign,
-    round, floor, ceil, isinteger, unique2!,
-    isinf, isnan, isfinite
+    convert, promote, hash, pf, pff, show, generation, canonicalise, unique2!, 
+    sign, round, floor, ceil,
+    isinteger, isinf, isnan, isfinite
 
 
 abstract type Surreal <: Real end 
