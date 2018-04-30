@@ -104,6 +104,20 @@ The plan is to add a `SurrealTrans` for the transfinites and other
 surreals with infinite representations. But that is a little harder to
 do, so I leave that for the moment.
 
+The actual type structure (minus the constructor -- see the code) is
+just
+
+    struct SurrealFinite <: Surreal
+        shorthand::String
+        X_L :: Array{SurrealFinite,1} 
+        X_R :: Array{SurrealFinite,1} 
+    end 
+
+Note the addition of `shorthand`, which isn't necessary, but carries a
+little bit of extra information to make pretty printing a little
+easier. 
+
+
 ### Dyadic numbers
 
 The dyadic rational numbers are those that have a denumerator that is
