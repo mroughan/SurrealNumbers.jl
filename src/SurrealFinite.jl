@@ -243,9 +243,7 @@ function show(io::IO, x::SurrealFinite)
         print( io, "<", x.X_L, ":", x.X_R, ">")
     end
 end
-function show(io::IO, X::Array{SurrealFinite})
-    print(io, "{", join(X, ", "), "}")
-end
+show(io::IO, X::Array{SurrealFinite}) = print(io, "{", join(X, ", "), "}")
 
 # generation or birth day calculation
 function generation(x::SurrealFinite)
