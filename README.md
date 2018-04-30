@@ -439,6 +439,7 @@ Some examples of code are included here to make a little of this more real.
 
 Let's start by creating some surreals
 
+    x0 = SurrealFinite("0", ϕ,   ϕ)  
     x1 = SurrealFinite("1", [x0], ϕ)
     x11 = SurrealFinite("-1", ϕ,  [x0])
     x4 = SurrealFinite( [x11],  [x1,x0])
