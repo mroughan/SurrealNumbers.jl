@@ -113,9 +113,9 @@ just
         X_R :: Array{SurrealFinite,1} 
     end 
 
-Note the addition of `shorthand`, which isn't necessary, but carries a
-little bit of extra information to make pretty printing a little
-easier. 
+Note the addition of a `shorthand` string, which isn't necessary, but
+carries a little bit of extra information to make pretty printing a
+little easier.
 
 
 ### Dyadic numbers
@@ -466,6 +466,36 @@ Try printing them out in various forms:
 
 #### Operations on surreals and arrays of surreals
 
+Test out some operations on the above variables with expected results
+
+     # comparisons
+     x0 <= x1
+     x0 <= x0
+     x1 >= x11
+     !( x11 ≅ x1 )
+     x21 ≅ x22 ≅ x23 ≅ x24
+
+     # addition and subtraction
+     -x1 == x11
+     - -x0 == x0
+     - -x4 == x4 
+     x1 + x11 ≅ x0
+     x1 - x1 ≅ x0
+     x1 + x0 == x1
+
+     # multiplication
+     x1*x1 ≅ x1
+     x0*x1 ≅ x0
+     x4*x0 ≅ x0 
+     convert(SurrealFinite,2)*convert(SurrealFinite,2) ) ≅ convert(SurrealFinite,4)
+     
+     # division
+     x11/one(x11) ≅ -x1
+     x22 / x22 ≅ one(x22)
+     x22/x1 ≅ x22
+     x4/x1 ≅ x4
+     float(x1/x4) == float(x1)/float(x4)
+     convert(SurrealFinite, 6)/ convert(SurrealFinite, 3) ≅ convert(SurrealFinite, 2)
 
 #### Simple functions
 
