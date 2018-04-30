@@ -20,6 +20,10 @@ z = zero(x1)
 z = zero(SurrealFinite)
 z = one(x1)
 
+x3 = convert(SurrealFinite, 3)
+x41 = convert(SurrealFinite, 4)
+x42 = SurrealFinite( [x3],  ϕ)
+x43 = convert(SurrealFinite, 2) * convert(SurrealFinite, 2)
 
 print("x1 = ")
 pf(x1)
@@ -38,15 +42,21 @@ print("s2 = ")
 pf(s2)
 println()
 
+println("x41 = ", x41, ", x42 = ", x42, ", x43 = ", x43)
 
 @testset "comparisons" begin
     @test x0 <= x1
+    @test x0 < x1
     @test x0 <= x0
     @test x1 >= x11
+    @test x11 < x0
     @test !( x11 ≅ x1 )
     @test x21 ≅ x22 ≅ x23 ≅ x24 # should be an equivalence class
+    @test x41 ≅ x42 ≅ x43
+    @test x41 == x42
+    @test x41 != x43
 end
-
+ 
 @testset "basic operators" begin
     @test -x1 == x11
     @test - -x0 == x0
@@ -151,7 +161,7 @@ g3 = SurrealFinite( [ 7//16 ], [ 15//16 ] )
 g4 = SurrealFinite( [convert(SurrealFinite,3)], [convert(SurrealFinite,17)] )
 # g4 ≅ convert(SurrealFinite,4)
 
-@testset "conversion from surreal back to ordinary numbers" begin
+@testset "conversion from surreal back to real" begin
     @test convert(Rational, convert(SurrealFinite, 1//8)) == 1//8
     @test convert(Rational, convert(SurrealFinite, 9//8)) == 9//8
     @test convert(Rational, convert(SurrealFinite, -9//8)) == -9//8
@@ -172,9 +182,11 @@ g4 = SurrealFinite( [convert(SurrealFinite,3)], [convert(SurrealFinite,17)] )
 end
 
 @testset "promotion" begin
+    # note promoted type will be in canonical form, but other side might not
+    @test x0 <= 1.0
+    @test x1 == 1//1
     @test 1.0 + x1 == 2.0
+    @test canonicalise(1//2 + x1) == 1.5
+    @test 1//2 + x1 ≅ 1.5
 end
-
-
-
 

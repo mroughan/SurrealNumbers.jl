@@ -143,7 +143,9 @@ end
 <(x::SurrealFinite, y::SurrealFinite) = x<=y && !(y≅x)
 # ===(x::SurrealFinite, y::SurrealFinite) = x<=y && y<x # causes an error
 ≅(x::SurrealFinite, y::SurrealFinite) = x<=y && y<=x
+≅(x::Real, y::Real) = ≅(promote(x,y)...)
 ≇(x::SurrealFinite, y::SurrealFinite) = !( x ≅ y ) 
+≇(x::Real, y::Real) = ≇(promote(x,y)...)
 ==(x::SurrealFinite, y::SurrealFinite) = size(x.X_L) == size(y.X_L) &&
                                          size(x.X_R) == size(y.X_R) &&
                                          all(x.X_L .== y.X_L) &&
@@ -244,6 +246,8 @@ function show(io::IO, x::SurrealFinite)
     end
 end
 show(io::IO, X::Array{SurrealFinite}) = print(io, "{", join(X, ", "), "}")
+spf(x::SurrealFinite) = print("<", canonicalise.(x.X_L), ":", canonicalise.(x.X_R), ">")
+
 
 # generation or birth day calculation
 function generation(x::SurrealFinite)

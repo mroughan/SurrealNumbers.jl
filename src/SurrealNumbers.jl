@@ -4,7 +4,7 @@ importall Base
 
 export Surreal, SurrealFinite, Dyadic
 export <=, zero, one, ==, ≅, ≇, <, -, +, *, ϕ, ≀, ↑, ↓, 
-    convert, promote, hash, pf, pff, show, generation, canonicalise, unique2!, 
+    convert, promote, hash, pf, pff, spf, show, generation, canonicalise, unique2!, 
     sign, round, floor, ceil,
     isinteger, isinf, isnan, isfinite
 

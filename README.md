@@ -488,7 +488,7 @@ Test out some operations on the above variables with expected results
      x1*x1 ≅ x1
      x0*x1 ≅ x0
      x4*x0 ≅ x0 
-     convert(SurrealFinite,2)*convert(SurrealFinite,2) ) ≅ convert(SurrealFinite,4)
+     convert(SurrealFinite,2)*convert(SurrealFinite,2) ≅ convert(SurrealFinite,4)
      
      # division
      x11/one(x11) ≅ -x1
