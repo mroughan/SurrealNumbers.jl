@@ -342,7 +342,7 @@ parsed (assuming you have GraphVis installed) by commands such as
 
 Which produces the figure ![alt text](/tests/test_dot_s2.dot.svg).
 
-See the code `tests/test_dot.jl` for other examples. 
+See the code `test/test_dot.jl` for other examples. 
 
 ###  Uniquely surreal functions
 
