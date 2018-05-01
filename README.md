@@ -159,14 +159,14 @@ your new type. But you can't redefine $===$ or $\equiv$. The blog I
 read suggests that this is because this is a core operation, that
 might cause problems if a user broke it.
 
-https://docs.julialang.org/en/stable/devdocs/functions/#Builtins-1
-https://discourse.julialang.org/t/overload-for-custom-type/4898
+ + https://docs.julialang.org/en/stable/devdocs/functions/#Builtins-1
+ + https://discourse.julialang.org/t/overload-for-custom-type/4898
 
-Anyway, I have defined *congruence* $\cong$ to do the same thing, check for
-equivalence. However, as there are many possible surreal forms we
-could create to represent any given real number, we have to chose
-one. Call that the *canonical* form. We could define it in several
-ways, but the standard is
+Anyway, I have defined *congruence* $\cong$ or `≅` to do the same
+thing, check for equivalence. However, as there are many possible
+surreal forms we could create to represent any given real number, we
+have to chose one. Call that the *canonical* form. We could define it
+in several ways, but the standard is
 
 + zero => 0 = <{} | {} >
 
