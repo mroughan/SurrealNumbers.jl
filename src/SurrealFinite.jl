@@ -279,11 +279,12 @@ function surreal2dot_f(io::IO, x::SurrealFinite, k::Integer)
     if x ≅ zero(x)
         println(io, "   node_$k [shape=none,margin=0,label=<<B>0</B>>]")
     else
-        if x.shorthand==""
-            S = convert(String, x)
-        else
-            S = x.shorthand
-        end
+        #if x.shorthand==""
+        #    S = convert(String, x)
+        #else
+        #    S = x.shorthand
+        #end
+        S = convert(String, x)
         # L = isempty(x.X_L) ? "ϕ" : "" * join( convert.(String, x.X_L), ",</TD><TD> ") *"</TD>
         # R = isempty(x.X_R) ? "ϕ" : join( convert.(String, x.X_R), ", ")
         if isempty(x.X_L)

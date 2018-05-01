@@ -12,7 +12,7 @@
 <!-- node_1 -->
 <g id="node1" class="node"><title>node_1</title>
 <polygon fill="none" stroke="black" points="92,-281 92,-306 160,-306 160,-281 92,-281"/>
-<text text-anchor="start" x="115" y="-289.8" font-family="Times,serif" font-size="14.00">3//4</text>
+<text text-anchor="start" x="117" y="-289.8" font-family="Times,serif" font-size="14.00">3/4</text>
 <polygon fill="none" stroke="black" points="92,-252 92,-281 131,-281 131,-252 92,-252"/>
 <text text-anchor="start" x="99" y="-262.8" font-family="Times,serif" font-size="14.00"> 1/2 </text>
 <polygon fill="none" stroke="black" points="131,-252 131,-281 160,-281 160,-252 131,-252"/>
@@ -21,7 +21,7 @@
 <!-- node_2 -->
 <g id="node2" class="node"><title>node_2</title>
 <polygon fill="none" stroke="black" points="56,-191 56,-216 114,-216 114,-191 56,-191"/>
-<text text-anchor="start" x="74" y="-199.8" font-family="Times,serif" font-size="14.00">1//2</text>
+<text text-anchor="start" x="76" y="-199.8" font-family="Times,serif" font-size="14.00">1/2</text>
 <polygon fill="none" stroke="black" points="56,-162 56,-191 85,-191 85,-162 56,-162"/>
 <text text-anchor="start" x="63" y="-172.8" font-family="Times,serif" font-size="14.00"> 0 </text>
 <polygon fill="none" stroke="black" points="85,-162 85,-191 114,-191 114,-162 85,-162"/>
