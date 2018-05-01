@@ -395,7 +395,7 @@ integers to create an array containing the respective
 surreals. Likewise, we can use *comprehensions* to construct arrays,
 e.g.,
 
-     [ convert(SurrealFinite, i) for i=-1:2 ]
+    [ convert(SurrealFinite, i) for i=-1:2 ]
 
 Or we could construct and iterator for the same thing (once `floor`
 and some promotion rules are defined), e.g.., the iterator from -1 to 2 is  
