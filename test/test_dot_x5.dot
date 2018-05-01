@@ -18,7 +18,7 @@ digraph "0.5" {
    node_4 [shape=none,margin=0,label=
          <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
          <TR><TD COLSPAN="2">-1/2</TD></TR>
-         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="-1"> -1 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="0"> 0 </TD> &nbsp; <TD PORT="1"> 1 </TD> &nbsp; </TR></TABLE> </TD></TR>
+         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="-1"> -1 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="0"> 0 </TD> &nbsp; </TR></TABLE> </TD></TR>
          </TABLE>>
          ];
    node_4:"-1" -> node_5;
@@ -32,24 +32,15 @@ digraph "0.5" {
    node_6 [shape=none,margin=0,label=<<B>0</B>>]
    node_4:"0" -> node_7;
    node_7 [shape=none,margin=0,label=<<B>0</B>>]
-   node_4:"1" -> node_8;
-   node_8 [shape=none,margin=0,label=
+   node_1:"0" -> node_8;
+   node_8 [shape=none,margin=0,label=<<B>0</B>>]
+   node_1:"1" -> node_9;
+   node_9 [shape=none,margin=0,label=
          <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
          <TR><TD COLSPAN="2">1</TD></TR>
          <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="0"> 0 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> ϕ </TD></TR>
          </TABLE>>
          ];
-   node_8:"0" -> node_9;
-   node_9 [shape=none,margin=0,label=<<B>0</B>>]
-   node_1:"0" -> node_10;
+   node_9:"0" -> node_10;
    node_10 [shape=none,margin=0,label=<<B>0</B>>]
-   node_1:"1" -> node_11;
-   node_11 [shape=none,margin=0,label=
-         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
-         <TR><TD COLSPAN="2">1</TD></TR>
-         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="0"> 0 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> ϕ </TD></TR>
-         </TABLE>>
-         ];
-   node_11:"0" -> node_12;
-   node_12 [shape=none,margin=0,label=<<B>0</B>>]
 }

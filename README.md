@@ -333,16 +333,27 @@ into the DOT syntax from [GraphViz](https://www.graphviz.org/). The
 function `surreal2dot` can output a `.dot` file, and then this can be
 parsed (assuming you have GraphVis installed) by commands such as
 
+    using SurrealNumbers
+
     s2 = convert(SurrealFinite, 3//4)
     file = "test_dot_s2.dot"
     FID = open(file, "w")
-    surreal2dot(FID, x41)
+    surreal2dot(FID, s2)
     close(FID)
     run(`dot -Tsvg -O $file`)
 
-Which produces the figure
+    x5 = SurrealFinite( convert.(SurrealFinite, [-1, -1//2, 0]), [one(SurrealFinite)] )
+    file = "test_dot_x5.dot"
+    FID = open(file, "w")
+    surreal2dot(FID, x5)
+    close(FID)
+    run(`dot -Tsvg -O $file`)
 
-![alt text](/test/test_dot_s2.dot.svg).
+Which produces the figures like those below, illustrating the
+recursive definition of the two surreal numbers given. 
+
+![s2](/test/test_dot_s2.dot.svg).
+![x5](/test/test_dot_x5.dot.svg).
 
 See the code `test/test_dot.jl` for other examples. 
 
