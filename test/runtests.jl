@@ -176,9 +176,11 @@ g4 = SurrealFinite( [convert(SurrealFinite,3)], [convert(SurrealFinite,17)] )
     @test convert(AbstractFloat, x4) == -0.5
     @test float( x4 ) == -0.5
     @test float( s2 ) == 0.75
-    @test float( g4 ) == 4.0
+    @test float( g4 ) == 4.0 
 
     @test all(convert.(SurrealFinite, [-1, 0, 1, 2] ) == [ convert(SurrealFinite, i) for i=-1:2 ])
+
+    @test convert(String, x4) == "-1/2"
 end
 
 @testset "promotion" begin

@@ -340,7 +340,9 @@ parsed (assuming you have GraphVis installed) by commands such as
     close(FID)
     run(`dot -Tsvg -O $file`)
 
-Which produces the figure ![alt text](/test/test_dot_s2.dot.svg).
+Which produces the figure
+
+![alt text](/test/test_dot_s2.dot.svg).
 
 See the code `test/test_dot.jl` for other examples. 
 

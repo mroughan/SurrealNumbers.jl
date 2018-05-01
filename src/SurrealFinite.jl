@@ -114,6 +114,15 @@ end
 convert(::Type{AbstractFloat}, s::SurrealFinite ) = float( convert(Rational, s) )
 convert(::Type{Integer}, s::SurrealFinite ) = Int( convert(Rational, s) )
 ## convert{T<:Real}(::Type{T}, s::SurrealFinite ) =  convert(T, convert(Rational, s) )
+function convert(::Type{String}, s::SurrealFinite )
+    # try to work out a nice way to print it
+    if isinteger(s)
+        return string(convert(Integer, s))
+    else
+        r = convert(Rational, s)
+        return string(r.num) * "/" * string(r.den)
+    end
+end
 
 # promote all numbers to surreals for calculations
 promote_rule{T<:Real}(::Type{T}, ::Type{SurrealFinite}) = SurrealFinite
@@ -271,12 +280,32 @@ function surreal2dot_f(io::IO, x::SurrealFinite, k::Integer)
         println(io, "   node_$k [shape=none,margin=0,label=<<B>0</B>>]")
     else
         if x.shorthand==""
-            S = float(x)
+            S = convert(String, x)
         else
             S = x.shorthand
         end
-        L = isempty(x.X_L) ? "ϕ" : join( float.(x.X_L), ", ") 
-        R = isempty(x.X_R) ? "ϕ" : join( float.(x.X_R), ", ")
+        # L = isempty(x.X_L) ? "ϕ" : "" * join( convert.(String, x.X_L), ",</TD><TD> ") *"</TD>
+        # R = isempty(x.X_R) ? "ϕ" : join( convert.(String, x.X_R), ", ")
+        if isempty(x.X_L)
+            L = "ϕ" 
+        else
+            L = "<TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLPADDING=\"0\"><TR>"
+            for s in x.X_L
+                tmp = convert(String, s)
+                L *= "<TD PORT=\"$tmp\"> " * tmp * " </TD> &nbsp; "
+            end
+            L *= "</TR></TABLE>" 
+        end
+        if isempty(x.X_R)
+            R = "ϕ" 
+        else
+            R = "<TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLPADDING=\"0\"><TR>"
+            for s in x.X_R
+                tmp = convert(String, s)
+                R *= "<TD PORT=\"$tmp\"> " * tmp * " </TD> &nbsp; "
+            end
+            R *= "</TR></TABLE>" 
+        end
         print(io, "   ")
         println(io, """
             node_$k [shape=none,margin=0,label=
@@ -287,12 +316,14 @@ function surreal2dot_f(io::IO, x::SurrealFinite, k::Integer)
                      ];""")
         for s in x.X_L
             m += 1
-            println(io, "   node_$k:L -> node_$m;")
+            # println(io, "   node_$k:L -> node_$m;")
+            println(io, "   node_$k:\"" *  convert(String, s) * "\" -> node_$m;")
             m = surreal2dot_f(io, s, m)
         end
         for s in x.X_R
             m += 1
-            println(io, "   node_$k:R -> node_$m;")
+            # println(io, "   node_$k:R -> node_$m;")
+            println(io, "   node_$k:\"" *  convert(String, s) * "\" -> node_$m;")
             m = surreal2dot_f(io, s, m)
         end
     end 
