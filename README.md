@@ -326,10 +326,23 @@ is a "shorthand" defined for a surreal (most of the simple conversions
 will set this up). This aids in viewing the surreals succintly, but
 sometimes we want to see deeper. In the case where shorthand is
 defined we can use the command `pf` to see deeper, but it will stop at
-the first layer below with a shorthand. The command `pff` will plot
-the entire thing, but that is almost impossible to understand for
-non-trivial surreals, so we also provide a "tree-view" using ?????
+the first layer below with a shorthand.
 
+To see the full recursion I have implemented output of a surreal form
+into the DOT syntax from [GraphViz](https://www.graphviz.org/). The
+function `surreal2dot` can output a `.dot` file, and then this can be
+parsed (assuming you have GraphVis installed) by commands such as
+
+    s2 = convert(SurrealFinite, 3//4)
+    file = "test_dot_s2.dot"
+    FID = open(file, "w")
+    surreal2dot(FID, x41)
+    close(FID)
+    run(`dot -Tsvg -O $file`)
+
+Which produces the figure ![alt text](tests/test_dot_s2.dot.svg).
+
+See the code `tests/test_dot.jl` for other examples. 
 
 ###  Uniquely surreal functions
 
