@@ -425,7 +425,7 @@ one element from each equivalence class, i.e., I could have used
 congruences as equality, but in general these are short lists (with
 lots of recursion internally, but the arrays themselves are short), so
 I just wrote my own unique function, `unique2!`. Yes I know the name
-isn't great, but for newbies note that the ! is not a `'not` symbols
+isn't great, but for newbies note that the ! is not a `not` symbols
 here. In Julia's idiom this signifies that the function modifies its
 arguments.
 
