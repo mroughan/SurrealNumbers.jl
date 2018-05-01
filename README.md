@@ -172,7 +172,7 @@ ways, but the standard is
 + integers n => n+1 = <{n} | {} >
 
 + dyadic fraction => x = \frac{ n }{ 2^k } becomes
-     < { x - 1/2^{k-1} } | (x + 1/2^{k-1} } >
+     < { x - 1/2^{k } | (x + 1/2^{k} } >
 
 + negative number => use the identity that $-x = <-X_R | -X_L>$
 
@@ -182,10 +182,22 @@ construction/conversion. So some care (particularly) with floats
 should be taken not to create a variable that exhausts the stack. The
 current code isn't very clever in checking for this.
 
+Note that although this is the way most texts define integers (because
+it is very simple), we could have a simple, consistent conversion for
+all dyadics (including the integers) is we extend the dyadic
+conversion to the case where $k=0$. I didn't do this to be consistent
+with the literature, and because it results in less "complex"
+representations, but it seems more appealing to me.
+
 Examples:
+    julia> pf( convert(SurrealFinite, 1//2) )
+    <{0}:{1}>
+    julia> pf( convert(SurrealFinite, 3//4) )
+    <{1//2}:{1}>
 
-
-
+The `pf` function used here is a "print-in-full", which prints the
+left and right sets of the surreal, not the real equivalent
+shorthand. 
 
 ### Converting surreal back to a real number
 
