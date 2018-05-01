@@ -190,6 +190,7 @@ with the literature, and because it results in less "complex"
 representations, but it seems more appealing to me.
 
 Examples:
+
     julia> pf( convert(SurrealFinite, 1//2) )
     <{0}:{1}>
     julia> pf( convert(SurrealFinite, 3//4) )
