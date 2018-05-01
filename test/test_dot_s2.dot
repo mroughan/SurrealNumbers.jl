@@ -1,0 +1,35 @@
+digraph "0.75" {
+   node_1 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD COLSPAN="2">3//4</TD></TR>
+         <TR><TD PORT="L"> 0.5 </TD><TD PORT="R"> 1.0 </TD></TR>
+         </TABLE>>
+         ];
+   node_1:L -> node_2;
+   node_2 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD COLSPAN="2">1//2</TD></TR>
+         <TR><TD PORT="L"> 0.0 </TD><TD PORT="R"> 1.0 </TD></TR>
+         </TABLE>>
+         ];
+   node_2:L -> node_3;
+   node_3 [shape=none,margin=0,label=<<B>0</B>>]
+   node_2:R -> node_4;
+   node_4 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD COLSPAN="2">1</TD></TR>
+         <TR><TD PORT="L"> 0.0 </TD><TD PORT="R"> ϕ </TD></TR>
+         </TABLE>>
+         ];
+   node_4:L -> node_5;
+   node_5 [shape=none,margin=0,label=<<B>0</B>>]
+   node_1:R -> node_6;
+   node_6 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD COLSPAN="2">1</TD></TR>
+         <TR><TD PORT="L"> 0.0 </TD><TD PORT="R"> ϕ </TD></TR>
+         </TABLE>>
+         ];
+   node_6:L -> node_7;
+   node_7 [shape=none,margin=0,label=<<B>0</B>>]
+}

@@ -1,0 +1,100 @@
+digraph "4.0" {
+   node_1 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD COLSPAN="2">4.0</TD></TR>
+         <TR><TD PORT="L"> 3.0 </TD><TD PORT="R"> ϕ </TD></TR>
+         </TABLE>>
+         ];
+   node_1:L -> node_2;
+   node_2 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD COLSPAN="2">3.0</TD></TR>
+         <TR><TD PORT="L"> 2.0 </TD><TD PORT="R"> 4.0 </TD></TR>
+         </TABLE>>
+         ];
+   node_2:L -> node_3;
+   node_3 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD COLSPAN="2">2.0</TD></TR>
+         <TR><TD PORT="L"> 1.0 </TD><TD PORT="R"> 3.0 </TD></TR>
+         </TABLE>>
+         ];
+   node_3:L -> node_4;
+   node_4 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD COLSPAN="2">1.0</TD></TR>
+         <TR><TD PORT="L"> 0.0 </TD><TD PORT="R"> 2.0 </TD></TR>
+         </TABLE>>
+         ];
+   node_4:L -> node_5;
+   node_5 [shape=none,margin=0,label=<<B>0</B>>]
+   node_4:R -> node_6;
+   node_6 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD COLSPAN="2">2.0</TD></TR>
+         <TR><TD PORT="L"> 1.0 </TD><TD PORT="R"> ϕ </TD></TR>
+         </TABLE>>
+         ];
+   node_6:L -> node_7;
+   node_7 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD COLSPAN="2">1.0</TD></TR>
+         <TR><TD PORT="L"> 0.0 </TD><TD PORT="R"> ϕ </TD></TR>
+         </TABLE>>
+         ];
+   node_7:L -> node_8;
+   node_8 [shape=none,margin=0,label=<<B>0</B>>]
+   node_3:R -> node_9;
+   node_9 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD COLSPAN="2">3.0</TD></TR>
+         <TR><TD PORT="L"> 2.0 </TD><TD PORT="R"> ϕ </TD></TR>
+         </TABLE>>
+         ];
+   node_9:L -> node_10;
+   node_10 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD COLSPAN="2">2.0</TD></TR>
+         <TR><TD PORT="L"> 1.0 </TD><TD PORT="R"> ϕ </TD></TR>
+         </TABLE>>
+         ];
+   node_10:L -> node_11;
+   node_11 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD COLSPAN="2">1.0</TD></TR>
+         <TR><TD PORT="L"> 0.0 </TD><TD PORT="R"> ϕ </TD></TR>
+         </TABLE>>
+         ];
+   node_11:L -> node_12;
+   node_12 [shape=none,margin=0,label=<<B>0</B>>]
+   node_2:R -> node_13;
+   node_13 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD COLSPAN="2">4.0</TD></TR>
+         <TR><TD PORT="L"> 3.0 </TD><TD PORT="R"> ϕ </TD></TR>
+         </TABLE>>
+         ];
+   node_13:L -> node_14;
+   node_14 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD COLSPAN="2">3.0</TD></TR>
+         <TR><TD PORT="L"> 2.0 </TD><TD PORT="R"> ϕ </TD></TR>
+         </TABLE>>
+         ];
+   node_14:L -> node_15;
+   node_15 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD COLSPAN="2">2.0</TD></TR>
+         <TR><TD PORT="L"> 1.0 </TD><TD PORT="R"> ϕ </TD></TR>
+         </TABLE>>
+         ];
+   node_15:L -> node_16;
+   node_16 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD COLSPAN="2">1.0</TD></TR>
+         <TR><TD PORT="L"> 0.0 </TD><TD PORT="R"> ϕ </TD></TR>
+         </TABLE>>
+         ];
+   node_16:L -> node_17;
+   node_17 [shape=none,margin=0,label=<<B>0</B>>]
+}
