@@ -325,10 +325,13 @@ recursively.  Generation comes from Knuth's story where it's called
 the "birth day" of the surreal. Generation can be thought of as a
 function $\rho(\cdot)$
 
-	       \[ \rho(x) = \sup_{i \in X_L \cup X_R} \big[ \rho(i) + 1 \big] \]
+     \[ \rho(x) = \sup_{i \in X_L \cup X_R} \big[ \rho(i) + 1 \big] \]
  
 Generation is important as $x = <X_L | X_R>$ is defined to be the
 simplest number such that $X_L < x < X_R$.
+
+Note that within an equivalence class of forms, not all forms have the
+same generation. 
 
 **Canonicalise:** convert a surreal into its equivalent canonical
 form. The easiest way to implement this was to use a similar cheat to

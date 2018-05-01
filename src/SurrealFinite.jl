@@ -237,7 +237,17 @@ end
 
 # print commands
 pf(x::SurrealFinite) = print("<", x.X_L, ":", x.X_R, ">") 
-pff(x::SurrealFinite) = print("<", pff.(x.X_L), ":", pff.(x.X_R), ">") 
+function pff(x::SurrealFinite)
+    if x ≅ zero(x)
+        print(" 0 ")
+    elseif x.X_L == ϕ
+        print("< ϕ:", pff.(x.X_R), ">")
+    elseif x.X_R == ϕ
+        print("<", pff.(x.X_L), ":ϕ>")
+    else
+        print("<", pff.(x.X_L), ":", pff.(x.X_R), ">")
+    end
+end
 function show(io::IO, x::SurrealFinite)
     if x.shorthand != ""
         print_with_color(:bold, io, x.shorthand ) # could be :red
@@ -247,6 +257,48 @@ function show(io::IO, x::SurrealFinite)
 end
 show(io::IO, X::Array{SurrealFinite}) = print(io, "{", join(X, ", "), "}")
 spf(x::SurrealFinite) = print("<", canonicalise.(x.X_L), ":", canonicalise.(x.X_R), ">")
+
+function surreal2dot(io::IO, x::SurrealFinite)
+    println(io, "digraph \"", float(x), "\" {")
+    k = 1
+    m = surreal2dot_f(io, x, k)
+    println(io, "}")
+    return m
+end
+function surreal2dot_f(io::IO, x::SurrealFinite, k::Integer)
+    m = k
+    if x ≅ zero(x)
+        println(io, "   node_$k [shape=none,margin=0,label=<<B>0</B>>]")
+    else
+        if x.shorthand==""
+            S = float(x)
+        else
+            S = x.shorthand
+        end
+        L = isempty(x.X_L) ? "ϕ" : join( float.(x.X_L), ", ") 
+        R = isempty(x.X_R) ? "ϕ" : join( float.(x.X_R), ", ")
+        print(io, "   ")
+        println(io, """
+            node_$k [shape=none,margin=0,label=
+                     <<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"4\">
+                     <TR><TD COLSPAN=\"2\">$S</TD></TR>
+                     <TR><TD PORT=\"L\"> $L </TD><TD PORT=\"R\"> $R </TD></TR>
+                     </TABLE>>
+                     ];""")
+        for s in x.X_L
+            m += 1
+            println(io, "   node_$k:L -> node_$m;")
+            m = surreal2dot_f(io, s, m)
+        end
+        for s in x.X_R
+            m += 1
+            println(io, "   node_$k:R -> node_$m;")
+            m = surreal2dot_f(io, s, m)
+        end
+    end 
+    return m 
+end
+surreal2dot(x::SurrealFinite) = surreal2dot(STDOUT, x)
 
 
 # generation or birth day calculation
