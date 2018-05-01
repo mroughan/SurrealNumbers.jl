@@ -1,7 +1,7 @@
 struct SurrealFinite <: Surreal
     shorthand::String
-    X_L :: Array{SurrealFinite,1} 
-    X_R :: Array{SurrealFinite,1} 
+    X_L::Array{SurrealFinite,1} 
+    X_R::Array{SurrealFinite,1} 
     # constructor should check that X_L < X_R
     function SurrealFinite(shorthand::String, X_L::Array{SurrealFinite}, X_R::Array{SurrealFinite})
         unique2!( X_L ) # make elements unique and sort them in increasing order
