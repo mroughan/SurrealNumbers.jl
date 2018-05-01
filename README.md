@@ -352,7 +352,7 @@ parsed (assuming you have GraphVis installed) by commands such as
 Which produces the figures like those below, illustrating the
 recursive definition of the two surreal numbers given. 
 
-![s2](/test/test_dot_s2.dot.svg).
+![s2](/test/test_dot_s2.dot.svg) <&nbsp;>
 ![x5](/test/test_dot_x5.dot.svg).
 
 See the code `test/test_dot.jl` for other examples. 
