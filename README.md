@@ -131,7 +131,10 @@ separately installed, e.g.,
     julia> close(FID)
     julia> run(`dot -Tsvg -O $file`) 
 
-with the following result
+with the following result. Each box is a surreal number, designated by
+the number at the top of the box, and its left and right sets are in
+the corresponding boxes below. The recursion for each is show below,
+down to the point where each recursion stops at zero. 
  
 ![3/2](/test/test_dot.dot.svg)
 
