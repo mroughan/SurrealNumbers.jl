@@ -132,12 +132,13 @@ separately installed, e.g.,
     julia> close(FID)
     julia> run(`dot -Tsvg -O $file`) 
 
-with the following result. Each box is a surreal number, designated by
-the number at the top of the box, and its left and right sets are in
-the corresponding boxes below. The recursion for each is show below,
-down to the point where each recursion stops at zero. 
+with the following result. Note that the red notations were added
+manually. Each box is a surreal number, designated by the number at
+the top of the box, and its left and right sets are in the
+corresponding boxes below. The recursion for each is show below, down
+to the point where each recursion stops at zero.
  
-![3/2](/test/test_dot.dot.svg)
+![3/2](/test/test_dot.svg)
 
 That seems like enough to get you started, so now a little about the
 implementation. 
@@ -413,7 +414,7 @@ Which produces the figures like those below, illustrating the
 recursive definition of the two surreal numbers given. 
 
 ![s2](/test/test_dot_s2.dot.svg) <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-![x5](/test/test_dot_x5.dot.svg).
+![x5](/test/test_dot_x5.dot.svg). 
 
 See the code `test/test_dot.jl` for other examples. 
 
