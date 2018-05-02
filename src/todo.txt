@@ -1,13 +1,9 @@
 transfinites and ordinals
 
-convert to dot to draw pictures
+add internal documentation 
 
 division
-	- should be able to divide n//2^k
-	    by divisor of n
-	    or power of 2
 	- can we do this natively - currently requires conversion to reals and back    
-
 	- more testing needed
 	
 functions

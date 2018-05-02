@@ -265,7 +265,7 @@ The `pf` function used here is a "print-in-full", which prints the
 left and right sets of the surreal, not the real equivalent
 shorthand. 
 
-### Converting surreal back to a real number
+### Converting a surreal back to a real
 
 The conversion of canonical forms is relatively easy, but remember
 that non-canonical forms are possible, and can be quite
@@ -276,21 +276,41 @@ For instance, naively, you might expect that the form $<\{3\} |
 However, $x = <X_L|X_R>$ is the simplest number such that $X_L < x
 < X_R$, so, in fact, this form is equivalent to $4.
 
-Note, often in texts it is written $X \not \leq Y$ whereas I am writing $X > Y$. The distinction takes care of the case where one or the other is the empty set, but we can equally define $>$ to be synonomous with $\not \leq$.
+Note, often in texts it is written $X \not \leq Y$ whereas I am
+writing $X > Y$. The original definition is intended (I think) to take
+care of the case where one or the other is the empty set, but we can
+equally define $>$ to be synonomous with $\not \leq$, and just move
+on. 
 
-  check this
+Conway's define a Surreal $x = <X_L|X_R>$ to be the simplest $x$ that
+satisfies $X_L < x < X_R$, where simplest means comes from the
+earliest generation.
 
-Conway's approach is to define a Surreal $<X_L|X_R>$ to be the
-simplest $x$ that satisfies $X_L < x < X_R$, where simplest means
-comes from the earliest generation. 
+The secret of the conversion is again to use recursion, but that is
+not quite enough in this case. We use several tricks along the way:
 
-The secret of the conversion is again to use recursion, but that is not quite enough in this case. We use several tricks along the way: 
-
-+ If $x$ is equivalent to a known surreal such as 0 or 1, we convert directly
++ If $x$ is equivalent to a known surreal such as 0 or 1, we convert
+directly
 + If $x$ is negative, we use the identity that $-x = <-X_R | -X_L>$
-+ And, most importantly, if $0 < x < 1$ we know $x$ will be the "simplest" dyadic rational number such that  $x_L < x < x_R$. In the interval $(0,1)$ simplest means having the denominator with the lowest power, i.e., in order of preference we would like the denomator to the $1,2,3, \ldots$. We can find this though a simple modification of the standard binary search shown below.
++ And, most importantly, if $0 < x < 1$ we know $x$ will be the
+"simplest" dyadic rational number such that $x_L < x < x_R$. In the
+interval $(0,1)$ simplest means having the denominator with the lowest
+power, i.e., in order of preference we would like the denomator to the
+$1,2,3, \ldots$. We can find this though a simple modification of the
+standard binary search a simplified version of which is shown below.
 
-	Pseudo-code
+     a = 0
+     b = 1
+     while true
+         d = (a + b) / 2   
+	 if xl < c < xr
+             return d
+         elseif c <= xl
+             a = d 
+         elseif c >= xr
+             b = d
+	 end
+     end
 
 Now that we have these rules, we can convert any number $x \in
 [-1,1]$. To convert numbers into this range, we substract 1 (the
