@@ -4,8 +4,6 @@
 
 [![Coverage Status](https://coveralls.io/repos/mroughan/SurrealNumbers.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/mroughan/SurrealNumbers.jl?branch=master)
 
-[![Coverage Status](https://coveralls.io/repos/github/mroughan/SurrealNumbers.jl/badge.svg?branch=master)](https://coveralls.io/github/mroughan/SurrealNumbers.jl?branch=master)
-
 [![codecov.io](http://codecov.io/github/mroughan/SurrealNumbers.jl/coverage.svg?branch=master)](http://codecov.io/github/mroughan/SurrealNumbers.jl?branch=master)
 
 
