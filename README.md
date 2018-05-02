@@ -124,7 +124,7 @@ back to a real number,
     julia> float( x2 + x_half )
 
 or do a picture of the recursion using DOT (which needs to be
-separately installed, e.g.,
+separately installed from [GraphViz](https://www.graphviz.org/)), e.g.,
 
     julia> file = "test_dot.dot"
     julia> FID = open(file, "w")
@@ -299,20 +299,20 @@ power, i.e., in order of preference we would like the denomator to the
 $1,2,3, \ldots$. We can find this though a simple modification of the
 standard binary search a simplified version of which is shown below.
 
-here
 
+ 
      a = 0; b = 1
      while true
-     d = (a + b) / 2   
-     if xl < c < xr
-     return d
-     elseif c <= xl
-     a = d 
-     elseif c >= xr
-     b = d
+       d = (a + b) / 2   
+       if xl < c < xr
+         return d
+       elseif c <= xl
+         a = d 
+       elseif c >= xr
+         b = d
+       end
      end
-     end
- 
+  
 Now that we have these rules, we can convert any number $x \in
 [-1,1]$. To convert numbers into this range, we substract 1 (the
 surreal additive identity), convert the result (recuseively), and then
