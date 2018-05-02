@@ -108,32 +108,35 @@ was defined it just outputs (in bold) the shorthand, but otherwise it
 will show the angle bracket format of the components. To see the angle
 bracket format even when there is a shorthand defined use `pf`, e.g.
 
-   julia> println(" x_half = ", x_half, " = ")
-   julia> pf(x_half)
-   julia> println()
+    julia> println(" x_half = ", x_half, " = ")
+    julia> pf(x_half)
+    julia> println()
 
 We have most of the standard arithmetic operators (division has some
 restrictions -- see below), so you can do things such as
 
-   julia> x2 + x_half 
+    julia> x2 + x_half 
 
 which will produce quite a long sequence. To see what it is, convert
 back to a real number, 
 
-   julia> float( x2 + x_half )
+    julia> float( x2 + x_half )
 
 or do a picture of the recursion using DOT (which needs to be
 separately installed, e.g.,
 
-   julia> file = "test_dot.dot"
-   julia> FID = open(file, "w")
-   julia> surreal2dot(FID, x2 + x_half)
-   julia> close(FID)
-   julia> run(`dot -Tsvg -O $file`) 
+    julia> file = "test_dot.dot"
+    julia> FID = open(file, "w")
+    julia> surreal2dot(FID, x2 + x_half)
+    julia> close(FID)
+    julia> run(`dot -Tsvg -O $file`) 
 
 with the following result
 
-![3/2]{/test/test_dot.dot.svg}
+![3/2](/test/test_dot.dot.svg)
+
+That seems like enough to get you started, so now a little about the
+implementation. 
 
 ## Icky bits -- implementation details
 
