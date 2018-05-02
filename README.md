@@ -313,10 +313,11 @@ binary search a simplified version of which is shown below.
        end
      end
   
-The last two rules allow us to convert any number $x \in [-1,1]$. To
+The last rules allow us to convert any number $x \in (0,1)$. To
 convert numbers outside this range, e.g., $\geq 1$, we subtract 1
 (the surreal additive identity), convert the result (recursively), and
-then add back 1 (this time a real).
+then add back 1 (this time a real). To convert negative numbers we
+apply the second rule. 
 
 The result is not the world's most beautiful code -- I'm sure it can
 be improved, but there are so many other inefficiency's here, I am not
