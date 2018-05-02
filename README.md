@@ -640,6 +640,9 @@ Test out some operations on the above variables with expected results
 
 Many of the simple numerical functions will work, but not the more
 advanced ones such as `log`. The two specific to surreals are
+`generation` which returns the generation or birth day of a surreal,
+and `canonicalise` which reduces it to the canonical form of the
+surreal. 
 
      generation( zero(SurrealFinite) ) == 0
      canonicalise( convert(SurrealFinite,2)*convert(SurrealFinite,2) ) ≅ convert(SurrealFinite,4)
