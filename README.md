@@ -371,7 +371,9 @@ case. The form is quite complex. Moreover, superficially it recurse
 into itself, i.e., the surreal number 4 appears twice in the
 tree. However, the form is defined in terms of the tree, so the
 dependent "4" is not the same surreal as the parent "4". That is, they
-are not  equal, but they are equivalent. 
+are not  equal, but they are equivalent. Thus the parent "4" is
+defined in terms of simpler forms (even though one of these is
+equivalent). 
 
 ![2x2 = 4](/test/test_dot_x43.svg)
 
