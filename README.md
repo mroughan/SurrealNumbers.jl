@@ -367,11 +367,13 @@ One really useful example (for me to understand the surreals) is the
 following, which was obtained by multiplying the canonical form of 2
 with itself. You might naively think that operators applied to
 canonical forms resulted in canonical forms, but this is not the
-case. The form is quite complex. Moreover, superficially it recurses
-into itself. 
+case. The form is quite complex. Moreover, superficially it recurse
+into itself, i.e., the surreal number 4 appears twice in the
+tree. However, the form is defined in terms of the tree, so the
+dependent "4" is not the same surreal as the parent "4". That is, they
+are not  equal, but they are equivalent. 
 
-![2x2 = 4](/test/test_dot_x43.dot.svg)
-
+![2x2 = 4](/test/test_dot_x43.svg)
 
 The other pieces are the standard things you expect to be able to do
 with numbers, e.g. round, sign, isinteger, ...
