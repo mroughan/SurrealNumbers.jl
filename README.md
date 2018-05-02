@@ -638,9 +638,28 @@ Test out some operations on the above variables with expected results
 
 #### Simple functions
 
+Many of the simple numerical functions will work, but not the more
+advanced ones such as `log`. The two specific to surreals are
 
+     generation( zero(SurrealFinite) ) == 0
+     canonicalise( convert(SurrealFinite,2)*convert(SurrealFinite,2) ) ≅ convert(SurrealFinite,4)
+     
 #### Converting back to standard real
 
+Examples of how to convert a number back to rationals or floats. 
+
+     convert(Rational, convert(SurrealFinite, 1//8)) == 1//8
+     float( x4 ) == -0.5
+     convert( Rational, SurrealFinite( [ 7//16 ], [ 15//16 ] ) ) == 1//2
+     convert(String, x4) == "-1/2"
+
+And of how conversion is automatically applied by promotion rules
+
+     x0 <= 1.0
+     x1 == 1//1
+     1.0 + x1 == 2.0
+     canonicalise(1//2 + x1) == 1.5
+     1//2 + x1 ≅ 1.5
 
 #### 
 
