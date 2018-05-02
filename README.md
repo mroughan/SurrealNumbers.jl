@@ -313,10 +313,10 @@ binary search a simplified version of which is shown below.
        end
      end
   
-Now that we have these rules, we can convert any number $x \in
-[-1,1]$. To convert numbers into this range, we substract 1 (the
-surreal additive identity), convert the result (recuseively), and then
-add back 1 (this time a real).
+The last two rules allow us to convert any number $x \in [-1,1]$. To
+convert numbers outside this range, e.g., $\geq 1$, we subtract 1
+(the surreal additive identity), convert the result (recursively), and
+then add back 1 (this time a real).
 
 The result is not the world's most beautiful code -- I'm sure it can
 be improved, but there are so many other inefficiency's here, I am not
