@@ -11,8 +11,8 @@
 
 This is a slightly crazy package implementing some parts of the
 Surreal Number system invented by John Horton Conway, and explained by
-Knuth in "Surreal Numbers: How Two Ex-Students Turned on to Pure
-Mathematics and Found Total Happiness."
+Knuth in ["Surreal Numbers: How Two Ex-Students Turned on to Pure
+Mathematics and Found Total Happiness."](http://www.math.harvard.edu/~knill/teaching/mathe320_2015_fall/blog15/surreal1.pdf)
 
 It isn't intended to be useful, so much as educational. It was
 educational for me to write, in terms of learning Julia. I wanted a
