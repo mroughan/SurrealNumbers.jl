@@ -377,11 +377,10 @@ equivalent).
 
 ![2x2 = 4](/test/test_dot_x43.svg)
 
-The other pieces are the standard things you expect to be able to do
-with numbers, e.g. round, sign, isinteger, ...
-
-I probably haven't implemented all of these, but hopefully enough that
-any others can be easily added.
+The other pieces of the toolkitare the standard things you expect to
+be able to do with numbers, e.g. round, sign, isinteger, ...  I
+haven't implemented all of these, but hopefully enough that any others
+can be easily added.
 
 There are two approaches: one is to use intrinsic surreal arithmetic,
 e.g. `sign` and `abs` are implemented using native surreal arithmetic and operators. The result is that they looks almost exactly like it would for any other number.
@@ -415,10 +414,6 @@ second (at the moment) requires the cheat (see below) of converting
 back into a rational number, but in either case the check to see which
 case requires the conversion. Some work is needed here.
 
-
-Other functions ...
-
-
 The `show` command is designed to show the full structure unless there
 is a "shorthand" defined for a surreal (most of the simple conversions
 will set this up). This aids in viewing the surreals succintly, but
@@ -429,7 +424,7 @@ the first layer below with a shorthand.
 To see the full recursion I have implemented output of a surreal form
 into the DOT syntax from [GraphViz](https://www.graphviz.org/). The
 function `surreal2dot` can output a `.dot` file, and then this can be
-parsed (assuming you have GraphVis installed) by commands such as
+parsed (assuming you have GraphVis installed) by commands such as 
 
     using SurrealNumbers
 
