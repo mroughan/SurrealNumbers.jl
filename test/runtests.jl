@@ -146,15 +146,15 @@ end
 
     @test isinf(s1) == false
     @test isnan(s1) == false
-    @test isfinite(s1) 
+    @test isfinite(s1)  
 end
 
 
 @testset "simplifications" begin
     @test canonicalise(x22) ≅ x22 
     @test canonicalise( convert(SurrealFinite,2)*convert(SurrealFinite,2) ) ≅ convert(SurrealFinite,4)
-    @test canonicalise(convert(SurrealFinite,2)*convert(SurrealFinite,2) ) != convert(SurrealFinite,2)*convert(SurrealFinite,2)
-    @test canonicalise(convert(SurrealFinite,2)*convert(SurrealFinite,2) ) ≅ convert(SurrealFinite,2)*convert(SurrealFinite,2)
+    @test canonicalise( convert(SurrealFinite,2)*convert(SurrealFinite,2) ) != convert(SurrealFinite,2)*convert(SurrealFinite,2)
+    @test canonicalise( convert(SurrealFinite,2)*convert(SurrealFinite,2) ) ≅ convert(SurrealFinite,2)*convert(SurrealFinite,2)
 end
 
 g3 = SurrealFinite( [ 7//16 ], [ 15//16 ] )
