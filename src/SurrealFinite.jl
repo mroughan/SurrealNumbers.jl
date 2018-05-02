@@ -384,11 +384,11 @@ function floor(s::SurrealFinite)
 end
 
 function ceil(s::SurrealFinite)
-    if zero(s) <= s < one(s) 
-        return zero(s)
-    elseif s < zero(s)
+    if zero(s) < s <= one(s) 
+        return one(s)
+    elseif s <= zero(s)
         return ceil(s + one(s)) - one(s)
-    elseif s >= one(s)
+    elseif s > one(s)
         return ceil(s - one(s)) + one(s)
     end
 end
@@ -407,7 +407,7 @@ function round(s::SurrealFinite)
     elseif s >= convert(SurrealFinite, -1//2)
         return zero(s)
     else
-        return -ones(s)
+        return -one(s)
     end
 end
 

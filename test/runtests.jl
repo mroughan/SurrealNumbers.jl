@@ -44,6 +44,12 @@ println()
 
 println("x41 = ", x41, ", x42 = ", x42, ", x43 = ", x43)
 
+@testset "constructor test" begin
+    @test_throws ErrorException SurrealFinite("1", [x1], [x0])
+    @test all( convert(Array{SurrealFinite}, [1,2]) .== convert.(SurrealFinite, [1,2]) )
+    
+end
+
 @testset "comparisons" begin
     @test x0 <= x1
     @test x0 < x1
@@ -74,7 +80,9 @@ end
     @test x22/x1 ≅ x22
     @test x4/x1 ≅ x4
     @test float(x1/x4) == float(x1)/float(x4)
-
+    @test_throws ErrorException x1/x0
+    @test_throws ErrorException x1/x3
+    
     @test convert(SurrealFinite, 6)/ convert(SurrealFinite, 3) ≅ convert(SurrealFinite, 2)
 end
 
@@ -118,6 +126,14 @@ unique2!(Y)
     @test all( sort(float.(A - B)) .== [0.5, 1.0, 1.5, 2.0])
     @test A + ϕ == ϕ
     @test ϕ - B == ϕ
+
+    @test B <= A
+    @test B < A
+    @test !(B > A)
+    @test !(B >= A)
+
+    @test all( x1*A .≅ A )
+    @test all( x23*A .≅ A*x23 )
 end
 
 @testset "simple functions" begin
@@ -129,20 +145,34 @@ end
     @test round(x22) ≅ x22 
     @test round(x23) ≅ x23
     @test round(x4) ≇ x4
-    @test round(-x4) ≇ -x4 
-
+    @test round(-x4) ≇ -x4
+    @test round( convert(SurrealFinite, -0.75) ) ≅ round( -0.75 )
+    @test round( convert(SurrealFinite, -1.25) ) ≅ round( -1.25 )
+ 
+    @test floor(zero(SurrealFinite)) ≅ 0.0
+    @test floor(one(SurrealFinite)) ≅ 1.0
     @test floor(x22) ≅ x22 
     @test floor(x4) ≅ -one(x4)
     @test floor(x4) ≇ x4
     @test floor(-x4) ≇ -x4
     @test floor(-x4) == zero(x4)
 
-    # add some for ceil as well
+    @test ceil(zero(SurrealFinite)) ≅ 0.0
+    @test ceil(one(SurrealFinite)) ≅ 1.0
+    @test ceil(x22) ≅ x22 
+    @test ceil(x4) ≅ zero(x4)
+    @test ceil(x4) ≇ x4
+    @test ceil(-x4) ≇ -x4
+    @test ceil(-x4) == one(x4)
+
+     # add some for ceil as well
     
     @test isinteger(x0) == true
     @test isinteger(x22) == true
     @test isinteger(s1) == false
     @test isinteger( convert(SurrealFinite,2)*convert(SurrealFinite,2) ) == true
+    @test isinteger( convert(SurrealFinite,-4) ) == true
+    @test isinteger( convert(SurrealFinite,-1//4) ) == false
 
     @test isinf(s1) == false
     @test isnan(s1) == false
@@ -162,6 +192,10 @@ g4 = SurrealFinite( [convert(SurrealFinite,3)], [convert(SurrealFinite,17)] )
 # g4 ≅ convert(SurrealFinite,4)
 
 @testset "conversion from surreal back to real" begin
+    @test convert(Integer, convert(SurrealFinite, -2)) == -2
+    @test convert(Integer, convert(SurrealFinite, 6)) == 6
+    @test convert(Integer, convert(SurrealFinite, 0)) == 0
+    
     @test convert(Rational, convert(SurrealFinite, 1//8)) == 1//8
     @test convert(Rational, convert(SurrealFinite, 9//8)) == 9//8
     @test convert(Rational, convert(SurrealFinite, -9//8)) == -9//8
@@ -180,6 +214,7 @@ g4 = SurrealFinite( [convert(SurrealFinite,3)], [convert(SurrealFinite,17)] )
 
     @test all(convert.(SurrealFinite, [-1, 0, 1, 2] ) == [ convert(SurrealFinite, i) for i=-1:2 ])
 
+    @test convert(String, x1) == "1"
     @test convert(String, x4) == "-1/2"
 end
 
@@ -190,5 +225,6 @@ end
     @test 1.0 + x1 == 2.0
     @test canonicalise(1//2 + x1) == 1.5
     @test 1//2 + x1 ≅ 1.5
+    @test 1//2 + x1 ≇ 2.5
 end
 
