@@ -85,7 +85,7 @@ moment, using arrays seemed like a low pain way to get surreals working.
 
 Let's start off with some small examples of using the package. After
 installing the package we can create basic surreals using (i) the
-constructor, (ii) conversion from another real number, or a couple of
+constructor, (ii) conversion from another real number, or (iii) a couple of
 special functions, e.g., `zero` and `one`. There are two constructors,
 one includes an extra string we'll call the *shorthand* for the
 surreal. It's use in printing out numbers. The second constructor, and
