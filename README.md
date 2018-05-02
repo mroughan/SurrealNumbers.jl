@@ -132,7 +132,7 @@ separately installed, e.g.,
     julia> run(`dot -Tsvg -O $file`) 
 
 with the following result
-
+ 
 ![3/2](/test/test_dot.dot.svg)
 
 That seems like enough to get you started, so now a little about the
