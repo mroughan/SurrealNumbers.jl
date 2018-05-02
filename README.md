@@ -645,7 +645,7 @@ and `canonicalise` which reduces it to the canonical form of the
 surreal. 
 
      generation( zero(SurrealFinite) ) == 0
-     canonicalise( convert(SurrealFinite,2)*convert(SurrealFinite,2) ) ≅ convert(SurrealFinite,4)
+     canonicalise( convert(SurrealFinite,2)*convert(SurrealFinite,2) ) == convert(SurrealFinite,4)
      
 #### Converting back to standard real
 
@@ -664,14 +664,16 @@ And of how conversion is automatically applied by promotion rules
      canonicalise(1//2 + x1) == 1.5
      1//2 + x1 ≅ 1.5
 
-#### 
-
-
 ## Final notes
 
-One final point. This would have been a lot easier if I knew more
-Julia, or more about the surreals. Trying to build something to learn
-about two moving parts at once wasn't a brilliant idea :)
+The total implementation here is less than 500 lines of code. No doubt
+an expert in Julia could make it a good deal tighter -- I have
+concentrated on making the code easy (for me) to understand rather
+than super concise. 
+
+This little project would have been a lot easier if I knew more Julia,
+or more about the surreals. Trying to build something to learn about
+two moving parts at once wasn't a brilliant idea :)
 
 But I was correct in thinking that (at least for me) this would have
 been almost impossible to build in Matlab. And at the least, it would
