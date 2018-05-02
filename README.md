@@ -299,8 +299,7 @@ power, i.e., in order of preference we would like the denomator to the
 $1,2,3, \ldots$. We can find this though a simple modification of the
 standard binary search a simplified version of which is shown below.
 
-     a = 0
-     b = 1
+     a = 0; b = 1
      while true
          d = (a + b) / 2   
 	 if xl < c < xr
