@@ -89,7 +89,8 @@ constructor, (ii) conversion from another real number, or a couple of
 special functions, e.g., `zero` and `one`. There are two constructors,
 one includes an extra string we'll call the *shorthand* for the
 surreal. It's use in printing out numbers. The second constructor, and
-many other operators leave this blank.
+many other operators leave this blank. The empty set is designated by
+ϕ, which you can get in Julia by typing `\phi TAB`. 
 
     julia> using SurrealNumbers
     julia> z = zero(SurrealFinite)
