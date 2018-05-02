@@ -314,7 +314,7 @@ binary search a simplified version of which is shown below.
      end
   
 The first and last rules allow us to convert any number $x \in
-[0,1]$. To convert numbers outside this range, e.g., $> 1$, we
+[0,1]$. To convert numbers above this range, i.e., $x > 1$, we
 subtract 1 (the surreal additive identity), convert the result
 (recursively), and then add back 1 (this time a real). To convert
 negative numbers we apply the second rule.
