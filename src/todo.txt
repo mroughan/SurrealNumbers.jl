@@ -31,3 +31,8 @@ add some automatically generated random tests
 
 
 	     
+"The Graphical Structure of the Surreal Numbers Examined Through an
+ Implementation in Julia"
+
+
+
