@@ -44,7 +44,11 @@ println()
 
 println("x41 = ", x41, ", x42 = ", x42, ", x43 = ", x43)
 
+pf(x43)
+spf(x43)
+
 @testset "constructor test" begin
+    @test SurrealFinite("1/2", [0], [1]) ≅ 1/2
     @test_throws ErrorException SurrealFinite("1", [x1], [x0])
     @test all( convert(Array{SurrealFinite}, [1,2]) .== convert.(SurrealFinite, [1,2]) )
     
@@ -228,3 +232,8 @@ end
     @test 1//2 + x1 ≇ 2.5
 end
 
+@testset "output" begin
+    @test surreal2dot(DevNull, x0) == 1
+    @test surreal2dot(DevNull, x23) == 5
+    @test surreal2dot(DevNull, x43) == 17
+end
