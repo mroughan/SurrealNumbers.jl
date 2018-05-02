@@ -40,7 +40,7 @@ angle bracket and pipe notation to denote $x = < X_L | X_R>$.
 
 Then on the "second day" a new generation of surreals can be created in terms of the initial case. On the third day we create a new generation and so on. Each has a meaning corresponding to traditional numbers in order to place a consistent interpretation on standard mathematical operators defined on the surreals.
 
-Just to reiterate, the tricky things is that everything is
+Just to reiterate, the tricky thing is that everything is
 recursive. Even comparitors like `<`, and hence, we can't even know
 if something is a valid surreal in its own right, but only through
 recursively investigating its component sets. 
@@ -70,17 +70,70 @@ I didn't find that easy to work with. As a type, it doesn't seem to
 have all the bells and whistles I would expect from sets.
 
 I could have added these, but Julia creates a whole suite of array
-functions almost automagically when you define scalars so using arrays
-was a low pain way to get things working. That is, although the
-surreals use sets, i.e., order of the elements is not important,
-almost all texts do write these sets in order. So I felt justified in
-putting these elements into sorted arrays. It works nicely, as long as
-you make sure to only put unique entries into the array, and this is a
-little more tricky for surreals for reasons we will get to in a
-moment.
+functions automagically when you define scalars so using arrays was a
+low pain way to get things working. That is, although the surreals use
+sets, i.e., order of the elements is not important, almost all texts
+do write these sets in order. So I felt justified in putting these
+elements into sorted arrays. It works nicely, as long as you make sure
+to only put unique entries into the array, and this is a little more
+tricky for surreals for reasons we will get to in a moment.
 
 Someone may correct me about the best way to do this, but for the
 moment, using arrays seemed like a low pain way to get surreals working. 
+
+### An example
+
+Let's start off with some small examples of using the package. After
+installing the package we can create basic surreals using (i) the
+constructor, (ii) conversion from another real number, or a couple of
+special functions, e.g., `zero` and `one`. There are two constructors,
+one includes an extra string we'll call the *shorthand* for the
+surreal. It's use in printing out numbers. The second constructor, and
+many other operators leave this blank.
+
+    julia> using SurrealNumbers
+    julia> z = zero(SurrealFinite)
+    julia> x1 = SurrealFinite("1", [z], ϕ)
+    julia> x2 = SurrealFinite("2", [x1], ϕ)
+    julia> x_something = SurrealFinite([z, x1], ϕ)
+    julia> x_half = convert(SurrealFinite, 1 // 2)
+
+These commands create several surreals, starting at zero, then 1, and
+2, showing the recursive construction. Then a surreal whose value we
+might not know (to start with), and then we convert the rational value
+1/2 into a surreal.
+
+Note that the output of these varies: in the case where a shorthand
+was defined it just outputs (in bold) the shorthand, but otherwise it
+will show the angle bracket format of the components. To see the angle
+bracket format even when there is a shorthand defined use `pf`, e.g.
+
+   julia> println(" x_half = ", x_half, " = ")
+   julia> pf(x_half)
+   julia> println()
+
+We have most of the standard arithmetic operators (division has some
+restrictions -- see below), so you can do things such as
+
+   julia> x2 + x_half 
+
+which will produce quite a long sequence. To see what it is, convert
+back to a real number, 
+
+   julia> float( x2 + x_half )
+
+or do a picture of the recursion using DOT (which needs to be
+separately installed, e.g.,
+
+   julia> file = "test_dot.dot"
+   julia> FID = open(file, "w")
+   julia> surreal2dot(FID, x2 + x_half)
+   julia> close(FID)
+   julia> run(`dot -Tsvg -O $file`) 
+
+with the following result
+
+![3/2]{/test/test_dot.dot.svg}
 
 ## Icky bits -- implementation details
 
