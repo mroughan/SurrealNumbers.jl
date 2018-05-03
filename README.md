@@ -379,7 +379,7 @@ equivalent).
 
 ![2x2 = 4](/test/test_dot_x43.svg)
 
-The other pieces of the toolkitare the standard things you expect to
+The other pieces of the toolkit are the standard things you expect to
 be able to do with numbers, e.g. round, sign, isinteger, ...  I
 haven't implemented all of these, but hopefully enough that any others
 can be easily added.
@@ -391,9 +391,9 @@ e.g. `sign` and `abs` are implemented using native surreal arithmetic and operat
     abs(x::SurrealFinite) = x<zero(x) ? -x : x
 
 Actually, I don't even have to define `abs` as I get this for free
-beacuse Julia has a similar operation defined `abs(x::Real)` for all
+because Julia has a similar operation defined `abs(x::Real)` for all
 real numbers. This is a great feature of Julia's type hierarchy and
-multiple dispatch function selection.
+multiple dispatch function selection. 
 
 The other approach to function definition is somewhat of a cheat. It
 involves converting the number to a real, and then using the
@@ -401,11 +401,12 @@ appropriate operation on that field. I have tried to avoid that
 approach when possible. At the moment, only the `simplify` function
 uses this approach. But if I am going to do more complex math
 functions, e.g., logs or trig functions, I think I will have to take
-this approach.
+this approach. The mathematical definitions of such in pure surreal
+terms are obscure. 
 
-The cheat is a part of one of the pieces of this that is truly hard
-(in Julia), namely division. Division is well-defined on the surreals,
-but as even simple divisions such as 1/3 result in non-dyadic rational
+The cheat is used as part of one of the pieces of this that is hard to
+implement, namely division. Division is well-defined on the surreals,
+but, as even simple divisions such as 1/3 result in non-dyadic rational
 numbers, and hence have a infinite representations as a surreal, the
 class of "finite" surreals defined here is not *closed* under
 division. Eventually, this can be solved by outputting a non-finite
@@ -474,7 +475,6 @@ same generation.
 form. The easiest way to implement this was to use a similar cheat to
 that above, i.e., convert to a real, and then convert back to the
 equivalent surreal in canonical form.
-
 
 ### Arrays of Surreals
 
