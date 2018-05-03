@@ -222,8 +222,9 @@ I think of this loosely by analogy to the rationals, e.g., we can have
 
 However, it seems important to distinguish equality from equivalence
 here. In programming terms two "things" are equal when they are the
-same, so equality and equivalence have different meanings and
-uses. Hence, here we have the relation ≅ defined to test equivalence. 
+same, not some airy-fairy notion of equivalence, so equality and
+equivalence have different meanings and uses. Hence, here we have the
+relation ≅ defined to test equivalence separate from ==. 
 
 BTW, here we hit one of the weirdnesses of Julia; 99\% of the time,
 you can redefine operators and comparators to do whatever you like on
