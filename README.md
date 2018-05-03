@@ -165,7 +165,7 @@ itself is finite.
 
 This is a pretty rich set by itself, but it doesn't cover even the
 entire set of Rationals; only the *dyadic* rationals. So a few words
-on them seem in order.
+on them seem in order (see below).
 
 The plan is to add a `SurrealTrans` for the transfinites and other
 surreals with infinite representations. But that is a little harder to
