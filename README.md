@@ -246,6 +246,7 @@ in several ways, but the standard is
 + integers n => $n+1 = \{ n | \}$
 
 + dyadic fraction => $ x = \frac{ n }{ 2^k } $ (for n odd) becomes
+
      \[  \{ x - 1/2^{k} | x + 1/2^{k} \} \]
 
 + negative number => use the identity that $-x = \{-X_R | -X_L\}$
