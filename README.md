@@ -187,7 +187,7 @@ little easier.
 
 ### Dyadic numbers
 
-The dyadic rational numbers are those that have a denumerator that is
+The dyadic rational numbers are those that have a denominator that is
 an exact power of 2, that is, numbers of the form (note seems that
 GitHub doesn't let me use Mathjax to interpret maths). 
 
