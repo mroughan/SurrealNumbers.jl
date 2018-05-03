@@ -35,10 +35,16 @@ member of the left set is `<` all of the members of the right set.
 
 There is a starting point -- we can always use empty sets -- as so the
 first surreal number (usually denoted zero, because it will turn out
-to be the additive identity) is $<\{\} | \{\}>$, where I will use this
-angle bracket and pipe notation to denote $x = \{ X_L | X_R\}$.
+to be the additive identity) is $\{ | \}$, where I will use this
+ bracket and pipe notation to denote $x = \{ X_L | X_R\}$. Also, to
+ make the empty spaces clearer (and the coding more efficient) I have
+ defined $ ϕ = \{ \}$ the empty set. 
 
-Then on the "second day" a new generation of surreals can be created in terms of the initial case. On the third day we create a new generation and so on. Each has a meaning corresponding to traditional numbers in order to place a consistent interpretation on standard mathematical operators defined on the surreals.
+Then on the "first day" a new generation of surreals can be created in
+terms of the initial case. On the second day we create a new generation
+and so on. Each has a meaning corresponding to traditional numbers in
+order to place a consistent interpretation on standard mathematical
+operators defined on the surreals. 
 
 Just to reiterate, the tricky thing is that everything is
 recursive. Even comparitors like `<`, and hence, we can't even know
