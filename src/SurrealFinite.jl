@@ -244,27 +244,35 @@ end
 *(X::Array{SurrealFinite}, y::SurrealFinite) = y*X
 
 # print commands
-pf(x::SurrealFinite) = print("<", x.L, ":", x.R, ">") 
-function pff(x::SurrealFinite)
-    if x ≅ zero(x)
-        print(" 0 ")
-    elseif x.L == ϕ
-        print("< ϕ:", pff.(x.R), ">")
-    elseif x.R == ϕ
-        print("<", pff.(x.L), ":ϕ>")
-    else
-        print("<", pff.(x.L), ":", pff.(x.R), ">")
-    end
-end
+pf(x::SurrealFinite) = print("{ ", x.L, " | ", x.R, " }") 
+# function pff(x::SurrealFinite)
+#     if x ≅ zero(x)
+#         print(" 0 ")
+#     elseif x.L == ϕ
+#         print("< ϕ:", pff.(x.R), ">")
+#     elseif x.R == ϕ
+#         print("<", pff.(x.L), ":ϕ>")
+#     else
+#         print("<", pff.(x.L), ":", pff.(x.R), ">")
+#     end
+# end
 function show(io::IO, x::SurrealFinite)
     if x.shorthand != ""
         print_with_color(:bold, io, x.shorthand ) # could be :red
     else
-        print( io, "<", x.L, ":", x.R, ">")
+        # print( io, "<", x.L, ":", x.R, ">")
+        print( io, "{ ", x.L, " | ", x.R, " }")
     end
 end
-show(io::IO, X::Array{SurrealFinite}) = print(io, "{", join(X, ", "), "}")
-spf(x::SurrealFinite) = print("<", canonicalise.(x.L), ":", canonicalise.(x.R), ">")
+# show(io::IO, X::Array{SurrealFinite}) = print(io, "{", join(X, ", "), "}")
+function show(io::IO, X::Array{SurrealFinite})
+    if isempty(X)
+        print(io, "ϕ")
+    else
+        print(io, join(X, ", "))
+    end
+end
+spf(x::SurrealFinite) = print("{ ", canonicalise.(x.L), " | ", canonicalise.(x.R), " }")
 
 function surreal2dot(io::IO, x::SurrealFinite)
     println(io, "digraph \"", float(x), "\" {")

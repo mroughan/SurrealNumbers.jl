@@ -45,7 +45,10 @@ println()
 println("x41 = ", x41, ", x42 = ", x42, ", x43 = ", x43)
 
 pf(x43)
+println()
+
 spf(x43)
+println()
 
 @testset "constructor test" begin
     @test SurrealFinite("1/2", [0], [1]) ≅ 1/2
