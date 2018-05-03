@@ -261,7 +261,7 @@ work is needed.
 Examples:
 
     julia> pf( convert(SurrealFinite, 1//2) )
-    {0 | 1 }
+    { 0 | 1 }
     julia> pf( convert(SurrealFinite, 3//4) )
     { 1//2 | 1 } 
     julia> pf( convert(SurrealFinite, -11//8) )
@@ -277,10 +277,10 @@ The conversion of canonical forms is relatively easy, but remember
 that non-canonical forms are possible, and can be quite
 counter-intuitive. 
 
-For instance, naively, you might expect that the form $\{3 |
-17 \}$ could be mapped to the mean of the two sets, i.e., $10$.
+For instance, naively, you might expect that the form $\{ 3 |
+17 \}$ could be mapped to the mean of the two sets, i.e., 10.
 However, $x = \{ X_L | X_R \}$ is the simplest number such that $X_L < x
-< X_R$, so, in fact, this form is equivalent to $4.
+< X_R$, so, in fact, this form is equivalent to 4.
 
 Note, often in texts it is written $X \not \leq Y$ whereas I am
 writing $X > Y$. The original definition is intended (I think) to take
