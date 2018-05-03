@@ -200,7 +200,8 @@ It might seem a little limiting to be restricted to this set, but
 remember that floating point numbers are dyadics. They are a (binary)
 integer (the *significand*) multiplied by 2 to the power of a (binary)
 exponent (just called the *exponent*). Thus all (finite) floating
-point numbers have a finite surreal representation.
+point numbers have a finite surreal representation (though it may be
+very, very long).
 
 I did start writing a type for dyadics, but I'm not sure what it would
 be useful for, so it didn't get far (I realise the irony here -- the
