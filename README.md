@@ -258,13 +258,6 @@ should be taken not to create a variable that exhausts the stack. The
 current code isn't very clever in checking for this another place some
 work is needed. 
 
-Note that although this is the way most texts define integers (because
-it is very simple), we could have a simple, consistent conversion for
-all dyadics (including the integers) is we extend the dyadic
-conversion to the case where $k=0$. I didn't do this to be consistent
-with the literature, and because it results in less "complex"
-representations, but it seems more appealing to me.
-
 Examples:
 
     julia> pf( convert(SurrealFinite, 1//2) )
