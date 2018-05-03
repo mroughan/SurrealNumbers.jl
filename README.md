@@ -36,7 +36,7 @@ member of the left set is `<` all of the members of the right set.
 There is a starting point -- we can always use empty sets -- as so the
 first surreal number (usually denoted zero, because it will turn out
 to be the additive identity) is $<\{\} | \{\}>$, where I will use this
-angle bracket and pipe notation to denote $x = < X_L | X_R>$.
+angle bracket and pipe notation to denote $x = \{ X_L | X_R\}$.
 
 Then on the "second day" a new generation of surreals can be created in terms of the initial case. On the third day we create a new generation and so on. Each has a meaning corresponding to traditional numbers in order to place a consistent interpretation on standard mathematical operators defined on the surreals.
 
@@ -170,8 +170,8 @@ just
 
     struct SurrealFinite <: Surreal
         shorthand::String
-        X_L :: Array{SurrealFinite,1} 
-        X_R :: Array{SurrealFinite,1} 
+        L::Array{SurrealFinite,1} 
+        R::Array{SurrealFinite,1} 
     end 
 
 Note the addition of a `shorthand` string, which isn't necessary, but
@@ -230,14 +230,14 @@ surreal forms we could create to represent any given real number, we
 have to chose one. Call that the *canonical* form. We could define it
 in several ways, but the standard is
 
-+ zero => 0 = <{} | {} >
++ zero => $0 = \{ | \}$
 
-+ integers n => n+1 = <{n} | {} >
++ integers n => $n+1 = \{ n | \}$
 
-+ dyadic fraction => x = \frac{ n }{ 2^k } becomes
-     < { x - 1/2^{k } | (x + 1/2^{k} } >
++ dyadic fraction => x = \frac{ n }{ 2^k } (n odd) becomes
+     \[  \{ x - 1/2^{k} | x + 1/2^{k} \} \]
 
-+ negative number => use the identity that $-x = <-X_R | -X_L>$
++ negative number => use the identity that $-x = \{-X_R | -X_L\}$
 
 This is the set of conversions implemented, and it includes all
 dyadics, and hence floats. Note the recursion inherent in the
@@ -273,7 +273,7 @@ counter-intuitive.
 
 For instance, naively, you might expect that the form $<\{3\} |
 \{17\}>$ could be mapped to the mean of the two sets, i.e., $10$.
-However, $x = <X_L|X_R>$ is the simplest number such that $X_L < x
+However, $x = \{ X_L | X_R \}$ is the simplest number such that $X_L < x
 < X_R$, so, in fact, this form is equivalent to $4.
 
 Note, often in texts it is written $X \not \leq Y$ whereas I am
@@ -282,7 +282,7 @@ care of the case where one or the other is the empty set, but we can
 equally define $>$ to be synonomous with $\not \leq$, and just move
 on. 
 
-Conway's define a Surreal $x = <X_L|X_R>$ to be the simplest $x$ that
+Conway's define a Surreal $x = \{ X_L | X_R \}$ to be the simplest $x$ that
 satisfies $X_L < x < X_R$, where simplest means comes from the
 earliest generation.
 
@@ -291,7 +291,7 @@ not quite enough in this case. We use several tricks along the way:
 
 + If $x$ is equivalent to a known surreal such as 0 or 1, we convert
 directly
-+ If $x$ is negative, we use the identity that $-x = <-X_R | -X_L>$
++ If $x$ is negative, we use the identity that $-x = \{ -X_R | -X_L \}$
 + And, most importantly, if $0 < x < 1$ we know $x$ will be the
 "simplest" dyadic rational number such that $x_L < x < x_R$. In the
 interval $(0,1)$ simplest means having the denominator with the lowest
@@ -342,7 +342,9 @@ using arrays instead of sets for $X_L$ and $X_R$ is appealling). Thus we can wri
 
 once addition is defined on the scalar surreal type, without any additional definitions, and this is particular appealling here as the scalar addition operator is recursively defined in terms of the vector+scalar addition `.+`. 
 
-Mutiplication was a bit of a bugbear to get right because I misinterpreted the definition. The definition of multiplication of $x=<X_L|X_R>$ and $y=<Y_L|Y_R>$ had terms like
+Mutiplication was a bit of a bugbear to get right because I
+misinterpreted the definition. The definition of multiplication of
+$x= \{ X_L |X_R \}$ and $y=\{ Y_L | Y_R \}$ had terms like
 
     X_L y + x Y_L - X_L Y_L
 
@@ -462,7 +464,7 @@ function $\rho(\cdot)$
 
      \[ \rho(x) = \sup_{i \in X_L \cup X_R} \big[ \rho(i) + 1 \big] \]
  
-Generation is important as $x = <X_L | X_R>$ is defined to be the
+Generation is important as $x = \{ X_L | X_R \}$ is defined to be the
 simplest number such that $X_L < x < X_R$.
 
 Note that within an equivalence class of forms, not all forms have the
