@@ -220,7 +220,10 @@ I think of this loosely by analogy to the rationals, e.g., we can have
 
     2 // 4 == 1 // 2
 
-but it seemed to distinguish equality from equivalence here. It allows us to test when two surreal forms are the same thing, not just equivalent to the same number. Maybe later we should reduce this to an equality relation. 
+However, it seems important to distinguish equality from equivalence
+here. In programming terms two "things" are equal when they are the
+same, so equality and equivalence have different meanings and
+uses. Hence, here we have the relation ≅ defined to test equivalence. 
 
 BTW, here we hit one of the weirdnesses of Julia; 99\% of the time,
 you can redefine operators and comparators to do whatever you like on
