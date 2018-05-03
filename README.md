@@ -469,9 +469,13 @@ the "birth day" of the surreal. Generation can be thought of as a
 function $\rho(\cdot)$
 
      \[ \rho(x) = \sup_{i \in X_L \cup X_R} \big[ \rho(i) + 1 \big] \]
- 
+
+Implicitly, generation is the tree *depth*, if viewed as the recursive
+tree shown above. 
+
 Generation is important as $x = \{ X_L | X_R \}$ is defined to be the
-simplest number such that $X_L < x < X_R$.
+simplest number such that $X_L < x < X_R$, i.e., the number with the
+lowest birth day. 
 
 Note that within an equivalence class of forms, not all forms have the
 same generation. 
