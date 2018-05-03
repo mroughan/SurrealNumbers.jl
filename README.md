@@ -288,9 +288,9 @@ care of the case where one or the other is the empty set, but we can
 equally define $>$ to be synonomous with $\not \leq$, and just move
 on. 
 
-Conway's define a Surreal $x = \{ X_L | X_R \}$ to be the simplest $x$ that
-satisfies $X_L < x < X_R$, where simplest means comes from the
-earliest generation.
+Conway defines a surreal $x = \{ X_L | X_R \}$ to be the simplest
+$x$ that satisfies $X_L < x < X_R$, where simplest means comes from
+the earliest generation.
 
 The secret of the conversion is again to use recursion, but that is
 not quite enough in this case. We use several tricks along the way:
