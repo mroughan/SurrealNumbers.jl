@@ -17,7 +17,7 @@ SurrealFinite(shorthand::String, L::Array, R::Array ) =
     SurrealFinite( shorthand, convert(Array{SurrealFinite},L), convert(Array{SurrealFinite},R) )
 SurrealFinite(L::Array, R::Array ) =
     SurrealFinite( "", convert(Array{SurrealFinite},L), convert(Array{SurrealFinite},R) )
-≀(L::Array, R::Array ) = SurrealFinite(L::Array, R::Array )
+≀(L::Array, R::Array) = SurrealFinite(L::Array, R::Array )
 
 hash(x::SurrealFinite, h::UInt) = hash( hash(x.L, h) * hash(x.R, h), h )
 hash(X::Array{SurrealFinite}, h::UInt) = isempty(X) ? hash(0) : hash( hash(X[1]) * hash( X[2:end]), h )
@@ -147,9 +147,10 @@ function <=(x::SurrealFinite, y::SurrealFinite)
             return false
         end
     end
+    
     return true 
 end
-<(x::SurrealFinite, y::SurrealFinite) = x<=y && !(y≅x)
+<(x::SurrealFinite, y::SurrealFinite) = x<=y && !(y<=x)
 # ===(x::SurrealFinite, y::SurrealFinite) = x<=y && y<x # causes an error
 ≅(x::SurrealFinite, y::SurrealFinite) = x<=y && y<=x
 ≅(x::Real, y::Real) = ≅(promote(x,y)...)
@@ -160,7 +161,9 @@ end
                                          all(x.L .== y.L) &&
                                          all(x.R .== y.R)  
 
-# comparisons between arrays are all-to-all, so don't have to be the same size
+# comparisons between sets (i.e., arrays) are all-to-all, so
+#   (1) don't have to be the same size
+#   (2) the < is not exactly the same as the < defined above
 function <=(X::Array{SurrealFinite}, Y::Array{SurrealFinite} )
     if isempty(X) || isempty(Y)
         return true
@@ -174,7 +177,7 @@ function <=(X::Array{SurrealFinite}, Y::Array{SurrealFinite} )
         end
         return true
     end
-end 
+end
 function <(X::Array{SurrealFinite}, Y::Array{SurrealFinite} )
     if isempty(X) || isempty(Y)
         return true
@@ -201,7 +204,7 @@ function -(x::SurrealFinite)
     else
         SurrealFinite("-"*x.shorthand, -x.R, -x.L )
     end 
-end  
+end
 function /(x::SurrealFinite, y::SurrealFinite)
     xr = convert(Rational, x)
     yr = convert(Rational, y) 
@@ -228,18 +231,13 @@ end
 -(X::Array{SurrealFinite}, Y::Array{SurrealFinite}) = X + -Y
 
 function *(x::SurrealFinite, y::SurrealFinite)
-    XL = x.L
-    XR = x.R
-    YL = y.L
-    YR = y.R
-    tmp1 = vec([s*y + x*t - s*t for s in XL, t in YL])
-    tmp2 = vec([s*y + x*t - s*t for s in XR, t in YR])
-    tmp3 = vec([s*y + x*t - s*t for s in XL, t in YR])
-    tmp4 = vec([s*y + x*t - s*t for s in XR, t in YL])
-
-    left  = [ tmp1; tmp2]
-    right = [ tmp3; tmp4]
-    return SurrealFinite("", left, right)
+    tmp1 = vec([s*y + x*t - s*t for s in x.L, t in y.L])
+    tmp2 = vec([s*y + x*t - s*t for s in x.R, t in y.R])
+    tmp3 = vec([s*y + x*t - s*t for s in x.L, t in y.R])
+    tmp4 = vec([s*y + x*t - s*t for s in x.R, t in y.L])
+    L = [ tmp1; tmp2]
+    R = [ tmp3; tmp4]
+    return SurrealFinite("", L, R)
 end
 *(x::SurrealFinite, Y::Array{SurrealFinite}) = return [ x*s for s in Y ]
 *(X::Array{SurrealFinite}, y::SurrealFinite) = y*X
