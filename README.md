@@ -271,8 +271,8 @@ The conversion of canonical forms is relatively easy, but remember
 that non-canonical forms are possible, and can be quite
 counter-intuitive. 
 
-For instance, naively, you might expect that the form $<\{3\} |
-\{17\}>$ could be mapped to the mean of the two sets, i.e., $10$.
+For instance, naively, you might expect that the form $\{3 |
+17 \}$ could be mapped to the mean of the two sets, i.e., $10$.
 However, $x = \{ X_L | X_R \}$ is the simplest number such that $X_L < x
 < X_R$, so, in fact, this form is equivalent to $4.
 
