@@ -1,25 +1,25 @@
 struct SurrealFinite <: Surreal
     shorthand::String
-    X_L::Array{SurrealFinite,1} 
-    X_R::Array{SurrealFinite,1} 
-    # constructor should check that X_L < X_R
-    function SurrealFinite(shorthand::String, X_L::Array{SurrealFinite}, X_R::Array{SurrealFinite})
-        unique2!( X_L ) # make elements unique and sort them in increasing order
-        unique2!( X_R ) # make elements unique and sort them in increasing order
-        if X_L < X_R
-            return new(shorthand, X_L, X_R)
+    L::Array{SurrealFinite,1} 
+    R::Array{SurrealFinite,1} 
+    # constructor should check that L < R
+    function SurrealFinite(shorthand::String, L::Array{SurrealFinite}, R::Array{SurrealFinite})
+        unique2!( L ) # make elements unique and sort them in increasing order
+        unique2!( R ) # make elements unique and sort them in increasing order
+        if L < R
+            return new(shorthand, L, R)
         else 
-            error("Surreal number must have X_L < X_R.")
+            error("Surreal number must have L < R.")
         end
     end
 end
-SurrealFinite(shorthand::String, X_L::Array, X_R::Array ) =
-    SurrealFinite( shorthand, convert(Array{SurrealFinite},X_L), convert(Array{SurrealFinite},X_R) )
-SurrealFinite(X_L::Array, X_R::Array ) =
-    SurrealFinite( "", convert(Array{SurrealFinite},X_L), convert(Array{SurrealFinite},X_R) )
-≀(X_L::Array, X_R::Array ) = SurrealFinite(X_L::Array, X_R::Array )
+SurrealFinite(shorthand::String, L::Array, R::Array ) =
+    SurrealFinite( shorthand, convert(Array{SurrealFinite},L), convert(Array{SurrealFinite},R) )
+SurrealFinite(L::Array, R::Array ) =
+    SurrealFinite( "", convert(Array{SurrealFinite},L), convert(Array{SurrealFinite},R) )
+≀(L::Array, R::Array ) = SurrealFinite(L::Array, R::Array )
 
-hash(x::SurrealFinite, h::UInt) = hash( hash(x.X_L, h) * hash(x.X_R, h), h )
+hash(x::SurrealFinite, h::UInt) = hash( hash(x.L, h) * hash(x.R, h), h )
 hash(X::Array{SurrealFinite}, h::UInt) = isempty(X) ? hash(0) : hash( hash(X[1]) * hash( X[2:end]), h )
 hash(x::SurrealFinite) = hash(x, convert(UInt64,0) )
 hash(X::Array{SurrealFinite}) = hash(X, convert(UInt64,0) )
@@ -84,8 +84,8 @@ function convert(::Type{Rational}, s::SurrealFinite )
         convert(Rational, s - one(s) ) + 1 
     else # 0 < x < 1
         # do a binary search from top down, first valid is the simplest
-        xl = maximum(s.X_L)
-        xr = minimum(s.X_R)
+        xl = maximum(s.L)
+        xr = minimum(s.R)
         not_end = true
         k = 0
         a = 0
@@ -137,12 +137,12 @@ one(::SurrealFinite) = SurrealFinite("1", [ zero(SurrealFinite) ], ϕ )
 #   these are written in terms of the definition, but could
 #   rewrite in terms of max/min to make marginally faster
 function <=(x::SurrealFinite, y::SurrealFinite)
-    for t in x.X_L
+    for t in x.L
         if y <= t
             return false
         end
     end
-    for t in y.X_R
+    for t in y.R
         if t <= x
             return false
         end
@@ -155,10 +155,10 @@ end
 ≅(x::Real, y::Real) = ≅(promote(x,y)...)
 ≇(x::SurrealFinite, y::SurrealFinite) = !( x ≅ y ) 
 ≇(x::Real, y::Real) = ≇(promote(x,y)...)
-==(x::SurrealFinite, y::SurrealFinite) = size(x.X_L) == size(y.X_L) &&
-                                         size(x.X_R) == size(y.X_R) &&
-                                         all(x.X_L .== y.X_L) &&
-                                         all(x.X_R .== y.X_R)  
+==(x::SurrealFinite, y::SurrealFinite) = size(x.L) == size(y.L) &&
+                                         size(x.R) == size(y.R) &&
+                                         all(x.L .== y.L) &&
+                                         all(x.R .== y.R)  
 
 # comparisons between arrays are all-to-all, so don't have to be the same size
 function <=(X::Array{SurrealFinite}, Y::Array{SurrealFinite} )
@@ -193,13 +193,13 @@ end
 # unary operators
 function -(x::SurrealFinite)
     if isempty(x.shorthand)
-        SurrealFinite("", -x.X_R, -x.X_L )
+        SurrealFinite("", -x.R, -x.L )
     elseif x.shorthand == "0"
         zero(x)
     elseif x.shorthand[1] == '-'
-        SurrealFinite(x.shorthand[2:end], -x.X_R, -x.X_L )
+        SurrealFinite(x.shorthand[2:end], -x.R, -x.L )
     else
-        SurrealFinite("-"*x.shorthand, -x.X_R, -x.X_L )
+        SurrealFinite("-"*x.shorthand, -x.R, -x.L )
     end 
 end  
 function /(x::SurrealFinite, y::SurrealFinite)
@@ -217,21 +217,21 @@ function /(x::SurrealFinite, y::SurrealFinite)
 end
 
 # binary operators
-+(x::SurrealFinite, y::SurrealFinite) = SurrealFinite([x.X_L .+ y; x .+ y.X_L],
-                                                      [x.X_R .+ y; x .+ y.X_R] )
++(x::SurrealFinite, y::SurrealFinite) = SurrealFinite([x.L .+ y; x .+ y.L],
+                                                      [x.R .+ y; x .+ y.R] )
 # can't do like this because of empty arrays I think
-#+(x::SurrealFinite, y::SurrealFinite) = SurrealFinite([x.X_L + y.X_L],
-#                                                      [x.X_R + y.X_R] )
+#+(x::SurrealFinite, y::SurrealFinite) = SurrealFinite([x.L + y.L],
+#                                                      [x.R + y.R] )
 +(X::Array{SurrealFinite}, Y::Array{SurrealFinite}) = vec([s+t for s in X, t in Y])
  
 -(x::SurrealFinite, y::SurrealFinite) = x + -y
 -(X::Array{SurrealFinite}, Y::Array{SurrealFinite}) = X + -Y
 
 function *(x::SurrealFinite, y::SurrealFinite)
-    XL = x.X_L
-    XR = x.X_R
-    YL = y.X_L
-    YR = y.X_R
+    XL = x.L
+    XR = x.R
+    YL = y.L
+    YR = y.R
     tmp1 = vec([s*y + x*t - s*t for s in XL, t in YL])
     tmp2 = vec([s*y + x*t - s*t for s in XR, t in YR])
     tmp3 = vec([s*y + x*t - s*t for s in XL, t in YR])
@@ -245,27 +245,27 @@ end
 *(X::Array{SurrealFinite}, y::SurrealFinite) = y*X
 
 # print commands
-pf(x::SurrealFinite) = print("<", x.X_L, ":", x.X_R, ">") 
+pf(x::SurrealFinite) = print("<", x.L, ":", x.R, ">") 
 function pff(x::SurrealFinite)
     if x ≅ zero(x)
         print(" 0 ")
-    elseif x.X_L == ϕ
-        print("< ϕ:", pff.(x.X_R), ">")
-    elseif x.X_R == ϕ
-        print("<", pff.(x.X_L), ":ϕ>")
+    elseif x.L == ϕ
+        print("< ϕ:", pff.(x.R), ">")
+    elseif x.R == ϕ
+        print("<", pff.(x.L), ":ϕ>")
     else
-        print("<", pff.(x.X_L), ":", pff.(x.X_R), ">")
+        print("<", pff.(x.L), ":", pff.(x.R), ">")
     end
 end
 function show(io::IO, x::SurrealFinite)
     if x.shorthand != ""
         print_with_color(:bold, io, x.shorthand ) # could be :red
     else
-        print( io, "<", x.X_L, ":", x.X_R, ">")
+        print( io, "<", x.L, ":", x.R, ">")
     end
 end
 show(io::IO, X::Array{SurrealFinite}) = print(io, "{", join(X, ", "), "}")
-spf(x::SurrealFinite) = print("<", canonicalise.(x.X_L), ":", canonicalise.(x.X_R), ">")
+spf(x::SurrealFinite) = print("<", canonicalise.(x.L), ":", canonicalise.(x.R), ">")
 
 function surreal2dot(io::IO, x::SurrealFinite)
     println(io, "digraph \"", float(x), "\" {")
@@ -285,23 +285,23 @@ function surreal2dot_f(io::IO, x::SurrealFinite, k::Integer)
         #    S = x.shorthand
         #end
         S = convert(String, x)
-        # L = isempty(x.X_L) ? "ϕ" : "" * join( convert.(String, x.X_L), ",</TD><TD> ") *"</TD>
-        # R = isempty(x.X_R) ? "ϕ" : join( convert.(String, x.X_R), ", ")
-        if isempty(x.X_L)
+        # L = isempty(x.L) ? "ϕ" : "" * join( convert.(String, x.L), ",</TD><TD> ") *"</TD>
+        # R = isempty(x.R) ? "ϕ" : join( convert.(String, x.R), ", ")
+        if isempty(x.L)
             L = "ϕ" 
         else
             L = "<TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLPADDING=\"0\"><TR>"
-            for s in x.X_L
+            for s in x.L
                 tmp = convert(String, s)
                 L *= "<TD PORT=\"$tmp\"> " * tmp * " </TD> &nbsp; "
             end
             L *= "</TR></TABLE>" 
         end
-        if isempty(x.X_R)
+        if isempty(x.R)
             R = "ϕ" 
         else
             R = "<TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLPADDING=\"0\"><TR>"
-            for s in x.X_R
+            for s in x.R
                 tmp = convert(String, s)
                 R *= "<TD PORT=\"$tmp\"> " * tmp * " </TD> &nbsp; "
             end
@@ -315,13 +315,13 @@ function surreal2dot_f(io::IO, x::SurrealFinite, k::Integer)
                      <TR><TD PORT=\"L\"> $L </TD><TD PORT=\"R\"> $R </TD></TR>
                      </TABLE>>
                      ];""")
-        for s in x.X_L
+        for s in x.L
             m += 1
             # println(io, "   node_$k:L -> node_$m;")
             println(io, "   node_$k:\"" *  convert(String, s) * "\" -> node_$m;")
             m = surreal2dot_f(io, s, m)
         end
-        for s in x.X_R
+        for s in x.R
             m += 1
             # println(io, "   node_$k:R -> node_$m;")
             println(io, "   node_$k:\"" *  convert(String, s) * "\" -> node_$m;")
@@ -338,8 +338,8 @@ function generation(x::SurrealFinite)
     if x≅zero(x)
         return 0
     else
-        return max( maximum( generation.( [x.X_L; 0]) ),
-                    maximum( generation.( [x.X_R; 0]) )) + 1
+        return max( maximum( generation.( [x.L; 0]) ),
+                    maximum( generation.( [x.R; 0]) )) + 1
     end
 end 
 
