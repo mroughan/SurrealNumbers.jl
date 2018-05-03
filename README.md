@@ -255,11 +255,11 @@ representations, but it seems more appealing to me.
 Examples:
 
     julia> pf( convert(SurrealFinite, 1//2) )
-    <{0}:{1}>
+    {0 | 1 }
     julia> pf( convert(SurrealFinite, 3//4) )
-    <{1//2}:{1}>
+    { 1//2 | 1 } 
     julia> pf( convert(SurrealFinite, -11//8) )
-    <{-3//2}:{-5//4}>
+    { -3//2 | -5//4 }
 
 The `pf` function used here is a "print-in-full", which prints the
 left and right sets of the surreal, not the real equivalent
