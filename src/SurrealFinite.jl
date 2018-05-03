@@ -136,6 +136,7 @@ one(::SurrealFinite) = SurrealFinite("1", [ zero(SurrealFinite) ], ϕ )
 # relations
 #   these are written in terms of the definition, but could
 #   rewrite in terms of max/min to make marginally faster
+#   or in terms of set operations to make more succinct
 function <=(x::SurrealFinite, y::SurrealFinite)
     for t in x.L
         if y <= t
