@@ -332,11 +332,10 @@ sure it warrants it.
 
 ### Implementations of operators and standard functions
 
-Not to much to report here. Most of the operators follow standard
-surreal definitions and defining them in Julia is easy. There are all
-recursive, as you might guess, and so very inefficient -- I wouldn't
-want to do demanding computations this way, but they are easy to
-understand, for instance
+Most of the operators follow standard surreal definitions and defining
+them in Julia is easy. They are all recursive, as you might guess,
+and so very inefficient -- I wouldn't want to do demanding
+computations this way, but they are easy to understand, for instance
 
      +(x::SurrealFinite, y::SurrealFinite) = SurrealFinite([x.X_L .+ y; x .+ y.X_L], [x.X_R .+ y; x .+ y.X_R] )
 
