@@ -255,7 +255,8 @@ This is the set of conversions implemented, and it includes all
 dyadics, and hence floats. Note the recursion inherent in the
 construction/conversion. So some care (particularly) with floats
 should be taken not to create a variable that exhausts the stack. The
-current code isn't very clever in checking for this.
+current code isn't very clever in checking for this another place some
+work is needed. 
 
 Note that although this is the way most texts define integers (because
 it is very simple), we could have a simple, consistent conversion for
