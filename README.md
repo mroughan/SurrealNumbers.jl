@@ -212,8 +212,8 @@ surreals themselves aren't exactly useful).
 The description of a surreal given above generates a *form*. The forms
 satisfy the rules of arithmetic ($+$, $-$, $\times$ and $/$), and so
 we can identify these with the real numbers. However, there are many
-forms that equate to the same real number. Thus there are sets of
-forms that are equivalent in the sense that $x \equiv y$ if and only
+*forms* that equate to the same real number. Thus there are sets of
+*forms* that are equivalent in the sense that $x \equiv y$ if and only
 if $x \leq y$ and $y \leq x$.
 
 I think of this loosely by analogy to the rationals, e.g., we can have
