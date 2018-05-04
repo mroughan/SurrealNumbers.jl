@@ -2,6 +2,8 @@ transfinites and ordinals
 
 add internal documentation 
 
+converting to float64???
+
 division
 	- can we do this natively - currently requires conversion to reals and back    
 	- more testing needed

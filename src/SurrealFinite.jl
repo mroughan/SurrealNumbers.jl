@@ -246,7 +246,7 @@ end
 # print commands
 pf(x::SurrealFinite) = print("{ ", x.L, " | ", x.R, " }") 
 # function pff(x::SurrealFinite)
-#     if x ≅ zero(x)
+#     if x == zero(x)
 #         print(" 0 ")
 #     elseif x.L == ϕ
 #         print("< ϕ:", pff.(x.R), ">")
@@ -283,7 +283,7 @@ function surreal2dot(io::IO, x::SurrealFinite)
 end
 function surreal2dot_f(io::IO, x::SurrealFinite, k::Integer)
     m = k
-    if x ≅ zero(x)
+    if x == zero(x)
         println(io, "   node_$k [shape=none,margin=0,label=<<B>0</B>>]")
     else
         #if x.shorthand==""
@@ -342,7 +342,7 @@ surreal2dot(x::SurrealFinite) = surreal2dot(STDOUT, x)
 
 # generation or birth day calculation
 function generation(x::SurrealFinite)
-    if x≅zero(x)
+    if x==zero(x)
         return 0
     else
         return max( maximum( generation.( [x.L; 0]) ),
@@ -421,4 +421,54 @@ end
 isinf(s::SurrealFinite) = false
 isnan(s::SurrealFinite) = false
 isfinite(s::SurrealFinite) = true
+
+# extra analysis functions
+function size(x::SurrealFinite)
+    if x==zero(x)
+        return 1
+    else
+        return 1 + sum(size.(x.L)) + sum(size.(x.R))
+    end
+end
+function n_zeros(x::SurrealFinite)
+    if x==zero(x)
+        return 1
+    else
+        return sum(n_zeros.(x.L)) + sum(n_zeros.(x.R))
+    end
+end 
+function count_n(x::Surreal)
+    # return [c; [convert(Rational, x)]; count_n.(x.L); count_n.(x.R) ] 
+    tmp = [ convert(Rational, x) ]
+    for s in x.L
+        tmp = [tmp; count_n(s) ]
+    end
+    for s in x.R 
+        tmp = [tmp; count_n(s) ]
+    end
+    # println( "x = ", convert(Rational, x))
+    # println( join(tmp, ", ") )
+    return tmp 
+end
+ 
+function depth(x::Surreal)
+    if x==zero(x)
+        return [0]
+    else
+        tmp = [ ]
+        for s in x.L
+            tmp = [tmp; depth(s) ]
+        end
+        for s in x.R
+            tmp = [tmp; depth(s) ]
+        end
+        return 1 + tmp
+    end
+end
+depth_max(x::SurrealFinite) = maximum( depth(x) )
+depth_av(x::Surreal) = mean( depth(x) )
+
+
+
+
 

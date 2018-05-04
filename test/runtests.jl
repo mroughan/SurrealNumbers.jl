@@ -94,7 +94,7 @@ end
 end
 
 
-@testset "generation function" begin
+@testset "surreal specific functions" begin
     @test generation(x0) == 0
     @test generation(x1) == 1
     @test generation(x21) == 2
@@ -103,7 +103,43 @@ end
     @test generation(x5) == 3
     @test generation( convert(SurrealFinite,2)*convert(SurrealFinite,2) ) == 6
     @test generation( convert(SurrealFinite,4) ) == 4
+
+    @test size(x0) == 1
+    @test size(x1) == 2
+    @test size(x41) == 5
+    @test size(x43) == 21
+    @test size(x5) == 12
+    @test size(s2) == 7
+
+    @test n_zeros(x0) == 1
+    @test n_zeros(x1) == 1
+    @test n_zeros(x41) == 1
+    @test n_zeros(x43) == 5
+    @test n_zeros(x5) == 6
+    @test n_zeros(s2) == 3
+
+    @test depth_max(x0) == 0
+    @test depth_max(x1) == 1
+    @test depth_max(x41) == 4
+    @test depth_max(x43) == 6
+    @test depth_max(x5) == 3
+    @test depth_max(s2) == 3
+
+    @test depth_av(x0) == 0.0
+    @test depth_av(x1) == 1.0
+    @test depth_av(x41) == 4.0
+    @test depth_av(x43) == 6.0
+    @test depth_av(x5) == 13/6
+    @test depth_av(s2) == 7/3
+
+    @test all( sort(count_n(x0)) .== [0] )
+    @test all( sort(count_n(x1)) .== [0, 1] )
+    @test all( sort(count_n(x41)) .== [0,1,2,3,4] )
+    @test all( sort(count_n(x43)) .== [-1,0,0,0,0,0,0,1,1,1,1,1,2,2,2,2,3,3,3,4,4] )
+    @test all( sort(count_n(x5)) .== [-1, -1, -1//2, 0, 0, 0, 0, 0, 0, 1//2, 1, 1] )
+    @test all( sort(count_n(s2)) .== [0, 0, 0, 1//2, 3//4, 1, 1] )
 end
+
 @testset "convert to surreal" begin
     @test convert(SurrealFinite,2)*convert(SurrealFinite,2) ≅ convert(SurrealFinite,4)
     @test convert(SurrealFinite,2)*convert(SurrealFinite,-3) ≅ convert(SurrealFinite,-6)
@@ -238,5 +274,5 @@ end
 @testset "output" begin
     @test surreal2dot(DevNull, x0) == 1
     @test surreal2dot(DevNull, x23) == 5
-    @test surreal2dot(DevNull, x43) == 17
+    @test surreal2dot(DevNull, x43) == size(x43)
 end

@@ -5,8 +5,8 @@ importall Base
 export Surreal, SurrealFinite, Dyadic
 export <=, zero, one, ==, ≅, ≇, <, -, +, *, ϕ, ≀, ↑, ↓, 
     convert, promote, hash, pf, pff, spf, show, surreal2dot,
-    generation, canonicalise, unique2!, 
-    sign, round, floor, ceil,
+    generation, canonicalise, unique2!, size, n_zeros, depth_max, depth_av, count_n, depth, 
+    sign, round, floor, ceil, 
     isinteger, isinf, isnan, isfinite
 
 
