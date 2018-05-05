@@ -1,0 +1,107 @@
+Impractically surreal: an exploration of the surreal numbers using an implementation in Julia
+
+
+Note that shorthand makes surreals look simpler than they are ...
+
+
+Let's consider a suposedly simple case $2 \times 2$, starting with a
+simple, canonical form for 2. That is compute $x \times y$ where
+\begin{eqnarray*}
+  x & = & \{ 1 \mid \phi \} \\
+  y & = & \{ 1 \mid \phi \} \\
+\end{eqnarray*}
+
+The definition of mulitplication is given above, but note that $X_R =
+Y_R = \phi$ and so 3 of the four terms in the multiplication are also
+$\phi$. Taking the only non-empty term we get
+\begin{eqnarray*}
+  x y & = & \{ X_L y + x Y_L - X_L Y_L \mid \phi \} \\
+      & = & \{ 1.2 + 2.1 - 1.1 \mid \phi \} \\
+      & = & \{ 2 + 2 - 1 \mid \phi \}.
+\end{eqnarray*}
+the last simplification arising because 1 is the multiplicative identity. 
+
+Superficially, we can complete the arithmetic above to find that $x y
+= \{ 3 | \phi \}$, which would be the canonical form of 4, the
+expected solution. However, we should understand that the additions
+and subtraction are surreal operators, and should be evaluated as
+such. Each of the integers in the computation is in canonical form (by
+construction), and so $2 + 2 = 4 = \{ 3 \mid \phi \}$, which is an
+easy start. However, we write the subtraction as
+\begin{eqnarray*}
+  \{ 3 \mid \phi \} - \{ 1 \mid \phi \}
+  & = &   \{ 3 \mid \phi \} +  -\{ 1 \mid \phi \} \\
+  & = &   \{ 3 \mid \phi \} +  \{ \phi \mid -1 \} \\
+  & = &   \{ 2 \mid 4 \}.
+\end{eqnarray*}
+Note that this is equal to 3 as required, but that it is not
+canonical, and in fact doesn't even seem to be simplifying (it is, by
+definition, but this is part of issue here).
+
+Note that once again, in writing $\{ 2 \mid 4\}$ we have simplified
+the arithmetic down to it's shorthand. The '4' here is canonical, but
+the 2 is not; it is really $3 - 1$, which simillary to $4-1$ above
+breaks down into two components again. And so on.
+
+In the end, the true representation of 2.2, which we can see through
+looking at it as a tree, has 21 nodes (the original surreal, and 20
+component surreals), reaching down branches of length 6 to the leaves
+of the tree which are the zeros,
+
+PICTURE
+
+A tree with 21 nodes doesn't seem so bad, perhaps. But it quickly gets
+worse. The table below shows the size (in terms of numbers of nodes)
+of the tree-representation of several products.
+
+product &  size & tree depth  & number of leaves \\
+2.0 &           1 &  0 & 0
+2.1 &           3 &  2 & 1
+2.2 &          21 &  6 & 5
+2.3 &       2,574 & 12 & 652 
+2.4 &   3,042,201 & 20 & 748,077
+2.5 &         ?   &  ? &   ?
+
+To illustrate the point 2.3 is shown below:
+
+PICTURE
+
+So far, I haven't succeeded in calculting 2.5 let alone 3.3. My code
+will have to be a good deal more efficient to calculate the next
+step. Guessing, I'd say that the growth from 2.1 to 2.2 was about a
+factor of 10, then from 2.2 to 2.3 was about a factor of 100, and from
+2.3 to 2.4 about 1000, so we might expect the next step to be about
+10^4 x 10^6, so of the order of 10^{10} nodes. But computation time is
+non-linear in the numb er of nodes as many of the operations that we
+take for granted as constant time are (in this case) implemented
+recuseively, and hence linear in the size of the trees. That is, even
+constructing a surreal (as part of the tree) will require a check that
+$X_L < X_R$ and hence each piece we try to construct will take time
+linear in its subtree, and hence the overall compute time will be
+non-linear in the size of the tree.
+
+
+
+Tree depth seems to grow by the next even integer, i.e., 2, 4, 6, 8,
+so I hypothesize that 2.5 will have tree depth 30.
+
+
+
+We can always cheat, and recanonicalise at each step. But that is no
+more than just doing traditional arithemetic.
+
+
+Does it matter -- I suspect not. The motivations for surreal numbers
+are not related to replacing traditional computation. ...
+
+
+
+
+
+
+--- canonical form means all components are also in canonical form ...
+
+
+
+
+

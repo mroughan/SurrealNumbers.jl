@@ -101,7 +101,7 @@ end
     @test generation(x22) == 2
     @test generation(x4) == 2
     @test generation(x5) == 3
-    @test generation( convert(SurrealFinite,2)*convert(SurrealFinite,2) ) == 6
+    @test generation( x43 ) == 6
     @test generation( convert(SurrealFinite,4) ) == 4
 
     @test size(x0) == 1
@@ -208,15 +208,30 @@ end
     @test ceil(-x4) ≇ -x4
     @test ceil(-x4) == one(x4)
 
-     # add some for ceil as well
-    
+    @test mod(zero(SurrealFinite), x21) == 0
+    @test mod(one(SurrealFinite), x21) == 1
+    @test mod(x22, x21) ≅ 0.0 
+    @test mod(x41, x21) ≅ zero(x4)
+    @test mod(x3, x43) ≅ 3
+    @test mod(-x43, x3) ≅ 2
+    @test mod(s1 + 2, x21) ≅ s1
+
     @test isinteger(x0) == true
     @test isinteger(x22) == true
     @test isinteger(s1) == false
-    @test isinteger( convert(SurrealFinite,2)*convert(SurrealFinite,2) ) == true
+    @test isinteger(x43) == true
     @test isinteger( convert(SurrealFinite,-4) ) == true
     @test isinteger( convert(SurrealFinite,-1//4) ) == false
 
+    @test iseven(x0) == true
+    @test iseven(x22) == true
+    @test iseven(s1) == false
+    @test iseven(x3) == false
+    @test isodd(s1) == false
+    @test isodd(x3) == true   
+    @test iseven( convert(SurrealFinite,-4) ) == true
+    @test iseven( convert(SurrealFinite,-1) ) == false
+    
     @test isinf(s1) == false
     @test isnan(s1) == false
     @test isfinite(s1)  
@@ -224,10 +239,12 @@ end
 
 
 @testset "simplifications" begin
-    @test canonicalise(x22) ≅ x22 
-    @test canonicalise( convert(SurrealFinite,2)*convert(SurrealFinite,2) ) ≅ convert(SurrealFinite,4)
-    @test canonicalise( convert(SurrealFinite,2)*convert(SurrealFinite,2) ) != convert(SurrealFinite,2)*convert(SurrealFinite,2)
-    @test canonicalise( convert(SurrealFinite,2)*convert(SurrealFinite,2) ) ≅ convert(SurrealFinite,2)*convert(SurrealFinite,2)
+    @test canonicalise(x22) ≅ x22
+    @test canonicalise(x43) ≅ convert(SurrealFinite,4)
+    @test canonicalise(x43) != convert(SurrealFinite,2)*convert(SurrealFinite,2)
+    @test canonicalise(x43) ≅ convert(SurrealFinite,2)*convert(SurrealFinite,2)
+    @test !iscanonical(x22)
+    @test iscanonical(x21)
 end
 
 g3 = SurrealFinite( [ 7//16 ], [ 15//16 ] )
@@ -238,6 +255,10 @@ g4 = SurrealFinite( [convert(SurrealFinite,3)], [convert(SurrealFinite,17)] )
     @test convert(Integer, convert(SurrealFinite, -2)) == -2
     @test convert(Integer, convert(SurrealFinite, 6)) == 6
     @test convert(Integer, convert(SurrealFinite, 0)) == 0
+    @test convert(Int64, convert(SurrealFinite, -2)) == -2
+    @test convert(UInt32, convert(SurrealFinite, 6)) == 6
+    @test convert(Int8, convert(SurrealFinite, 0)) == 0
+    @test_throws InexactError convert(UInt8, convert(SurrealFinite, -1))
     
     @test convert(Rational, convert(SurrealFinite, 1//8)) == 1//8
     @test convert(Rational, convert(SurrealFinite, 9//8)) == 9//8
@@ -249,7 +270,9 @@ g4 = SurrealFinite( [convert(SurrealFinite,3)], [convert(SurrealFinite,17)] )
     @test g3 ≅ convert(SurrealFinite, 0.5) 
     @test convert( Rational, SurrealFinite( [ 7//16 ], [ 15//16 ] ) ) == 1//2
 
-    @test convert(AbstractFloat, convert(SurrealFinite,2)*convert(SurrealFinite,2) ) == 4.0
+    @test convert(Float64, x43 ) == 4.0
+    @test convert(Float64, x4) == -0.5
+    @test convert(AbstractFloat, x43 ) == 4.0
     @test convert(AbstractFloat, x4) == -0.5
     @test float( x4 ) == -0.5
     @test float( s2 ) == 0.75
@@ -276,3 +299,4 @@ end
     @test surreal2dot(DevNull, x23) == 5
     @test surreal2dot(DevNull, x43) == size(x43)
 end
+

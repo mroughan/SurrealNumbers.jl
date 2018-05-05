@@ -4,6 +4,10 @@ add internal documentation
 
 converting to float64???
 
+test time to see if we cant do some optimisations
+
+3*3
+
 division
 	- can we do this natively - currently requires conversion to reals and back    
 	- more testing needed
