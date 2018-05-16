@@ -48,7 +48,6 @@ close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
-
 file = "test_dot_x43.dot"
 FID = open(file, "w")
 surreal2dot(FID, x43)
@@ -56,6 +55,15 @@ close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
+file = "test_dag_x43.dot"
+FID = open(file, "w")
+surreal2dag(FID, x43)
+close(FID)
+run(`dot -Tpdf -O $file`) 
+run(`dot -Tsvg -O $file`) 
+
+temp1 = values(ExistingSurreals)
+temp1 = sort(collect(temp1))
 
 file = "test_dot_x5.dot"
 FID = open(file, "w")
@@ -64,6 +72,13 @@ close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
+file = "test_dag_x5.dot"
+FID = open(file, "w")
+surreal2dag(FID, x5) 
+close(FID)
+run(`dot -Tpdf -O $file`) 
+run(`dot -Tsvg -O $file`) 
+ 
 # file = "test_dot_x6.dot"
 # FID = open(file, "w")
 # surreal2dot(FID, x6)
@@ -71,6 +86,12 @@ run(`dot -Tsvg -O $file`)
 # run(`dot -Tpdf -O $file`) 
 # run(`dot -Tsvg -O $file`) 
 
+file = "test_dag_x6.dot"
+FID = open(file, "w")
+ surreal2dag(FID, x6)
+ close(FID)
+ run(`dot -Tpdf -O $file`) 
+ run(`dot -Tsvg -O $file`) 
 
-
-
+temp2 = values(ExistingSurreals)
+temp2 = sort(collect(temp2))

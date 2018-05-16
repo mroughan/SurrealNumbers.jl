@@ -23,11 +23,19 @@ SurrealFinite(L::Array, R::Array ) =
     SurrealFinite( "", convert(Array{SurrealFinite},L), convert(Array{SurrealFinite},R) )
 ≀(L::Array, R::Array) = SurrealFinite(L::Array, R::Array )
 
+# put hash(x,0) into construct, based on recursive construction
+# hash does a call to this, but hash(x.hash, h)
+# keep the array versions
+# note whether we get the expected performance improvements
+
 hash(x::SurrealFinite, h::UInt) = hash( hash(x.L, h) * hash(x.R, h), h )
 hash(X::Array{SurrealFinite}, h::UInt) = isempty(X) ? hash(0,h) : hash( hash(X[1],h) * hash( X[2:end],h), h )
 #hash(X::Array{SurrealFinite}, h::UInt) = isempty(X) ? hash(0,h) : hash( prod(hash.(X, h )), h)
 hash(x::SurrealFinite) = hash(x, convert(UInt64,0) )
 hash(X::Array{SurrealFinite}) = hash(X, convert(UInt64,0) )
+
+# globale dictionary for use in constructing DAG representations
+ExistingSurreals = Dict{SurrealFinite,Int}()
 
 function convert(::Type{SurrealFinite}, n::Int ) 
     if n==0 
@@ -188,6 +196,9 @@ function <=(X::Array{SurrealFinite}, Y::Array{SurrealFinite} )
                 end 
             end
         end
+#        if !(X[end] <= Y[1])
+#            return false
+#        end
         return true
     end
 end
@@ -202,6 +213,10 @@ function <(X::Array{SurrealFinite}, Y::Array{SurrealFinite} )
                 end 
             end
         end
+#        # assume sort
+#        if !(X[end] < Y[1])
+#            return false
+#        end
         return true
     end
 end 
@@ -284,22 +299,85 @@ end
 *(x::SurrealFinite, Y::Array{SurrealFinite}) = return [ x*s for s in Y ]
 *(X::Array{SurrealFinite}, y::SurrealFinite) = y*X
 
-# print commands
-pf(x::SurrealFinite) = print("{ ", x.L, " | ", x.R, " }") 
-# function pff(x::SurrealFinite)
-#     if x == zero(x)
-#         print(" 0 ")
-#     elseif x.L == ϕ
-#         print("< ϕ:", pff.(x.R), ">")
-#     elseif x.R == ϕ
-#         print("<", pff.(x.L), ":ϕ>")
-#     else
-#         print("<", pff.(x.L), ":", pff.(x.R), ">")
-#     end
-# end
+
+#####################################################3
+# read/write routines for surreals
+
+# print the first level in full (ignoring the top level shorthand if present)
+#   these should be replaced using "expand"
+pf(io::IO, x::SurrealFinite) = println(io, "{ ", x.L, " | ", x.R, " }")
+pf(x::SurrealFinite) = pf(STDOUT, x) 
+
+# expand at some level, 0 steps (if possible), 1 step, or completely
+function expand(x::SurrealFinite; level=0)
+    if level==0
+        s = x.shorthand != "" ? x.shorthand : expand(x; level=1)
+    elseif level==1
+        tmpL = isempty(x.L) ? "ϕ" : join(convert.(String, x.L), ',')
+        tmpR = isempty(x.R) ? "ϕ" : join(convert.(String, x.R), ',')
+        s = "{ " * tmpL * " | " * tmpR  * " }"
+        return s 
+    elseif level>=1
+        return "{ " * expand(x.L;level=level) * " | " * expand(x.R;level=level) * " }"
+    end
+end
+expand(X::Array{SurrealFinite}; level=0) = isempty(X) ? "ϕ" : join(expand.(X; level=level), ',') 
+ 
+# isnumeric(s::AbstractString) = ismatch(r"^-?\d*.\d*$", s) || ismatch(r"^-?\d*//-?\d*$", s)
+
+# this has to parse a surreal written into a string 
+function convert(::Type{SurrealFinite}, s::AbstractString ) 
+    # interpret, (i) numbers as canonical, (ii) phi, \phi, ϕ correctly, (iii) structure
+    s = replace(s, r"\s+", "") # remove white space
+    s = replace(s, r"phi|\\phi|ϕ|\{\}", "") # replace phi or \phi with empty set
+    # println("     s1 = $s")
+    not_end = true
+    basic_number = r"\{([^{}|]*)\|([^{|}]*)\}"
+    while not_end
+        if ismatch(basic_number, s)
+            s = replace(s, basic_number, s"SurrealFinite([\1],[\2])") # remove comments
+        else 
+            not_end = false
+        end
+    end
+    # println("     s2 = $s")
+    return eval(parse(s))
+end
+
+# read in the full format
+function read(io::IO, ::Type{SurrealFinite}, n::Int=1)
+    X = Array{SurrealFinite}(n,)
+    k = 1
+    while !eof(io) && k<=n
+        line = replace(readline(io), r"#.*", s"") # remove comments
+        # println(" $k:   $line")
+        if ismatch(r"\S", line)
+            X[k] = convert(SurrealFinite, line)
+            k += 1
+        end
+    end 
+    return X
+end
+# read(filename::AbstractString, args...) = open(io->read(io, args...), filename)
+
+# write out a string suitable for inclusion into latex docs
+function surreal2tex(io::IO, x::SurrealFinite; level=0)
+    s = expand(x; level=level)
+    s = replace(s, r"\{", "\\\{") 
+    s = replace(s, r"\|", "\\mid") 
+    s = replace(s, r"\}", "\\\}")
+    s = replace(s, r"(\d+)//(\d+)", s"\\frac{\1}{\2}")
+    println(io,s)
+end
+surreal2tex(x::SurrealFinite; level=0) = surreal2tex(STDOUT, x; level=level)
+
+
+# standard show will use shorthand when available
 function show(io::IO, x::SurrealFinite)
-    if x.shorthand != ""
+    if io==STDOUT && x.shorthand != ""
         print_with_color(:bold, io, x.shorthand ) # could be :red
+    elseif x.shorthand != ""
+        print(io, x.shorthand )
     else
         # print( io, "<", x.L, ":", x.R, ">")
         print( io, "{ ", x.L, " | ", x.R, " }")
@@ -313,7 +391,50 @@ function show(io::IO, X::Array{SurrealFinite})
         print(io, join(X, ", "))
     end
 end
+# special "canonicalised" output
 spf(x::SurrealFinite) = print("{ ", canonicalise.(x.L), " | ", canonicalise.(x.R), " }")
+
+function surreal2dag(io::IO, x::SurrealFinite)
+    println(io, "digraph \"", float(x), "\" {")
+    k = 1
+    SurrealsinDAG = Dict{SurrealFinite,Int}()
+    # for a in keys(ExistingSurreals)
+    #    delete!(ExistingSurreals, a)
+    # end
+    m = surreal2dag_f(io, x, k, SurrealsinDAG)
+    println(io, "}")
+    return m
+end
+function surreal2dag_f(io::IO, x::SurrealFinite, k::Integer, SurrealsinDAG)
+    m = k 
+    if !haskey(SurrealsinDAG, x)
+        SurrealsinDAG[x] = m 
+        surreal2node(io, x, k)
+        for s in x.L
+            if !haskey(SurrealsinDAG, s)
+                m += 1
+                # println(io, "   node_$k:L -> node_$m;")
+                println(io, "   node_$k:\"" *  convert(String, s) * "\" -> node_$m;")
+                m = surreal2dag_f(io, s, m, SurrealsinDAG)
+            else
+                println(io, "   node_$k:\"" *  convert(String, s) * "\" -> node_$(SurrealsinDAG[s]);") 
+            end
+        end
+        for s in x.R
+            if !haskey(SurrealsinDAG, s)
+                m += 1
+                # println(io, "   node_$k:R -> node_$m;")
+                println(io, "   node_$k:\"" *  convert(String, s) * "\" -> node_$m;")
+                m = surreal2dag_f(io, s, m, SurrealsinDAG)
+            else
+                println(io, "   node_$k:\"" *  convert(String, s) * "\" -> node_$(SurrealsinDAG[s]);")
+            end
+        end
+    end 
+    return m 
+end
+surreal2dag(x::SurrealFinite) = surreal2dag(STDOUT, x)
+
 
 function surreal2dot(io::IO, x::SurrealFinite)
     println(io, "digraph \"", float(x), "\" {")
@@ -332,37 +453,7 @@ function surreal2dot_f(io::IO, x::SurrealFinite, k::Integer)
         #else
         #    S = x.shorthand
         #end
-        S = convert(String, x)
-        # L = isempty(x.L) ? "ϕ" : "" * join( convert.(String, x.L), ",</TD><TD> ") *"</TD>
-        # R = isempty(x.R) ? "ϕ" : join( convert.(String, x.R), ", ")
-        if isempty(x.L)
-            L = "ϕ" 
-        else
-            L = "<TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLPADDING=\"0\"><TR>"
-            for s in x.L
-                tmp = convert(String, s)
-                L *= "<TD PORT=\"$tmp\"> " * tmp * " </TD> &nbsp; "
-            end
-            L *= "</TR></TABLE>" 
-        end
-        if isempty(x.R)
-            R = "ϕ" 
-        else
-            R = "<TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLPADDING=\"0\"><TR>"
-            for s in x.R
-                tmp = convert(String, s)
-                R *= "<TD PORT=\"$tmp\"> " * tmp * " </TD> &nbsp; "
-            end
-            R *= "</TR></TABLE>" 
-        end
-        print(io, "   ")
-        println(io, """
-            node_$k [shape=none,margin=0,label=
-                     <<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"4\">
-                     <TR><TD COLSPAN=\"2\">$S</TD></TR>
-                     <TR><TD PORT=\"L\"> $L </TD><TD PORT=\"R\"> $R </TD></TR>
-                     </TABLE>>
-                     ];""")
+        surreal2node(io, x, k)
         for s in x.L
             m += 1
             # println(io, "   node_$k:L -> node_$m;")
@@ -378,8 +469,47 @@ function surreal2dot_f(io::IO, x::SurrealFinite, k::Integer)
     end 
     return m 
 end
+function surreal2node(io::IO, x::SurrealFinite, k::Integer; extra_args::String="")
+    S = convert(String, x)
+    # L = isempty(x.L) ? "ϕ" : "" * join( convert.(String, x.L), ",</TD><TD> ") *"</TD>
+    # R = isempty(x.R) ? "ϕ" : join( convert.(String, x.R), ", ")
+    if isempty(x.L)
+        L = "ϕ" 
+    else
+        L = "<TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLPADDING=\"0\"><TR>"
+        for s in x.L
+            tmp = convert(String, s)
+            L *= "<TD PORT=\"$tmp\"> " * tmp * " </TD> &nbsp; "
+        end
+        L *= "</TR></TABLE>" 
+    end
+    if isempty(x.R)
+        R = "ϕ" 
+    else
+        R = "<TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLPADDING=\"0\"><TR>"
+        for s in x.R
+            tmp = convert(String, s)
+            R *= "<TD PORT=\"$tmp\"> " * tmp * " </TD> &nbsp; "
+        end
+        R *= "</TR></TABLE>" 
+    end
+    print(io, "   ")
+    if k>=0
+        label = "$k"
+    else
+        label = "m$k"
+    end
+    println(io, """
+                node_$label [shape=none,margin=0,label=
+                         <<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"4\">
+                         <TR><TD COLSPAN=\"2\">$S</TD></TR>
+                         <TR><TD PORT=\"L\"> $L </TD><TD PORT=\"R\"> $R </TD></TR>
+                         </TABLE>>,$extra_args
+                         ];""")
+end
 surreal2dot(x::SurrealFinite) = surreal2dot(STDOUT, x)
 
+#######################################################
 
 # generation or birth day calculation
 function generation(x::SurrealFinite)

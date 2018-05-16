@@ -1,3 +1,13 @@
+size_u = no. of unique surr
+
+could do an ALT implementation that
+   (i) tracks stats of surreals when they are created to avoid
+       overhead later
+   (ii) stores a hash value when created, again to avoid overhead
+   (iii) creates a Dict of surreals, so we can convert the tree
+       structure into a DAG using refs to the Dict, reusing components so that we don't have
+       to recompute all of the pieces already computed 
+
 transfinites and ordinals
 
 add internal documentation 
@@ -12,9 +22,10 @@ division
 	- can we do this natively - currently requires conversion to reals and back    
 	- more testing needed
 	
-functions
-	
-	better round
+functions	
+	better round, more consistent with julia standard round
+	       - not trivial because can't just multiply and reuse
+
 	trunc
 
 	div
