@@ -15,7 +15,7 @@ struct SurrealFinite <: Surreal
         else 
             error("Surreal number must have L < R.")
         end
-    end
+    end 
 end
 SurrealFinite(shorthand::String, L::Array, R::Array ) =
     SurrealFinite( shorthand, convert(Array{SurrealFinite},L), convert(Array{SurrealFinite},R) )
@@ -34,11 +34,11 @@ hash(X::Array{SurrealFinite}, h::UInt) = isempty(X) ? hash(0,h) : hash( hash(X[1
 hash(x::SurrealFinite) = hash(x, convert(UInt64,0) )
 hash(X::Array{SurrealFinite}) = hash(X, convert(UInt64,0) )
 
-# globale dictionary for use in constructing DAG representations
-ExistingSurreals = Dict{SurrealFinite,Int}()
+# global dictionary for use in reducing cost of repeated conversions back to real numbers
+ExistingSurreals = Dict{SurrealFinite,Rational}()
 
 function convert(::Type{SurrealFinite}, n::Int ) 
-    if n==0 
+    if n==0  
         return SurrealFinite("0", ϕ, ϕ )
     elseif n>0
         return SurrealFinite(string(n), [convert(SurrealFinite, n-1)], ϕ )
@@ -86,41 +86,48 @@ function convert(::Type{SurrealFinite}, f::Float64 )
         error(DomainError)
     end 
 end 
-function convert(::Type{Rational}, s::SurrealFinite )  
-    if s ≅ zero(s)
-        return 0 // 1
-    elseif s ≅ one(s)
-        return 1 // 1
-    elseif s < zero(s)
-        return -convert(Rational, -s)
-    elseif s > one(s)
-        convert(Rational, s - one(s) ) + 1 
-    else # 0 < x < 1
-        # do a binary search from top down, first valid is the simplest
-        xl = maximum(s.L)
-        xr = minimum(s.R)
-        not_end = true
-        k = 0
-        a = 0
-        b = 1
-        while not_end && k < 24 # 24 is arbitrary, but it would be painful to go lower
-            k += 1
-            d = (b+a) // 2
-            # print("k=$k, a=$a, b=$b, d=$d \n")
-
-            c = convert(SurrealFinite,  d)
-            if xl < c < xr
-                return d
-            elseif c <= xl
-                a = d 
-            elseif c >= xr
-                b = d
-            else
-                error("this case should not happen")
-            end 
+function convert(::Type{Rational}, s::SurrealFinite )
+    global ExistingSurreals
+    if !haskey(ExistingSurreals, s)
+        if s ≅ zero(s)
+            ExistingSurreals[s] = 0 // 1
+        elseif s ≅ one(s)
+            ExistingSurreals[s] = 1 // 1
+        elseif s < zero(s)
+            ExistingSurreals[s] = -convert(Rational, -s)
+        #elseif s > one(s)
+            # sf = floor(s; returntype=Integer)
+            # ExistingSurreals[s] = convert(Rational, s - sf ) + sf
+        elseif (sf = floor(s; returntype=Integer)) ≅ s
+            ExistingSurreals[s] = sf 
+        else # 0 < x < 1
+            # do a binary search from top down, first valid is the simplest
+            xl = isempty(s.L) ? convert(SurrealFinite, sf)   : maximum(s.L)
+            xr = isempty(s.R) ? convert(SurrealFinite, sf+1) : minimum(s.R) 
+            not_end = true
+            k = 0
+            a = sf
+            b = sf+1
+            while not_end && k < 24 # 24 is arbitrary, but it would be painful to go lower
+                k += 1
+                d = (b+a) // 2
+                # print("k=$k, a=$a, b=$b, d=$d \n")
+                
+                c = convert(SurrealFinite,  d)
+                if xl < c < xr
+                    ExistingSurreals[s] = d
+                    not_end = false 
+                elseif c <= xl
+                    a = d 
+                elseif c >= xr
+                    b = d
+                else
+                    error("this case should not happen")
+                end 
+            end
         end
-        error("should not get to here -- down to n/2^24")
     end
+    return ExistingSurreals[s]
 end
 
 # some catch alls
@@ -371,7 +378,6 @@ function surreal2tex(io::IO, x::SurrealFinite; level=0)
 end
 surreal2tex(x::SurrealFinite; level=0) = surreal2tex(STDOUT, x; level=level)
 
-
 # standard show will use shorthand when available
 function show(io::IO, x::SurrealFinite)
     if io==STDOUT && x.shorthand != ""
@@ -398,7 +404,7 @@ function surreal2dag(io::IO, x::SurrealFinite)
     println(io, "digraph \"", float(x), "\" {")
     k = 1
     SurrealsinDAG = Dict{SurrealFinite,Int}()
-    # for a in keys(ExistingSurreals)
+    # for a in keys(ExistingSurreals) 
     #    delete!(ExistingSurreals, a)
     # end
     m = surreal2dag_f(io, x, k, SurrealsinDAG)
@@ -409,26 +415,30 @@ function surreal2dag_f(io::IO, x::SurrealFinite, k::Integer, SurrealsinDAG)
     m = k 
     if !haskey(SurrealsinDAG, x)
         SurrealsinDAG[x] = m 
-        surreal2node(io, x, k)
+        surreal2node(io, x, k) 
+        c = 1
         for s in x.L
             if !haskey(SurrealsinDAG, s)
                 m += 1
                 # println(io, "   node_$k:L -> node_$m;")
-                println(io, "   node_$k:\"" *  convert(String, s) * "\" -> node_$m;")
+                println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c) * "\" -> node_$m;")
                 m = surreal2dag_f(io, s, m, SurrealsinDAG)
             else
-                println(io, "   node_$k:\"" *  convert(String, s) * "\" -> node_$(SurrealsinDAG[s]);") 
+                println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c)  * "\" -> node_$(SurrealsinDAG[s]);") 
             end
+            c += 1 
         end
+        c = 1
         for s in x.R
             if !haskey(SurrealsinDAG, s)
                 m += 1
                 # println(io, "   node_$k:R -> node_$m;")
-                println(io, "   node_$k:\"" *  convert(String, s) * "\" -> node_$m;")
+                println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c) * "\" -> node_$m;")
                 m = surreal2dag_f(io, s, m, SurrealsinDAG)
             else
-                println(io, "   node_$k:\"" *  convert(String, s) * "\" -> node_$(SurrealsinDAG[s]);")
+                println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c) * "\" -> node_$(SurrealsinDAG[s]);")
             end
+            c += 1 
         end
     end 
     return m 
@@ -454,18 +464,22 @@ function surreal2dot_f(io::IO, x::SurrealFinite, k::Integer)
         #    S = x.shorthand
         #end
         surreal2node(io, x, k)
+        c = 1
         for s in x.L
             m += 1
             # println(io, "   node_$k:L -> node_$m;")
-            println(io, "   node_$k:\"" *  convert(String, s) * "\" -> node_$m;")
+            println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c) * "\" -> node_$m;")
             m = surreal2dot_f(io, s, m)
+            c += 1 
         end
+        c = 1
         for s in x.R
             m += 1
             # println(io, "   node_$k:R -> node_$m;")
-            println(io, "   node_$k:\"" *  convert(String, s) * "\" -> node_$m;")
+            println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c)  * "\" -> node_$m;")
             m = surreal2dot_f(io, s, m)
-        end
+           c += 1 
+         end
     end 
     return m 
 end
@@ -477,9 +491,11 @@ function surreal2node(io::IO, x::SurrealFinite, k::Integer; extra_args::String="
         L = "ϕ" 
     else
         L = "<TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLPADDING=\"0\"><TR>"
+        c = 1
         for s in x.L
             tmp = convert(String, s)
-            L *= "<TD PORT=\"$tmp\"> " * tmp * " </TD> &nbsp; "
+            L *= "<TD PORT=\"$tmp," * string(c) * "\"> " * tmp  * " </TD> &nbsp; "
+            c += 1
         end
         L *= "</TR></TABLE>" 
     end
@@ -487,9 +503,11 @@ function surreal2node(io::IO, x::SurrealFinite, k::Integer; extra_args::String="
         R = "ϕ" 
     else
         R = "<TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLPADDING=\"0\"><TR>"
+        c = 1
         for s in x.R
             tmp = convert(String, s)
-            R *= "<TD PORT=\"$tmp\"> " * tmp * " </TD> &nbsp; "
+            R *= "<TD PORT=\"$tmp," * string(c) * "\"> " * tmp * " </TD> &nbsp; "
+            c += 1 
         end
         R *= "</TR></TABLE>" 
     end
@@ -525,9 +543,6 @@ end
 canonicalise(s::SurrealFinite) = convert(SurrealFinite, convert(Rational, s))
 iscanonical(s::SurrealFinite) = canonicalise(s) == s
 
-sign(x::SurrealFinite) = x<zero(x) ? -one(x) : x>zero(x) ? one(x) : zero(x)
-# abs(x::SurrealFinite) = x<zero(x) ? -x : x
-
 function unique2!( X::Array{SurrealFinite} )
     # our own unique that is based on ≅
     sort!(X)
@@ -540,59 +555,94 @@ function unique2!( X::Array{SurrealFinite} )
     end
 end
 
-# could test if (i) max(x.L) and min(x.R) are integers (or empty),
-#               (ii) spaced more than 2 apart
-#   this would also be recursive, but might be faster
+###### standard math routines ##############################
+
+
+sign(x::SurrealFinite) = x<zero(x) ? -one(x) : x>zero(x) ? one(x) : zero(x)
+# abs(x::SurrealFinite) = x<zero(x) ? -x : x
+
+# subtraction is much slower than comparison, so got rid of old versions
+# these aren't purely surreal arithmetic, but everything could be, just would be slower
+function floor(s::SurrealFinite; returntype=SurrealFinite)
+    if s < zero(s)
+        if s >= -one(s)
+            return -one(returntype)
+        elseif s >= -2
+            return convert(returntype, -2)
+        else
+            k = 1
+            while s < -2^(k+1) && k < 12 # 12 is arbitrary, but it would be painful to go higher
+                k += 1
+            end 
+            if k==12
+                error("s is too large for the current floor function")
+            end
+            a = -2^(k+1)
+            b = -2^k
+            for i=1:k
+                d = (a+b) / 2
+                if s < d
+                    b = d
+                else
+                    a = d
+                end
+            end
+            return convert(returntype, a) # N.B. returns canonical form of floor 
+        end
+    elseif s < one(s)
+        return zero(returntype)
+    elseif s < 2
+        return one(returntype)
+    else
+        # start with geometric search to bound the number
+        k = 1
+        while s >= 2^(k+1) && k < 12 # 12 is arbitrary, but it would be painful to go higher
+            k += 1
+        end  
+        if k==12
+            error("s is too large for the current floor function")
+        end
+        # now a binary search to narrow it down
+        a = 2^k
+        b = 2^(k+1)
+        for i=1:k
+            d = (a+b) / 2
+            if s < d
+                b = d
+            else
+                a = d
+            end
+         end
+        return convert(returntype, a) # N.B. returns canonical form of floor 
+    end
+end
+
 function isinteger(s::SurrealFinite)
-    if s ≅ zero(s) 
+    if s ≅ floor2(s)
         return true
-    elseif s <= -one(s)
-        return isinteger(s + one(s))
-    elseif s >= one(s)
-        return isinteger(s - one(s))
     else
         return false
     end
 end
- 
-function floor(s::SurrealFinite)
-    if zero(s) <= s < one(s) 
-        return zero(s)
-    elseif s < zero(s)
-        return floor(s + one(s)) - one(s)
-    elseif s >= one(s)
-        return floor(s - one(s)) + one(s)
-    end
-end
 
 function ceil(s::SurrealFinite)
-    if zero(s) < s <= one(s) 
-        return one(s)
-    elseif s <= zero(s)
-        return ceil(s + one(s)) - one(s)
-    elseif s > one(s)
-        return ceil(s - one(s)) + one(s)
-    end
-end
-
-
-# not the more general form of rounding defined in Julia -- should fix
-function round(s::SurrealFinite)
-    if s ≅ zero(s) 
+    if isinteger(s)
         return s
-    elseif s <= -one(s)
-        return round(s + one(s)) - one(s)
-    elseif s >= one(s)
-        return round(s - one(s)) + one(s)
-    elseif s >= convert(SurrealFinite, 1//2)
-        return one(s)
-    elseif s >= convert(SurrealFinite, -1//2)
-        return zero(s)
     else
-        return -one(s)
+        return floor(s) + 1
     end
 end
 
+# implicit rounding mode is 'RoundNearestTiesUp'
+function round(s::SurrealFinite)
+    if isinteger(s)
+        return s
+    else
+        return floor(s + 1//2)
+    end
+end
+
+# this should still be rewritten in terms of searches
 function mod(s::SurrealFinite, n::SurrealFinite)
     if !isinteger(n)
         error("n should be an integer")
@@ -608,6 +658,7 @@ function mod(s::SurrealFinite, n::SurrealFinite)
     end
 end
 
+
 isdivisible(s::SurrealFinite, n::SurrealFinite) = isinteger(s) ? mod(s,n) ≅ zero(s) : false 
 isodd(s::SurrealFinite)  = isinteger(s) ? !isdivisible(s, convert(SurrealFinite,2) ) : false 
 iseven(s::SurrealFinite) = isinteger(s) ?  isdivisible(s, convert(SurrealFinite,2) ) : false 
@@ -616,6 +667,52 @@ iseven(s::SurrealFinite) = isinteger(s) ?  isdivisible(s, convert(SurrealFinite,
 isinf(s::SurrealFinite) = false
 isnan(s::SurrealFinite) = false
 isfinite(s::SurrealFinite) = true
+
+
+###### old versions for reference -- remember subtraction is slow #########################
+
+function floor2(s::SurrealFinite)
+    if zero(s) <= s < one(s) 
+        return zero(s)
+    elseif s < zero(s)
+        return floor(s + one(s)) - one(s)
+    elseif s >= one(s)
+        return floor(s - one(s)) + one(s)
+    end
+end
+
+function isinteger2(s::SurrealFinite)
+    if s ≅ zero(s) 
+        return true
+    elseif s <= -one(s)
+        return isinteger(s + one(s))
+    elseif s >= one(s)
+        return isinteger(s - one(s))
+    else
+        return false
+    end
+end
+
+
+# not the more general form of rounding defined in Julia -- should fix
+function round2(s::SurrealFinite)
+    if s ≅ zero(s) 
+        return s
+    elseif s <= -one(s)
+        return round(s + one(s)) - one(s)
+    elseif s >= one(s)
+        return round(s - one(s)) + one(s)
+    elseif s >= convert(SurrealFinite, 1//2)
+        return one(s)
+    elseif s >= convert(SurrealFinite, -1//2)
+        return zero(s)
+    else
+        return -one(s)
+    end
+end
+
+
+############################################
 
 # extra analysis functions
 function size(x::SurrealFinite)

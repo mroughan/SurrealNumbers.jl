@@ -1,3 +1,9 @@
+floor and round
+   make floor(T,x) instead of returntype
+   make round(0.5) match julias behaviour, or better yet implement the different rounding types
+       and then precision, which is a whole nother issue
+
+
 size_u = no. of unique surr
 
 could do an ALT implementation that
@@ -45,7 +51,8 @@ functions
 	     
 add some automatically generated random tests
 
-	     
+"Practical Surreals"
+
 "The Graphical Structure of the Surreal Numbers Examined Through the
  Lens on an Implementation in Julia"
 

@@ -178,7 +178,8 @@ unique2!(Y)
     @test all( x1*A .≅ A )
     @test all( x23*A .≅ A*x23 )
 end
-
+ 
+V = [-4.0, -3.25, -2.5, -2.0, -1.625, -1.0, -0.25, 0.0, 1.0, 7.0, 0.5, 1.625, 2.25, 4.5, 6.75, 8.0, 12.125]
 @testset "simple functions" begin
     @test sign(x0) == x0
     @test sign(x1) == x1
@@ -187,7 +188,7 @@ end
 
     @test round(x22) ≅ x22 
     @test round(x23) ≅ x23
-    @test round(x4) ≇ x4
+    @test round(x4) ≇ x4 
     @test round(-x4) ≇ -x4
     @test round( convert(SurrealFinite, -0.75) ) ≅ round( -0.75 )
     @test round( convert(SurrealFinite, -1.25) ) ≅ round( -1.25 )
@@ -196,10 +197,23 @@ end
     @test floor(one(SurrealFinite)) ≅ 1.0
     @test floor(x22) ≅ x22 
     @test floor(x4) ≅ -one(x4)
+    @test floor(x41) ≅ 4
     @test floor(x4) ≇ x4
     @test floor(-x4) ≇ -x4
     @test floor(-x4) == zero(x4)
-
+    for v in V
+        println("v = $v")
+        @test floor( convert(SurrealFinite, v) ) ≅ floor( v )
+        @test floor( convert(SurrealFinite, v); returntype=Integer ) == floor( v )
+        @test ceil( convert(SurrealFinite, v) ) ≅ ceil( v )
+        @test round( convert(SurrealFinite, v) ) ≅ round( v, RoundNearestTiesUp )
+        @test isinteger( convert(SurrealFinite, v) ) == isinteger( v )
+    end
+  
+    # @test floor2(zero(SurrealFinite)) ≅ 0.0
+    # @test floor2(one(SurrealFinite)) ≅ 1.0
+    # @test floor2(x22) ≅ x22
+     
     @test ceil(zero(SurrealFinite)) ≅ 0.0
     @test ceil(one(SurrealFinite)) ≅ 1.0
     @test ceil(x22) ≅ x22 
@@ -220,6 +234,7 @@ end
     @test isinteger(x22) == true
     @test isinteger(s1) == false
     @test isinteger(x43) == true
+    @test isinteger(x41) == true
     @test isinteger( convert(SurrealFinite,-4) ) == true
     @test isinteger( convert(SurrealFinite,-1//4) ) == false
 

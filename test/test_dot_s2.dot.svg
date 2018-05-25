@@ -31,7 +31,7 @@
 </g>
 <!-- node_1&#45;&gt;node_2 -->
 <g id="edge1" class="edge">
-<title>node_1:1/2&#45;&gt;node_2</title>
+<title>node_1:1/2,1&#45;&gt;node_2</title>
 <path fill="none" stroke="#000000" d="M111,-255C111,-243.6308 107.8707,-231.8455 103.7835,-221.3012"/>
 <polygon fill="#000000" stroke="#000000" points="106.9651,-219.8394 99.8228,-212.014 100.5262,-222.5855 106.9651,-219.8394"/>
 </g>
@@ -47,7 +47,7 @@
 </g>
 <!-- node_1&#45;&gt;node_6 -->
 <g id="edge5" class="edge">
-<title>node_1:1&#45;&gt;node_6</title>
+<title>node_1:1,1&#45;&gt;node_6</title>
 <path fill="none" stroke="#000000" d="M144,-255C144,-243.6308 147.1293,-231.8455 151.2165,-221.3012"/>
 <polygon fill="#000000" stroke="#000000" points="154.4738,-222.5855 155.1772,-212.014 148.0349,-219.8394 154.4738,-222.5855"/>
 </g>
@@ -58,7 +58,7 @@
 </g>
 <!-- node_2&#45;&gt;node_3 -->
 <g id="edge2" class="edge">
-<title>node_2:0&#45;&gt;node_3</title>
+<title>node_2:0,1&#45;&gt;node_3</title>
 <path fill="none" stroke="#000000" d="M71,-167C71,-151.1853 62.6812,-136.0781 53.2779,-124.0532"/>
 <polygon fill="#000000" stroke="#000000" points="55.8114,-121.6287 46.6835,-116.2498 50.4648,-126.1469 55.8114,-121.6287"/>
 </g>
@@ -74,7 +74,7 @@
 </g>
 <!-- node_2&#45;&gt;node_4 -->
 <g id="edge3" class="edge">
-<title>node_2:1&#45;&gt;node_4</title>
+<title>node_2:1,1&#45;&gt;node_4</title>
 <path fill="none" stroke="#000000" d="M99,-167C99,-156.3984 99,-144.8806 99,-134.3471"/>
 <polygon fill="#000000" stroke="#000000" points="102.5001,-134.2119 99,-124.212 95.5001,-134.212 102.5001,-134.2119"/>
 </g>
@@ -85,7 +85,7 @@
 </g>
 <!-- node_4&#45;&gt;node_5 -->
 <g id="edge4" class="edge">
-<title>node_4:0&#45;&gt;node_5</title>
+<title>node_4:0,1&#45;&gt;node_5</title>
 <path fill="none" stroke="#000000" d="M87,-79C87,-68.3104 87,-56.5672 87,-46.263"/>
 <polygon fill="#000000" stroke="#000000" points="90.5001,-46.1503 87,-36.1503 83.5001,-46.1504 90.5001,-46.1503"/>
 </g>
@@ -96,7 +96,7 @@
 </g>
 <!-- node_6&#45;&gt;node_7 -->
 <g id="edge6" class="edge">
-<title>node_6:0&#45;&gt;node_7</title>
+<title>node_6:0,1&#45;&gt;node_7</title>
 <path fill="none" stroke="#000000" d="M158,-167C158,-153.3816 160.4758,-138.5086 163.2665,-126.0695"/>
 <polygon fill="#000000" stroke="#000000" points="166.6866,-126.817 165.6373,-116.2742 159.883,-125.1702 166.6866,-126.817"/>
 </g>
