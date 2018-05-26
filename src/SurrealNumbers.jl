@@ -1,6 +1,9 @@
 module SurrealNumbers
 
-importall Base 
+import Base: convert, promote, promote_rule, hash, show, read,
+    size, sign, round, floor, ceil, mod, trunc,
+    isinteger, isinf, isnan, isfinite, isodd, iseven,
+    <, <=, zero, one, ==, <, -, +, *, /
 
 export Surreal, SurrealFinite, Dyadic
 export ExistingSurreals
@@ -9,7 +12,7 @@ export <=, zero, one, ==, ≅, ≇, <, -, +, *, ϕ, ≀, ↑, ↓,
     pf, pff, spf, show, surreal2dot, surreal2dag, surreal2node, surreal2tex, read, expand,
     generation, canonicalise, iscanonical,
     unique2!, size, size_u, n_zeros, depth_max, depth_av, count_n, depth, 
-    sign, round, floor, ceil, mod, 
+    sign, round, floor, ceil, trunc, mod, 
     isinteger, isinf, isnan, isfinite, isodd, iseven, isdivisible
 
 abstract type Surreal <: Real end 

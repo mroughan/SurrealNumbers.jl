@@ -128,15 +128,14 @@ function convert(::Type{Rational}, s::SurrealFinite )
 end
 
 # some catch alls
-convert(::Type{AbstractFloat}, s::SurrealFinite ) = float( convert(Rational, s) )
-convert{T <: AbstractFloat}(::Type{T}, s::SurrealFinite ) = convert(T, convert(Rational, s) )
-convert(::Type{Integer}, s::SurrealFinite ) = Int( convert(Rational, s) )
-convert{T <: Integer}(::Type{T}, s::SurrealFinite ) = convert(T, convert(Rational, s) )
-## convert{T<:Real}(::Type{T}, s::SurrealFinite ) =  convert(T, convert(Rational, s) )
+convert(::Type{T}, s::SurrealFinite ) where {T <: AbstractFloat} = convert(T, convert(Rational, s) )
+convert(::Type{T}, s::SurrealFinite ) where {T <: Integer} = convert(T, convert(Rational, s) )
+convert(::Type{Rational{T}}, s::SurrealFinite ) where {T <: Integer} = convert(Rational{T}, convert(Rational, s) )
+
 function convert(::Type{String}, s::SurrealFinite ) 
     # try to work out a nice way to print it
     if isinteger(s)
-        return string(convert(Integer, s))
+        return string(convert(Int, s))
     else
         r = convert(Rational, s)
         return string(r.num) * "/" * string(r.den)

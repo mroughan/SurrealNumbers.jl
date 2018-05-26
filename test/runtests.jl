@@ -204,7 +204,7 @@ V = [-4.0, -3.25, -2.5, -2.0, -1.625, -1.0, -0.25, 0.0, 1.0, 7.0, 0.5, 1.625, 2.
     for v in V
         println("v = $v")
         @test floor( convert(SurrealFinite, v) ) ≅ floor( v )
-        @test floor( Integer, convert(SurrealFinite, v) ) == floor( v )
+        @test floor( Int, convert(SurrealFinite, v) ) == floor( v )
         @test ceil( convert(SurrealFinite, v) ) ≅ ceil( v )
         @test round( convert(SurrealFinite, v) ) ≅ round( v, RoundNearestTiesUp )
         @test trunc( convert(SurrealFinite, v) ) ≅ trunc( v )
@@ -268,9 +268,9 @@ g4 = SurrealFinite( [convert(SurrealFinite,3)], [convert(SurrealFinite,17)] )
 # g4 ≅ convert(SurrealFinite,4)
 
 @testset "conversion from surreal back to real" begin
-    @test convert(Integer, convert(SurrealFinite, -2)) == -2
-    @test convert(Integer, convert(SurrealFinite, 6)) == 6
-    @test convert(Integer, convert(SurrealFinite, 0)) == 0
+    @test convert(Int64, convert(SurrealFinite, -2)) == -2
+    @test convert(Int32, convert(SurrealFinite, 6)) == 6
+    @test convert(Int, convert(SurrealFinite, 0)) == 0
     @test convert(Int64, convert(SurrealFinite, -2)) == -2
     @test convert(UInt32, convert(SurrealFinite, 6)) == 6
     @test convert(Int8, convert(SurrealFinite, 0)) == 0
@@ -285,6 +285,7 @@ g4 = SurrealFinite( [convert(SurrealFinite,3)], [convert(SurrealFinite,17)] )
 
     @test g3 ≅ convert(SurrealFinite, 0.5) 
     @test convert( Rational, SurrealFinite( [ 7//16 ], [ 15//16 ] ) ) == 1//2
+    @test convert( Rational{Int32}, SurrealFinite( [ 7//16 ], [ 15//16 ] ) ) == 1//2
 
     @test convert(Float64, x43 ) == 4.0
     @test convert(Float64, x4) == -0.5
