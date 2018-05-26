@@ -143,7 +143,7 @@ function convert(::Type{String}, s::SurrealFinite )
 end
 
 # promote all numbers to surreals for calculations
-promote_rule{T<:Real}(::Type{T}, ::Type{SurrealFinite}) = SurrealFinite
+promote_rule(::Type{T}, ::Type{SurrealFinite}) where {T<:Real} = SurrealFinite
 
 ϕ = Array{SurrealFinite,1}(0) # empty array of SurrealFinites
 zero(::SurrealFinite) = SurrealFinite("0", ϕ, ϕ )
