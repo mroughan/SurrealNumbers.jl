@@ -144,7 +144,7 @@ the top of the box, and its left and right sets are in the
 corresponding boxes below. The recursion for each is show below, down
 to the point where each recursion stops at zero.
  
-![3/2](/test/test_dot.svg)
+![3/2](/test/Data/test_dot.svg)
 
 That seems like enough to get you started, so now a little about the
 implementation. 
@@ -382,7 +382,7 @@ are not  equal, but they are equivalent. Thus the parent "4" is
 defined in terms of simpler forms (even though one of these is
 equivalent). 
 
-![2x2 = 4](/test/test_dot_x43.svg)
+![2x2 = 4](/test/Data/test_dot_x43.svg)
 
 The other pieces of the toolkit are the standard things you expect to
 be able to do with numbers, e.g. round, sign, isinteger, ...  I
