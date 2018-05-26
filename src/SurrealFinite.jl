@@ -366,14 +366,14 @@ end
 # write out a string suitable for inclusion into latex docs
 function surreal2tex(io::IO, x::SurrealFinite; level=0)
     s = expand(x; level=level)
-    s = replace(s, r"\{", "\\\{") 
-    s = replace(s, r"\|", "\\mid") 
-    s = replace(s, r"\}", "\\\}")
+    s = replace(s, r"\{", " \\{ ") 
+    s = replace(s, r"\|", " \\mid ") 
+    s = replace(s, r"\}", " \\} ")
     s = replace(s, r"(\d+)//(\d+)", s"\\frac{\1}{\2}")
     println(io,s)
 end
 surreal2tex(x::SurrealFinite; level=0) = surreal2tex(STDOUT, x; level=level)
-
+ 
 # standard show will use shorthand when available
 function show(io::IO, x::SurrealFinite)
     if io==STDOUT && x.shorthand != ""

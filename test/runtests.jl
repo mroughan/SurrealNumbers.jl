@@ -314,6 +314,8 @@ end
 end
 
 out_dir = "Data/"
+a4 = convert(SurrealFinite, 13//16)
+a5 = convert(SurrealFinite, -2//16)
 @testset "I/O and string parsing" begin
     @test_throws ParseError convert(SurrealFinite, "{1//2| \phi, 1}")
     @test convert(SurrealFinite, "{1//2 | 2,  1}") == SurrealFinite( [1//2], [2,1] )
@@ -323,8 +325,6 @@ out_dir = "Data/"
     @test all( float(R[1:3]) .== [0.0, -1.0, 0.0] )
     @test_throws UndefRefError R[4]
 
-    a4 = convert(SurrealFinite, 13//16)
-    a5 = convert(SurrealFinite, -2//16)
     io_test_file = "$(out_dir)test_surreals_io.dat"
     io = open(io_test_file, "w")
     pf(io, a4)
