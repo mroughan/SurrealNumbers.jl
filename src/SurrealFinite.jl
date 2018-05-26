@@ -672,6 +672,10 @@ isfinite(s::SurrealFinite) = true
 ############################################
 
 # extra analysis functions
+
+# could do a better implementation of this
+size_u(s::SurrealFinite) = length(unique(count_n(s)))
+ 
 function size(x::SurrealFinite)
     if x==zero(x)
         return 1

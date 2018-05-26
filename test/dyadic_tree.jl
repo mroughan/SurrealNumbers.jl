@@ -4,10 +4,11 @@ using SurrealNumbers
 var_args = ""
 n=3; x_scale = 2.25
 n=4; x_scale = 5.00
+out_dir = "Data/"
 
 name_map = Dict{SurrealFinite, Integer}()
 
-file = "dyadic_tree_$n.dot"
+file = "$(out_dir)dyadic_tree_$n.dot"
 
 io = open(file, "w")
 println(io, "digraph dyadic_tree {")

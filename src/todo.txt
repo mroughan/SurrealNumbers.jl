@@ -1,14 +1,11 @@
-floor and round
-   make floor(T,x) instead of returntype
-   make round(0.5) match julias behaviour, or better yet implement the different rounding types
+make round(0.5) match julias behaviour, or better yet implement the different rounding types
        and then precision, which is a whole nother issue
-
 
 size_u = no. of unique surr
 
 could do an ALT implementation that
    (i) tracks stats of surreals when they are created to avoid
-       overhead later
+       overhead later 
    (ii) stores a hash value when created, again to avoid overhead
    (iii) creates a Dict of surreals, so we can convert the tree
        structure into a DAG using refs to the Dict, reusing components so that we don't have

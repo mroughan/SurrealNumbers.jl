@@ -5,6 +5,8 @@ else
     using Test
 end
 
+out_dir = "Data/"
+
 #### PRESUMES THAT DOT (from GraphVis) is installed
 
 # recursive construction and one and zero
@@ -35,7 +37,7 @@ x03 = convert(SurrealFinite, 3) - convert(SurrealFinite, 3)
 
 surreal2dot(STDOUT, x1)
 
-file = "test_dot_x41.dot"
+file = "$(out_dir)test_dot_x41.dot"
 FID = open(file, "w")
 surreal2dot(FID, x41)
 close(FID)
@@ -43,21 +45,21 @@ run(`dot -Tpdf -O $file`)
 run(`dot -Tsvg -O $file`) 
 
 
-file = "test_dot_s2.dot"
+file = "$(out_dir)test_dot_s2.dot"
 FID = open(file, "w")
 surreal2dot(FID, s2)
 close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
-file = "test_dot_x43.dot"
+file = "$(out_dir)test_dot_x43.dot"
 FID = open(file, "w")
 surreal2dot(FID, x43)
 close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
-file = "test_dag_x43.dot"
+file = "$(out_dir)test_dag_x43.dot"
 FID = open(file, "w")
 surreal2dag(FID, x43)
 close(FID)
@@ -67,28 +69,28 @@ run(`dot -Tsvg -O $file`)
 temp1 = values(ExistingSurreals)
 temp1 = sort(collect(temp1))
 
-file = "test_dot_x5.dot"
+file = "$(out_dir)test_dot_x5.dot"
 FID = open(file, "w")
 surreal2dot(FID, x5)
 close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
-file = "test_dag_x5.dot"
+file = "$(out_dir)test_dag_x5.dot"
 FID = open(file, "w")
 surreal2dag(FID, x5) 
 close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
  
-# file = "test_dot_x6.dot"
+# file = "$(out_dir)test_dot_x6.dot"
 # FID = open(file, "w")
 # surreal2dot(FID, x6)
 # close(FID)
 # run(`dot -Tpdf -O $file`) 
 # run(`dot -Tsvg -O $file`) 
 
-file = "test_dag_x6.dot"
+file = "$(out_dir)test_dag_x6.dot"
 FID = open(file, "w")
 surreal2dag(FID, x6)
 close(FID)
