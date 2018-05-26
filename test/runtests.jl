@@ -271,6 +271,7 @@ g4 = SurrealFinite( [convert(SurrealFinite,3)], [convert(SurrealFinite,17)] )
     @test convert(Int64, convert(SurrealFinite, -2)) == -2
     @test convert(Int32, convert(SurrealFinite, 6)) == 6
     @test convert(Int, convert(SurrealFinite, 0)) == 0
+    @test Int( convert(SurrealFinite, 0) ) == 0
     @test convert(Int64, convert(SurrealFinite, -2)) == -2
     @test convert(UInt32, convert(SurrealFinite, 6)) == 6
     @test convert(Int8, convert(SurrealFinite, 0)) == 0
@@ -284,8 +285,8 @@ g4 = SurrealFinite( [convert(SurrealFinite,3)], [convert(SurrealFinite,17)] )
     @test convert(Rational, convert(SurrealFinite,2)*convert(SurrealFinite,2) ) == 4
 
     @test g3 ≅ convert(SurrealFinite, 0.5) 
-    @test convert( Rational, SurrealFinite( [ 7//16 ], [ 15//16 ] ) ) == 1//2
-    @test convert( Rational{Int32}, SurrealFinite( [ 7//16 ], [ 15//16 ] ) ) == 1//2
+    @test convert(Rational, SurrealFinite( [ 7//16 ], [ 15//16 ] ) ) == 1//2
+    @test convert(Rational{Int32}, SurrealFinite( [ 7//16 ], [ 15//16 ] ) ) == 1//2
 
     @test convert(Float64, x43 ) == 4.0
     @test convert(Float64, x4) == -0.5
@@ -302,6 +303,7 @@ g4 = SurrealFinite( [convert(SurrealFinite,3)], [convert(SurrealFinite,17)] )
 end
 
 @testset "promotion" begin
+    # lots of this has already been implicitly tested
     # note promoted type will be in canonical form, but other side might not
     @test x0 <= 1.0
     @test x1 == 1//1
@@ -311,9 +313,47 @@ end
     @test 1//2 + x1 ≇ 2.5
 end
 
-@testset "output" begin
+out_dir = "Data/"
+@testset "I/O and string parsing" begin
+    @test_throws ParseError convert(SurrealFinite, "{1//2| \phi, 1}")
+    @test convert(SurrealFinite, "{1//2 | 2,  1}") == SurrealFinite( [1//2], [2,1] )
+    @test convert(SurrealFinite, "{-1//2 | {|\phi}}") ==  SurrealFinite( [-1//2], [zero(SurrealFinite)] )
+    @test convert(SurrealFinite, "{-1//2 | 2.0, 3}") ==  SurrealFinite( [-1//2], [2,3] )
+    R = read("$(out_dir)test_surreals.dat", SurrealFinite, 4)
+    @test all( float(R[1:3]) .== [0.0, -1.0, 0.0] )
+    @test_throws UndefRefError R[4]
+
+    a4 = convert(SurrealFinite, 13//16)
+    a5 = convert(SurrealFinite, -2//16)
+    io_test_file = "$(out_dir)test_surreals_io.dat"
+    io = open(io_test_file, "w")
+    pf(io, a4)
+    pf(io, a5)
+    println(io, expand(a4))
+    println(io, expand(a5))
+    close(io)
+    Y = read(io_test_file, SurrealFinite, 2)
+    @test Y[1] == a4
+    @test Y[2] == a5
+
+    io_test_file = "$(out_dir)test_surreals_io.tex"
+    io = open(io_test_file, "w")
+    surreal2tex(io, a4; level = 0)
+    surreal2tex(io, a4; level = 1)
+    surreal2tex(io, a4; level = 2)
+    close(io)
+    # should compare this to a calibration file
+    #  but not sure if this might introduce potential for system dependencies that aren't reall errors
+    
+end 
+
+@testset "structured output" begin
     @test surreal2dot(DevNull, x0) == 1
     @test surreal2dot(DevNull, x23) == 5
     @test surreal2dot(DevNull, x43) == size(x43)
+    @test surreal2dag(DevNull, x0) == 1
+    @test surreal2dag(DevNull, x23) == 4
+    @test surreal2dag(DevNull, x43) == size_u(x43)
 end
+
 

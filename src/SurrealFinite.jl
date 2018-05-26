@@ -673,8 +673,8 @@ isfinite(s::SurrealFinite) = true
 # extra analysis functions
 
 # could do a better implementation of this
-size_u(s::SurrealFinite) = length(unique(count_n(s)))
- 
+size_u(s::SurrealFinite) = length(unique(list_n(s)))
+   
 function size(x::SurrealFinite)
     if x==zero(x)
         return 1
@@ -690,16 +690,16 @@ function n_zeros(x::SurrealFinite)
     end
 end 
 function count_n(x::Surreal)
-    # return [c; [convert(Rational, x)]; count_n.(x.L); count_n.(x.R) ] 
-    tmp = [ convert(Rational, x) ]
+    return convert.(Rational, list_n(x) )
+end
+ function list_n(x::Surreal)
+    tmp = [ x ]
     for s in x.L
-        tmp = [tmp; count_n(s) ]
+        tmp = [tmp; list_n(s) ]
     end
     for s in x.R 
-        tmp = [tmp; count_n(s) ]
+        tmp = [tmp; list_n(s) ]
     end
-    # println( "x = ", convert(Rational, x))
-    # println( join(tmp, ", ") )
     return tmp 
 end
  
