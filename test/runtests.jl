@@ -336,14 +336,14 @@ a5 = convert(SurrealFinite, -2//16)
     @test Y[1] == a4
     @test Y[2] == a5
 
-    # io_test_file = "$(out_dir)test_surreals_io.tex"
-    # io = open(io_test_file, "w")
-    # surreal2tex(io, a4; level = 0)
-    # surreal2tex(io, a4; level = 1)
-    # surreal2tex(io, a4; level = 2)
-    # close(io)
-    ## should compare this to a calibration file
-    ##  but not sure if this might introduce potential for system dependencies that aren't reall errors
+    io_test_file = "$(out_dir)test_surreals_io.tex"
+    io = open(io_test_file, "w")
+    surreal2tex(io, a4; level = 0)
+    surreal2tex(io, a4; level = 1)
+    surreal2tex(io, a4; level = 2)
+    close(io)
+    # should compare this to a calibration file
+    #  but not sure if this might introduce potential for system dependencies that aren't reall errors
     
 end 
 

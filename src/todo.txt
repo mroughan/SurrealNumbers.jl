@@ -1,9 +1,6 @@
-get rid of importall as is going to be deprecated
 
 make round(0.5) match julias behaviour, or better yet implement the different rounding types
        and then precision, which is a whole nother issue
-
-size_u = no. of unique surr
 
 could do an ALT implementation that
    (i) tracks stats of surreals when they are created to avoid
@@ -15,34 +12,27 @@ could do an ALT implementation that
 
 transfinites and ordinals
 
-add internal documentation 
-
-converting to float64???
-
-test time to see if we cant do some optimisations
+rewrite README and
+   add internal documentation 
 
 3*3
 
 division
 	- can we do this natively - currently requires conversion to reals and back    
 	- more testing needed
-	
+
 functions	
 	better round, more consistent with julia standard round
 	       - not trivial because can't just multiply and reuse
-
-	trunc
-
 	div
 	rem
-	mod
 	mod1
 	gcd
 	lcm
 
 	abs2 -- free
 
-	math functions -- this is hard
+	math functions -- this is hard without cheating by converting to real, and finding canonical equivalent
 	     log
 	     exp
 	     powers
@@ -50,7 +40,7 @@ functions
 	     
 add some automatically generated random tests
 
-"Practical Surreals"
+"Practically Surreal"
 
 "The Graphical Structure of the Surreal Numbers Examined Through the
  Lens on an Implementation in Julia"
