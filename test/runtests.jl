@@ -204,9 +204,10 @@ V = [-4.0, -3.25, -2.5, -2.0, -1.625, -1.0, -0.25, 0.0, 1.0, 7.0, 0.5, 1.625, 2.
     for v in V
         println("v = $v")
         @test floor( convert(SurrealFinite, v) ) ≅ floor( v )
-        @test floor( convert(SurrealFinite, v); returntype=Integer ) == floor( v )
+        @test floor( Integer, convert(SurrealFinite, v) ) == floor( v )
         @test ceil( convert(SurrealFinite, v) ) ≅ ceil( v )
         @test round( convert(SurrealFinite, v) ) ≅ round( v, RoundNearestTiesUp )
+        @test trunc( convert(SurrealFinite, v) ) ≅ trunc( v )
         @test isinteger( convert(SurrealFinite, v) ) == isinteger( v )
     end
   

@@ -95,10 +95,7 @@ function convert(::Type{Rational}, s::SurrealFinite )
             ExistingSurreals[s] = 1 // 1
         elseif s < zero(s)
             ExistingSurreals[s] = -convert(Rational, -s)
-        #elseif s > one(s)
-            # sf = floor(s; returntype=Integer)
-            # ExistingSurreals[s] = convert(Rational, s - sf ) + sf
-        elseif (sf = floor(s; returntype=Integer)) ≅ s
+        elseif (sf = floor(Integer, s)) ≅ s
             ExistingSurreals[s] = sf 
         else # 0 < x < 1
             # do a binary search from top down, first valid is the simplest
@@ -563,12 +560,12 @@ sign(x::SurrealFinite) = x<zero(x) ? -one(x) : x>zero(x) ? one(x) : zero(x)
 
 # subtraction is much slower than comparison, so got rid of old versions
 # these aren't purely surreal arithmetic, but everything could be, just would be slower
-function floor(s::SurrealFinite; returntype=SurrealFinite)
+function floor(T::Type, s::SurrealFinite)
     if s < zero(s)
         if s >= -one(s)
-            return -one(returntype)
+            return -one(T)
         elseif s >= -2
-            return convert(returntype, -2)
+            return convert(T, -2)
         else
             k = 1
             while s < -2^(k+1) && k < 12 # 12 is arbitrary, but it would be painful to go higher
@@ -587,12 +584,12 @@ function floor(s::SurrealFinite; returntype=SurrealFinite)
                     a = d
                 end
             end
-            return convert(returntype, a) # N.B. returns canonical form of floor 
+            return convert(T, a) # N.B. returns canonical form of floor 
         end
     elseif s < one(s)
-        return zero(returntype)
+        return zero(T)
     elseif s < 2
-        return one(returntype)
+        return one(T)
     else
         # start with geometric search to bound the number
         k = 1
@@ -613,34 +610,30 @@ function floor(s::SurrealFinite; returntype=SurrealFinite)
                 a = d
             end
          end
-        return convert(returntype, a) # N.B. returns canonical form of floor 
+        return convert(T, a) # N.B. returns canonical form of floor 
     end
 end
-
-function isinteger(s::SurrealFinite)
-    if s ≅ floor2(s)
-        return true
-    else
-        return false
-    end
-end
-
-function ceil(s::SurrealFinite)
+function ceil(T::Type, s::SurrealFinite)
     if isinteger(s)
-        return s
+        return floor(T,s)
     else
-        return floor(s) + 1
+        return floor(T,s) + 1
     end
 end
 
 # implicit rounding mode is 'RoundNearestTiesUp'
-function round(s::SurrealFinite)
-    if isinteger(s)
-        return s
-    else
-        return floor(s + 1//2)
-    end
+#   to bbe consistent, should do the other rounding modes, and a precision, but the latter is hard
+function round(T::Type, s::SurrealFinite)
+    return floor(T, s + 1//2)
 end
+
+trunc(T::Type, s::SurrealFinite) = s>=0 ? floor(T,s) : -floor(T,-s)
+
+# simple versions 
+floor(s::SurrealFinite) = floor(SurrealFinite, s)
+ceil(s::SurrealFinite) = ceil(SurrealFinite, s)
+round(s::SurrealFinite) = round(SurrealFinite, s)
+trunc(s::SurrealFinite) = trunc(SurrealFinite, s)
 
 # this should still be rewritten in terms of searches
 function mod(s::SurrealFinite, n::SurrealFinite)
@@ -658,6 +651,13 @@ function mod(s::SurrealFinite, n::SurrealFinite)
     end
 end
 
+function isinteger(s::SurrealFinite)
+    if s ≅ floor(s)
+        return true
+    else
+        return false
+    end
+end
 
 isdivisible(s::SurrealFinite, n::SurrealFinite) = isinteger(s) ? mod(s,n) ≅ zero(s) : false 
 isodd(s::SurrealFinite)  = isinteger(s) ? !isdivisible(s, convert(SurrealFinite,2) ) : false 
@@ -668,50 +668,7 @@ isinf(s::SurrealFinite) = false
 isnan(s::SurrealFinite) = false
 isfinite(s::SurrealFinite) = true
 
-
-###### old versions for reference -- remember subtraction is slow #########################
-
-function floor2(s::SurrealFinite)
-    if zero(s) <= s < one(s) 
-        return zero(s)
-    elseif s < zero(s)
-        return floor(s + one(s)) - one(s)
-    elseif s >= one(s)
-        return floor(s - one(s)) + one(s)
-    end
-end
-
-function isinteger2(s::SurrealFinite)
-    if s ≅ zero(s) 
-        return true
-    elseif s <= -one(s)
-        return isinteger(s + one(s))
-    elseif s >= one(s)
-        return isinteger(s - one(s))
-    else
-        return false
-    end
-end
-
-
-# not the more general form of rounding defined in Julia -- should fix
-function round2(s::SurrealFinite)
-    if s ≅ zero(s) 
-        return s
-    elseif s <= -one(s)
-        return round(s + one(s)) - one(s)
-    elseif s >= one(s)
-        return round(s - one(s)) + one(s)
-    elseif s >= convert(SurrealFinite, 1//2)
-        return one(s)
-    elseif s >= convert(SurrealFinite, -1//2)
-        return zero(s)
-    else
-        return -one(s)
-    end
-end
-
-
+ 
 ############################################
 
 # extra analysis functions
