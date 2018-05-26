@@ -271,7 +271,7 @@ g4 = SurrealFinite( [convert(SurrealFinite,3)], [convert(SurrealFinite,17)] )
     @test convert(Int64, convert(SurrealFinite, -2)) == -2
     @test convert(Int32, convert(SurrealFinite, 6)) == 6
     @test convert(Int, convert(SurrealFinite, 0)) == 0
-    @test Int( convert(SurrealFinite, 0) ) == 0
+    @test Int64( convert(SurrealFinite, 0) ) == 0
     @test convert(Int64, convert(SurrealFinite, -2)) == -2
     @test convert(UInt32, convert(SurrealFinite, 6)) == 6
     @test convert(Int8, convert(SurrealFinite, 0)) == 0
@@ -336,14 +336,14 @@ a5 = convert(SurrealFinite, -2//16)
     @test Y[1] == a4
     @test Y[2] == a5
 
-    io_test_file = "$(out_dir)test_surreals_io.tex"
-    io = open(io_test_file, "w")
-    surreal2tex(io, a4; level = 0)
-    surreal2tex(io, a4; level = 1)
-    surreal2tex(io, a4; level = 2)
-    close(io)
-    # should compare this to a calibration file
-    #  but not sure if this might introduce potential for system dependencies that aren't reall errors
+    # io_test_file = "$(out_dir)test_surreals_io.tex"
+    # io = open(io_test_file, "w")
+    # surreal2tex(io, a4; level = 0)
+    # surreal2tex(io, a4; level = 1)
+    # surreal2tex(io, a4; level = 2)
+    # close(io)
+    ## should compare this to a calibration file
+    ##  but not sure if this might introduce potential for system dependencies that aren't reall errors
     
 end 
 
@@ -354,6 +354,7 @@ end
     @test surreal2dag(DevNull, x0) == 1
     @test surreal2dag(DevNull, x23) == 4
     @test surreal2dag(DevNull, x43) == size_u(x43)
+    # should compare these against a reference, but sort could get non-unique order, so potential for difference
 end
 
 
