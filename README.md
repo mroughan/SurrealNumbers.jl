@@ -464,7 +464,7 @@ the same surreal forms are repeated. The code includes a function `surreal2dag`
 that you use in exactly the same way to generate a DAG (Directed Acyclic Graph)
 representation of the surreal as you see below.
 
-![s2](/test/Data/test_dag_s2.dot.svg) <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+![s2](/test/Data/test_dag_s2.dot.svg) <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
 ![x5](/test/Data/test_dag_x5.dot.svg). 
 
 
