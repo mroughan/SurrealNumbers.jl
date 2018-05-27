@@ -44,10 +44,23 @@ close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
+file = "$(out_dir)test_dag_x41.dot"
+FID = open(file, "w")
+surreal2dag(FID, x41)
+close(FID)
+run(`dot -Tpdf -O $file`) 
+run(`dot -Tsvg -O $file`) 
 
 file = "$(out_dir)test_dot_s2.dot"
 FID = open(file, "w")
 surreal2dot(FID, s2)
+close(FID)
+run(`dot -Tpdf -O $file`) 
+run(`dot -Tsvg -O $file`) 
+
+file = "$(out_dir)test_dag_s2.dot"
+FID = open(file, "w")
+surreal2dag(FID, s2)
 close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
