@@ -27,7 +27,7 @@ generation.(A)
 A .== canonicalise.(A)
 
 
-n = 3
+n = 1
 x = convert.(SurrealFinite, 0:n)
 A = zeros(SurrealFinite, n+1, n+1)    
 for i=1:n+1

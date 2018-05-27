@@ -311,7 +311,29 @@ end
 pf(io::IO, x::SurrealFinite) = println(io, "{ ", x.L, " | ", x.R, " }")
 pf(x::SurrealFinite) = pf(STDOUT, x) 
 
-# expand at some level, 0 steps (if possible), 1 step, or completely
+"""
+    expand(x::SurrealFinite; level=0) 
+
+ Writes a surreal as a string with varying levels of expansion.
+
+## Arguments
+* `x::SurrealFinite`: the number of elements to expand
+* `level=0`: the amount of expansion
+    
+    + 0 : write shorthand if it exists, or ``\\{ X_L \\| X_R \\}`` if not
+    + 1 : ``\\{ X_L \\| X_R \\}``
+    + 2 : expand out ``X_L`` and ``X_R`` recursively
+
+## Examples
+```jldoctest
+julia> expand( convert(SurrealFinite, 2))
+"2"
+julia> expand( convert(SurrealFinite, 2); level=1)
+"{ 1 | ϕ }"
+julia> expand( convert(SurrealFinite, 2); level=2)
+"{ { { ϕ | ϕ } | ϕ } | ϕ }"
+```
+"""
 function expand(x::SurrealFinite; level=0)
     if level==0
         s = x.shorthand != "" ? x.shorthand : expand(x; level=1)
@@ -396,6 +418,31 @@ end
 # special "canonicalised" output
 spf(x::SurrealFinite) = print("{ ", canonicalise.(x.L), " | ", canonicalise.(x.R), " }")
 
+""" 
+    surreal2dag(x::SurrealFinite)
+    surreal2dag(io::IO, x::SurrealFinite)
+
+ Writes a surreal representation as a DAG out in DOT format for drawing using GraphVis,
+ and returns the number of nodes in the graph.
+
+## Arguments
+* `io::IO`: output stream, default is STDOUT
+* `x::SurrealFinite`: the number to write out
+    
+## Examples
+```jldoctest
+julia> surreal2dag(convert(SurrealFinite, 0))
+digraph "0.0" {
+   node_1 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD COLSPAN="2">0</TD></TR>
+         <TR><TD PORT="L"> ϕ </TD><TD PORT="R"> ϕ </TD></TR>
+         </TABLE>>,
+         ];
+}
+1
+```
+"""
 function surreal2dag(io::IO, x::SurrealFinite)
     println(io, "digraph \"", float(x), "\" {")
     k = 1
@@ -442,6 +489,33 @@ end
 surreal2dag(x::SurrealFinite) = surreal2dag(STDOUT, x)
 
 
+""" 
+    surreal2dot(x::SurrealFinite)
+    surreal2dot(io::IO, x::SurrealFinite)
+
+ Writes a surreal representation as a tree out in DOT format for drawing using GraphVis,
+ and returns the number of nodes in the graph.
+
+## Arguments
+* `io::IO`: output stream, default is STDOUT
+* `x::SurrealFinite`: the number to write out
+    
+## Examples
+```jldoctest
+julia> surreal2dot(convert(SurrealFinite, 1))
+digraph "1.0" {
+   node_1 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD COLSPAN="2">1</TD></TR>
+         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="0,1"> 0 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> ϕ </TD></TR>
+         </TABLE>>,
+         ];
+   node_1:"0,1" -> node_2;
+   node_2 [shape=none,margin=0,label=<<B>0</B>>]
+}
+2
+```
+"""
 function surreal2dot(io::IO, x::SurrealFinite)
     println(io, "digraph \"", float(x), "\" {")
     k = 1
@@ -525,7 +599,20 @@ surreal2dot(x::SurrealFinite) = surreal2dot(STDOUT, x)
 
 #######################################################
 
-# generation or birth day calculation
+""" 
+    generation(x::SurrealFinite)
+
+ Finds the birthday of a surreal number, which is 1 + the max of any of its components.
+
+## Arguments
+* `x::SurrealFinite`: the number to operate on
+     
+## Examples
+```jldoctest
+julia> generation( convert(SurrealFinite, 1) )
+1
+``` 
+"""
 function generation(x::SurrealFinite)
     if x==zero(x)
         return 0
@@ -536,6 +623,22 @@ function generation(x::SurrealFinite)
 end 
 
 # this is a bit of a cheat, but I'm not smart enough to work out how to do it otherwise
+""" 
+    canonicalise(s::SurrealFinite)
+
+ Convert a surreal number form into its equivalent canonical form.
+
+## Arguments
+* `x::SurrealFinite`: the number to operate on
+     
+## Examples
+```jldoctest
+julia> convert(SurrealFinite, 1) - convert(SurrealFinite, 1)
+{ { ϕ | { ϕ | ϕ } } | { { ϕ | ϕ } | ϕ } }
+julia> pf( canonicalise( convert(SurrealFinite, 1) - convert(SurrealFinite, 1) ) )
+{ ϕ | ϕ }
+``` 
+"""
 canonicalise(s::SurrealFinite) = convert(SurrealFinite, convert(Rational, s))
 iscanonical(s::SurrealFinite) = canonicalise(s) == s
 
@@ -552,7 +655,6 @@ function unique2!( X::Array{SurrealFinite} )
 end
 
 ###### standard math routines ##############################
-
 
 sign(x::SurrealFinite) = x<zero(x) ? -one(x) : x>zero(x) ? one(x) : zero(x)
 # abs(x::SurrealFinite) = x<zero(x) ? -x : x

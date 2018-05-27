@@ -9,7 +9,7 @@ export Surreal, SurrealFinite, Dyadic
 export ExistingSurreals
 export <=, zero, one, ==, ≅, ≇, <, -, +, *, ϕ, ≀, ↑, ↓, 
     convert, promote, hash,
-    pf, pff, spf, show, surreal2dot, surreal2dag, surreal2node, surreal2tex, read, expand,
+    pf, pff, spf, show, surreal2dot, surreal2dag, surreal2tex, read, expand,
     generation, canonicalise, iscanonical,
     unique2!, size, size_u, n_zeros, depth_max, depth_av, list_n, count_n, depth, 
     sign, round, floor, ceil, trunc, mod, 

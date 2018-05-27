@@ -1,4 +1,7 @@
 
+create an examples directory instead of putting all code in the test, plus a doc directory
+   tidy up and add the "old" code to the timing files, so that it isn't in the main source
+
 make round(0.5) match julias behaviour, or better yet implement the different rounding types
        and then precision, which is a whole nother issue
 
@@ -30,20 +33,23 @@ functions
 	gcd
 	lcm
 
-	abs2 -- free
-
 	math functions -- this is hard without cheating by converting to real, and finding canonical equivalent
 	     log
 	     exp
 	     powers
 	     trig
-	     
+         require infinite series, so not valid for finite surreals 
+
 add some automatically generated random tests
 
 "Practically Surreal"
 
 "The Graphical Structure of the Surreal Numbers Examined Through the
  Lens on an Implementation in Julia"
+
+(1) one paper on CodeX, with general stuff on code and algorithms
+(2) one recreational maths paper on the structure and nature of surreal arithmetic
+
 
 
 
