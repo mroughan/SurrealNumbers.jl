@@ -194,8 +194,11 @@ GitHub doesn't let me use Mathjax to interpret maths).
      \[ x = \frac{ n }{ 2^k } \]
 
 It turns out that every dyadic has a finite representation as a
-surreal, and every finite surreal represents a dyadic.
+surreal, and every finite surreal represents a dyadic. The easiest way
+to represent this is as a DAG (Directed Acyclic Graph) of the constructions as shown below:
 
+![dyadics](/examples/Data/dyadic_tree_3.dot.svg)
+ 
 It might seem a little limiting to be restricted to this set, but
 remember that floating point numbers are dyadics. They are a (binary)
 integer (the *significand*) multiplied by 2 to the power of a (binary)
