@@ -110,5 +110,12 @@ close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
+file = "$(out_dir)test_dag_x1.dot"
+FID = open(file, "w")
+surreal2dag(FID,  convert(SurrealFinite, 1))
+close(FID)
+run(`dot -Tpdf -O $file`) 
+run(`dot -Tsvg -O $file`) 
+
 temp2 = values(ExistingSurreals)
 temp2 = sort(collect(temp2))

@@ -56,7 +56,6 @@ numbers. There are many out there better than I can write, e.g.,
 
 + https://en.wikipedia.org/wiki/Surreal_number
 + https://conservancy.umn.edu/bitstream/handle/11299/174778/Hebert_umn_0130M_15912.pdf?sequence=1
-+ https://libarynth.org/_media/surreal_numbers.pdf
 + https://math.stackexchange.com/questions/816540/proof-of-conways-simplicity-rule-for-surreal-numbers
 + http://www.math.harvard.edu/~knill/teaching/mathe320_2015_fall/blog15/surreal1.pdf
 + https://www.cut-the-knot.org/WhatIs/Infinity/SurrealNumbers.shtml
@@ -689,7 +688,7 @@ And of how conversion is automatically applied by promotion rules
 
 ## Final notes
 
-The total implementation here is less than 500 lines of code. No doubt
+The total implementation here is less than 1,000 lines of code. No doubt
 an expert in Julia could make it a good deal tighter -- I have
 concentrated on making the code easy (for me) to understand rather
 than super concise. 

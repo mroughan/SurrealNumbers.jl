@@ -1,6 +1,7 @@
 
-create an examples directory instead of putting all code in the test, plus a doc directory
-   tidy up and add the "old" code to the timing files, so that it isn't in the main source
+build a set-based alternative and compare performance ...
+
+consider use of globals, and or bootstrapping the code with some cases with known results  
 
 make round(0.5) match julias behaviour, or better yet implement the different rounding types
        and then precision, which is a whole nother issue
