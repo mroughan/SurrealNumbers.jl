@@ -344,7 +344,11 @@ a5 = convert(SurrealFinite, -2//16)
     close(io)
     # should compare this to a calibration file
     #  but not sure if this might introduce potential for system dependencies that aren't reall errors
-    
+
+    # from http://goodmath.scientopia.org/2006/08/21/arithmetic-with-surreal-numbers/
+    s = "{ {{{{{|0}|{0|}}|{{0|}|}}|{{{0|}|}|}}|{{{{0|}|}|}|}} | }"
+    ss = convert(SurrealFinite, s)
+    @test ss == 4.0
 end 
 
 @testset "structured output" begin
