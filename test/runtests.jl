@@ -316,6 +316,8 @@ end
 out_dir = "Data/"
 a4 = convert(SurrealFinite, 13//16)
 a5 = convert(SurrealFinite, -2//16)
+s = "{ {{{{{|0}|{0|}}|{{0|}|}}|{{{0|}|}|}}|{{{{0|}|}|}|}} | }"    # from http://goodmath.scientopia.org/2006/08/21/arithmetic-with-surreal-numbers/
+ss = convert(SurrealFinite, s)
 @testset "I/O and string parsing" begin
     @test_throws ParseError convert(SurrealFinite, "{1//2| \phi, 1}")
     @test convert(SurrealFinite, "{1//2 | 2,  1}") == SurrealFinite( [1//2], [2,1] )
@@ -345,10 +347,8 @@ a5 = convert(SurrealFinite, -2//16)
     # should compare this to a calibration file
     #  but not sure if this might introduce potential for system dependencies that aren't reall errors
 
-    # from http://goodmath.scientopia.org/2006/08/21/arithmetic-with-surreal-numbers/
-    s = "{ {{{{{|0}|{0|}}|{{0|}|}}|{{{0|}|}|}}|{{{{0|}|}|}|}} | }"
-    ss = convert(SurrealFinite, s)
-    @test ss == 4.0
+    @test ss ≅ 4.0
+    @test ss == convert(SurrealShort, 2.0) * convert(SurrealDyadic, 2.0)
 end 
 
 @testset "structured output" begin

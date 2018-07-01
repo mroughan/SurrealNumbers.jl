@@ -5,7 +5,7 @@ import Base: convert, promote, promote_rule, hash, show, read, expand,
     isinteger, isinf, isnan, isfinite, isodd, iseven,
     <, <=, zero, one, ==, <, -, +, *, /
 
-export Surreal, SurrealFinite, Dyadic
+export Surreal, SurrealFinite, SurrealShort, SurrealDyadic
 export ExistingSurreals
 export <=, zero, one, ==, ≅, ≇, <, -, +, *, ϕ, ≀, ↑, ↓, 
     convert, promote, hash,

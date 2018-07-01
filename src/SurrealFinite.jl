@@ -23,6 +23,9 @@ SurrealFinite(L::Array, R::Array ) =
     SurrealFinite( "", convert(Array{SurrealFinite},L), convert(Array{SurrealFinite},R) )
 ≀(L::Array, R::Array) = SurrealFinite(L::Array, R::Array )
 
+SurrealShort = SurrealFinite
+SurrealDyadic = SurrealFinite
+
 # put hash(x,0) into construct, based on recursive construction
 # hash does a call to this, but hash(x.hash, h)
 # keep the array versions
