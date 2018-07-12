@@ -1,44 +1,93 @@
-struct SurrealFinite <: Surreal
+mutable struct SurrealFinite <: Surreal
+    # mutable means I can set the has value when I need it, instead of
+    #   (i) always having to calculate it recursively
+    #   (ii) calculating it for even temporary surreals
     shorthand::String 
-    L::Array{SurrealFinite,1} 
-    R::Array{SurrealFinite,1} 
+    L::Array{SurrealFinite,1}  
+    R::Array{SurrealFinite,1}
+    h::UInt64 # this is only set the first time the hash function is called
     # constructor should check that L < R
-    function SurrealFinite(shorthand::String, L::Array{SurrealFinite}, R::Array{SurrealFinite})
-        # unique2!( L ) # make elements unique and sort them in increasing order
-        # unique2!( R ) # make elements unique and sort them in increasing order
-        L = sort(unique( L ))
-        R = sort(unique( R ))
-        # println("L = $L, R = $R")
-        # use the fact they are sorted to not doa complete comparison
-        if isempty(L) || isempty(R) || L[end] < R[1]
-            return new(shorthand, L, R)
-        else 
-            error("Surreal number must have L < R.")
+    function SurrealFinite(shorthand::String, L::Array{SurrealFinite}, R::Array{SurrealFinite}, h::UInt64)
+        global Count
+        Count['c'] += 1 
+        if length(L) > 1
+            L = sort(unique( L ))
         end
+        if length(R) > 1
+            R = sort(unique( R ))
+        end
+        # println("L = $L, R = $R")
+        # use the fact they are sorted to not do a complete comparison
+        # also means that == is much easier than if they were unsorted
+        if isempty(L) || isempty(R) || L[end] < R[1]
+            return new(shorthand, L, R, h)
+        else 
+            error("Surreal number must have L < R (currently they are $(L) and $(R) )")
+        end  
     end 
-end
+end 
 SurrealFinite(shorthand::String, L::Array, R::Array ) =
-    SurrealFinite( shorthand, convert(Array{SurrealFinite},L), convert(Array{SurrealFinite},R) )
+    SurrealFinite( shorthand, convert(Array{SurrealFinite},L), convert(Array{SurrealFinite},R), zero(UInt64))
 SurrealFinite(L::Array, R::Array ) =
-    SurrealFinite( "", convert(Array{SurrealFinite},L), convert(Array{SurrealFinite},R) )
+    SurrealFinite( "", convert(Array{SurrealFinite},L), convert(Array{SurrealFinite},R), zero(UInt64))
 ≀(L::Array, R::Array) = SurrealFinite(L::Array, R::Array )
 
-SurrealShort = SurrealFinite
-SurrealDyadic = SurrealFinite
+SurrealShort  = SurrealFinite 
+SurrealDyadic = SurrealFinite 
 
-# put hash(x,0) into construct, based on recursive construction
-# hash does a call to this, but hash(x.hash, h)
-# keep the array versions
-# note whether we get the expected performance improvements
-
-hash(x::SurrealFinite, h::UInt) = hash( hash(x.L, h) * hash(x.R, h), h )
-hash(X::Array{SurrealFinite}, h::UInt) = isempty(X) ? hash(0,h) : hash( hash(X[1],h) * hash( X[2:end],h), h )
-#hash(X::Array{SurrealFinite}, h::UInt) = isempty(X) ? hash(0,h) : hash( prod(hash.(X, h )), h)
-hash(x::SurrealFinite) = hash(x, convert(UInt64,0) )
-hash(X::Array{SurrealFinite}) = hash(X, convert(UInt64,0) )
-
-# global dictionary for use in reducing cost of repeated conversions back to real numbers
+function hash(x::SurrealFinite, h::UInt)
+    if x.h == 0
+        x.h = hash(x.L, convert(UInt64, 0) ) * hash(x.R, convert(UInt64, 1))
+    end
+    return hash(x.h, h)  
+end
+function hash(X::Array{SurrealFinite}, h::UInt)
+    if isempty(X)
+        hash(0, h) 
+    elseif length(X) == 1
+        hash(X[1], h) 
+    else
+        hash(X[1], h) * hash( X[2:end], h) # note, order is technically not important
+    end
+end
+# really slow version: hash(X::Array{SurrealFinite}, h::UInt) = isempty(X) ? hash(0,h) : hash( prod(hash.(X, h )), h)
+hash(x::SurrealFinite) = hash(x, zero(UInt64) )
+hash(x::SurrealFinite, h::Integer) = hash(x, convert(UInt64, h) )
+hash(X::Array{SurrealFinite}) = hash(X, zero(UInt64) )
+ 
+# global dictionaries to avoid repeated calculations of the same things
 ExistingSurreals = Dict{SurrealFinite,Rational}()
+# ExistingProducts = Dict{SurrealFinite, Dict{SurrealFinite,SurrealFinite}}()
+ExistingProducts = Dict{UInt64, Dict{UInt64,SurrealFinite}}()
+ExistingSums     = Dict{UInt64, Dict{UInt64,SurrealFinite}}() 
+function size(d::Dict)
+    [length(d[k]) for k in sort(collect(keys(d)))]        
+end 
+Count = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≦'=>0)
+
+function clearcache() 
+    global ExistingSurreals
+    global ExistingProducts
+    global ExistingSums
+    global Count
+    ExistingSurreals = Dict{SurrealFinite,Rational}()
+    # ExistingProducts = Dict{SurrealFinite, Dict{SurrealFinite,SurrealFinite}}()
+    ExistingProducts = Dict{UInt64, Dict{UInt64,SurrealFinite}}()
+    ExistingSums     = Dict{UInt64, Dict{UInt64,SurrealFinite}}()
+    Count = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≦'=>0)
+    return 1
+end
+
+# structure to hold stats on a surreal form
+struct SurrealDAGstats
+    nodes::Integer # nodes in its DAG
+    edges::Integer # edges in its DAG
+    generation::Integer # generation/birthday of the surreal
+    paths::Integer # number of paths from source to sink 
+end
+# CacheNodes = Dict{SurrealFinite,Integer}()
+# CacheEdges = Dict{SurrealFinite,Integer}()
+# can't cache these in recursive calculation on DAG because there are overlaps
 
 function convert(::Type{SurrealFinite}, n::Int ) 
     if n==0  
@@ -89,6 +138,8 @@ function convert(::Type{SurrealFinite}, f::Float64 )
         error(DomainError)
     end 
 end 
+dali(x) = convert(SurrealFinite, x)
+
 function convert(::Type{Rational}, s::SurrealFinite )
     global ExistingSurreals
     if !haskey(ExistingSurreals, s)
@@ -166,27 +217,51 @@ function <=(x::SurrealFinite, y::SurrealFinite)
 #    end
 #    for t in y.R
 #        if t <= x
-#            return false
+#            return false 
 #        end
 #    end
+    # global Count
+    # Count['≦'] += 1
     if !isempty(x.L) && y <= x.L[end] 
         return false
-    end
-    if !isempty(y.R) && x >= y.R[1] 
-        return false
+    elseif !isempty(y.R) && x >= y.R[1] 
+        return false 
     end
     return true 
-end
+end 
 <(x::SurrealFinite, y::SurrealFinite) = x<=y && !(y<=x)
 # ===(x::SurrealFinite, y::SurrealFinite) = x<=y && y<x # causes an error
+#   === is 'egal', and hardcoded for mutables to test they are same object in memory
 ≅(x::SurrealFinite, y::SurrealFinite) = x<=y && y<=x
 ≅(x::Real, y::Real) = ≅(promote(x,y)...)
 ≇(x::SurrealFinite, y::SurrealFinite) = !( x ≅ y ) 
 ≇(x::Real, y::Real) = ≇(promote(x,y)...)
-==(x::SurrealFinite, y::SurrealFinite) = size(x.L) == size(y.L) &&
-                                         size(x.R) == size(y.R) &&
-                                         all(x.L .== y.L) &&
-                                         all(x.R .== y.R)  
+# ==(x::SurrealFinite, y::SurrealFinite) = size(x.L) == size(y.L) &&
+#                                         size(x.R) == size(y.R) &&
+#                                         all(x.L .== y.L) &&
+#                                         all(x.R .== y.R)
+
+# much faster version because doesn't evaluate the whole array every time
+#   potential bug because sort order of equivalent values is not defined
+function ==(x::SurrealFinite, y::SurrealFinite)
+    # global Count
+    # Count['='] += 1
+    if length(x.L) != length(y.L) || length(x.R) != length(y.R)
+        return false
+    end
+    for i=1:length(x.L)
+        if x.L[i] != y.L[i]
+            return false
+        end  
+    end
+    for i=1:length(x.R)
+        if x.R[i] != y.R[i]
+            return false
+        end
+    end
+    return true
+end 
+iszero(x::SurrealFinite) = isempty(x.L) && isempty(x.R)
 
 # comparisons between sets (i.e., arrays) are all-to-all, so
 #   (1) don't have to be the same size
@@ -200,11 +275,8 @@ function <=(X::Array{SurrealFinite}, Y::Array{SurrealFinite} )
                 if !(x <= y) 
                     return false
                 end 
-            end
+            end 
         end
-#        if !(X[end] <= Y[1])
-#            return false
-#        end
         return true
     end
 end
@@ -219,16 +291,14 @@ function <(X::Array{SurrealFinite}, Y::Array{SurrealFinite} )
                 end 
             end
         end
-#        # assume sort
-#        if !(X[end] < Y[1])
-#            return false
-#        end
         return true
     end
 end 
 
 # unary operators
 function -(x::SurrealFinite)
+    global Count
+    Count['-'] += 1
     if isempty(x.shorthand)
         SurrealFinite("", -x.R, -x.L )
     elseif x.shorthand == "0"
@@ -256,8 +326,38 @@ function /(x::SurrealFinite, y::SurrealFinite)
 end
 
 # binary operators
-+(x::SurrealFinite, y::SurrealFinite) = SurrealFinite([x.L .+ y; x .+ y.L],
-                                                      [x.R .+ y; x .+ y.R] )
+function +(x::SurrealFinite, y::SurrealFinite)
+    global ExistingSums
+    global Count
+    hx = hash(x) # build the dictionary in terms of hashs, because it is used quite a bit
+    hy = hash(y) #   and these amortise the cost of initial calculation of hashs 
+    if haskey(ExistingSums, hx) && haskey(ExistingSums[hx], hy)
+        return ExistingSums[hx][hy]
+    elseif iszero(x)
+        result = y   
+    elseif iszero(y)
+        result = x 
+    else 
+#       result = SurrealFinite( [x.L .+ y; x .+ y.L],
+#                               [x.R .+ y; x .+ y.R] )
+        result = SurrealFinite( [[x + y for x in x.L]; [x + y for y in y.L]],
+                                [[x + y for x in x.R]; [x + y for y in y.R]] )
+    end   
+    if !haskey(ExistingSums, hx)
+        ExistingSums[hx] = Dict{UInt64,SurrealFinite}()
+    end
+    if !haskey(ExistingSums, hy)
+        ExistingSums[hy] = Dict{UInt64,SurrealFinite}() 
+    end
+    ExistingSums[hx][hy] = result
+    ExistingSums[hy][hx] = result
+    Count['+'] += 1
+    return result
+end
+ 
+# +(x::SurrealFinite, y::SurrealFinite) = SurrealFinite([x.L .+ y; x .+ y.L],
+#                                                       [x.R .+ y; x .+ y.R] )
+
 # can't do like this because of empty arrays I think
 #+(x::SurrealFinite, y::SurrealFinite) = SurrealFinite([x.L + y.L],
 #                                                      [x.R + y.R] )
@@ -267,42 +367,78 @@ end
 -(X::Array{SurrealFinite}, Y::Array{SurrealFinite}) = X + -Y
 
 function *(x::SurrealFinite, y::SurrealFinite)
-    if x ≅ 0 || y ≅ 0
-        return zero(x)
-#    elseif x ≅ 1
-#         return y
-#    elseif y ≅ 1 
-#        return x
-    else
-        # println("x = $x = ", float(x), ", y = $y = ", float(y))
-        # print("   x = ")
-        # pf(x)
-        # println()
-        # print("   y = ")
-        # pf(y)
-        # println()
-        
-        tmp1 = vec([s*y + x*t - s*t for s in x.L, t in y.L])
-        # println("  tmp1 = $tmp1")
-        tmp2 = vec([s*y + x*t - s*t for s in x.R, t in y.R])
-        # println("  tmp2 = $tmp2")
-        tmp3 = vec([s*y + x*t - s*t for s in x.L, t in y.R])
-        # println("  tmp3 = $tmp3")
-        tmp4 = vec([s*y + x*t - s*t for s in x.R, t in y.L])
-        # println("  tmp4 = $tmp4")
-        L = [ tmp1; tmp2]
-        # println("    L = $L")
-        # spf.(L)
-        # println()
-        R = [ tmp3; tmp4]
-        # println("    R = $R")
-        # spf.(R)
-        # println()
-        # println( " L < R ", L<R)
-        return SurrealFinite("", L, R)
+    global ExistingProducts
+    global Count
+    hx = hash(x)
+    hy = hash(y)
+    if haskey(ExistingProducts, hx) && haskey(ExistingProducts[hx], hy)
+        return ExistingProducts[hx][hy]
+    elseif iszero(x) || iszero(y) 
+        result = zero(x)
+#     elseif x == 1 
+#        result = y 
+#    elseif y == 1 
+#        result = x
+    else  
+        # tmp1 = vec([s*y + x*t - s*t for s in x.L, t in y.L])
+        # tmp2 = vec([s*y + x*t - s*t for s in x.R, t in y.R])
+        # tmp3 = vec([s*y + x*t - s*t for s in x.L, t in y.R])
+        # tmp4 = vec([s*y + x*t - s*t for s in x.R, t in y.L])
+        # L = [ tmp1; tmp2 ] 
+        # R = [ tmp3; tmp4 ] 
+        L = [vec([s*y + x*t - s*t for s in x.L, t in y.L]);
+             vec([s*y + x*t - s*t for s in x.R, t in y.R])]
+        R = [vec([s*y + x*t - s*t for s in x.L, t in y.R]);
+             vec([s*y + x*t - s*t for s in x.R, t in y.L])]
+        result = SurrealFinite("", L, R)
     end
-end
-*(x::SurrealFinite, Y::Array{SurrealFinite}) = return [ x*s for s in Y ]
+    if !haskey(ExistingProducts, hx)
+        ExistingProducts[hx] = Dict{UInt64,SurrealFinite}()
+    end
+    if !haskey(ExistingProducts, hy)
+        ExistingProducts[hy] = Dict{UInt64,SurrealFinite}()
+    end 
+    ExistingProducts[hx][hy] = result
+    ExistingProducts[hy][hx] = result
+    Count['*'] += 1 
+    return result
+end 
+function times(x::SurrealFinite, y::SurrealFinite)
+    global ExistingProducts
+    global Count
+    if haskey(ExistingProducts, x) && haskey(ExistingProducts[x], y)
+        return ExistingProducts[x][y]
+    elseif iszero(x) || iszero(y)
+        result = zero(x)
+#     elseif x == 1 
+#        result = y 
+#    elseif y == 1 
+#        result = x
+    else  
+        # tmp1 = vec([s*y + x*t - s*t for s in x.L, t in y.L])
+        # tmp2 = vec([s*y + x*t - s*t for s in x.R, t in y.R])
+        # tmp3 = vec([s*y + x*t - s*t for s in x.L, t in y.R])
+        # tmp4 = vec([s*y + x*t - s*t for s in x.R, t in y.L])
+        # L = [ tmp1; tmp2 ] 
+        # R = [ tmp3; tmp4 ] 
+        L = [vec([s*y + x*t - s*t for s in x.L, t in y.L]);
+             vec([s*y + x*t - s*t for s in x.R, t in y.R])]
+        R = [vec([s*y + x*t - s*t for s in x.L, t in y.R]);
+             vec([s*y + x*t - s*t for s in x.R, t in y.L])]
+        result = SurrealFinite("", L, R)
+    end
+    if !haskey(ExistingProducts, x)
+        ExistingProducts[x] = Dict{SurrealFinite,SurrealFinite}()
+    end
+    if !haskey(ExistingProducts, y)
+        ExistingProducts[y] = Dict{SurrealFinite,SurrealFinite}()
+    end 
+    ExistingProducts[x][y] = result
+    ExistingProducts[y][x] = result
+    Count['*'] += 1
+    return result
+end 
+*(x::SurrealFinite, Y::Array{SurrealFinite}) = [ x*s for s in Y ]
 *(X::Array{SurrealFinite}, y::SurrealFinite) = y*X
 
 
@@ -392,6 +528,7 @@ end
 function surreal2tex(io::IO, x::SurrealFinite; level=0)
     s = expand(x; level=level)
     s = replace(s, r"\{", " \\{ ") 
+    s = replace(s, r"ϕ", " \\phi ") 
     s = replace(s, r"\|", " \\mid ") 
     s = replace(s, r"\}", " \\} ")
     s = replace(s, r"(\d+)//(\d+)", s"\\frac{\1}{\2}")
@@ -768,18 +905,74 @@ isodd(s::SurrealFinite)  = isinteger(s) ? !isdivisible(s, convert(SurrealFinite,
 iseven(s::SurrealFinite) = isinteger(s) ?  isdivisible(s, convert(SurrealFinite,2) ) : false 
 # ispow2
 
-isinf(s::SurrealFinite) = false
+isinf(s::SurrealFinite) = false 
 isnan(s::SurrealFinite) = false
 isfinite(s::SurrealFinite) = true
 
- 
+parents(s::SurrealFinite) = [s.L; s.R]
+function ⪯(s::SurrealFinite, t::SurrealFinite)# is s an ancestor of t, or equal to it
+    if s == t
+        return true 
+    elseif iszero(s) 
+        return true 
+    else
+        for p in parents(t)
+            if s⪯p
+                return true
+            end
+        end
+    end
+    return false
+end
+isancestor(s::SurrealFinite, t::SurrealFinite) = s ⪯ t && s!=t
+≺(s::SurrealFinite, t::SurrealFinite) = isancestor(s, t)
+≻(s::SurrealFinite, t::SurrealFinite) = t ≺ s
+⪰(s::SurrealFinite, t::SurrealFinite) = t ⪯ s
+
 ############################################
 
 # extra analysis functions
+#    add in depth/generation/birthday
+#    could do some of the other stats below ... and shortest path to zero as well ... 
+function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealDAGstats}) 
+    if s==zero(s)   
+        nodes = 1
+        edges = 0
+        generation = 0
+        paths = 1 
+    else
+        P = parents(s) 
+        nodes = 1
+        edges = length(P)
+        generation = 1
+        paths = 0
+        for p in P
+            if !haskey(processed_list, p)
+                (stats,l) = dag_stats(p, processed_list) 
+                nodes += stats.nodes
+                edges += stats.edges
+                generation = max(generation, 1+stats.generation) 
+                # processed_list = unique([processed_list; l]) # prolly not best way to implement this?
+                paths += stats.paths
+            else
+                paths += processed_list[p].paths
+            end
+        end 
+    end 
+    stats = SurrealDAGstats(nodes, edges, generation, paths)
+    processed_list[s] = stats # could make this a reverse list, ...
+    return ( stats, processed_list) 
+end
+dag_stats(s::SurrealFinite) = dag_stats(s, Dict{SurrealFinite,SurrealDAGstats}())[1] 
+nodes(s::SurrealFinite) = dag_stats(s).nodes 
+edges(s::SurrealFinite) = dag_stats(s).edges
 
 # could do a better implementation of this
-size_u(s::SurrealFinite) = length(unique(list_n(s)))
-   
+# size_u(s::SurrealFinite) = length(unique(list_n(s)))
+size_u(s::SurrealFinite) = dag_stats(s).nodes
+
+# do a "tree stats" version 
+
 function size(x::SurrealFinite)
     if x==zero(x)
         return 1

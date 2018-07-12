@@ -19,11 +19,13 @@ x25 = [x11,x0,x1] ≀ ϕ
 z = zero(x1)
 z = zero(SurrealFinite)
 z = one(x1)
+x00 = SurrealFinite([x11],[x1])
 
 x3 = convert(SurrealFinite, 3)
 x41 = convert(SurrealFinite, 4)
 x42 = SurrealFinite( [x3],  ϕ)
 x43 = convert(SurrealFinite, 2) * convert(SurrealFinite, 2)
+x6 = convert(SurrealFinite, 2) * convert(SurrealFinite, 3)
 
 print("x1 = ")
 pf(x1)
@@ -68,6 +70,22 @@ end
     @test x41 ≅ x42 ≅ x43
     @test x41 == x42
     @test x41 != x43
+
+    @test x0 ≺ x5
+    @test x4 ≺ x5
+    @test x5 ≻ x4
+    @test !(x5 ≺ x4)
+    @test !(x4 ≺ x4)
+    @test x0 ⪯ x5
+    @test x5 ⪯ x5
+    @test x41 ⪰ x3
+    @test s1 ⪰ s1
+    @test x1 ⪯ s2
+    @test x21 ≺ x43
+    @test isancestor(x21, x43)
+
+    @test all( parents(x24) .== [x11,x0,x1] )
+    @test all( parents(x5) .== sort([x11,x0,x4,x1]) )
 end
  
 @testset "basic operators" begin
@@ -153,9 +171,10 @@ end
     
     # f =  1122342342.23422522
     # convert(SurrealFinite, 1122342342.23422522)
+    @test convert(SurrealFinite, 0.5) == dali(0.5)
 end
 
-A = [x0, x1]
+A = [x0, x1] 
 B = [x11, x4]
 X = [ x0, x1, x1, x11, x1, x11, x23]
 Y = copy(X)
@@ -345,7 +364,7 @@ ss = convert(SurrealFinite, s)
     surreal2tex(io, a4; level = 2)
     close(io)
     # should compare this to a calibration file
-    #  but not sure if this might introduce potential for system dependencies that aren't reall errors
+    #  but not sure if this might introduce potential for system dependencies that aren't real errors
 
     @test ss ≅ 4.0
     @test ss == convert(SurrealShort, 2.0) * convert(SurrealDyadic, 2.0)
@@ -361,4 +380,15 @@ end
     # should compare these against a reference, but sort could get non-unique order, so potential for difference
 end
 
+@testset "DAG statistics" begin
+    @test dag_stats(x1) == SurrealDAGstats(2,1,1,1)
+    @test dag_stats(x41) == SurrealDAGstats(5,4,4,1)
+    @test dag_stats(x43) == SurrealDAGstats(11,14,6,5)
+    @test dag_stats(x00) == SurrealDAGstats(4,4,2,2)
+    @test dag_stats(x5) == SurrealDAGstats(5,9,3,6)
+    @test dag_stats(s2) == SurrealDAGstats(4,5,3,3)    
+    @test dag_stats(x6) == SurrealDAGstats(45,82,12,625) 
+    @test dag_stats(x1, Dict{SurrealFinite,SurrealDAGstats}())[2] .== Dict(x0=>SurrealDAGstats(1,0,0,1),
+                                                                           x1=>SurrealDAGstats(2,1,1,1)    )
+end
 

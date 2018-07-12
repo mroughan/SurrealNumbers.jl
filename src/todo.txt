@@ -1,8 +1,60 @@
 
+check that sort ordering by VALUE isn't creating a bug where some
+surreals are considered unequal because sort ordering is different
+    -- in sort order, use hash() as a tie break
+
+
+
+... 
+
+"depends on or is a child of" creates a partial order on the surreal forms
+   over and above their 'natural' ordering
+       which is weak 
+
+       - create "ancestor" function, and (wobbly <=) 
+
+
+sparsity measure, or rather density ...
+   (edges+1) / nodes
+      min value = 1,    max value = f(n) for n-n
+
+topological ordering of nodes
+   -- could put this into stats as the dictionary values
+      -- ...
+
+no. of DAGs, 1,3,25,543, ....
+   so not all are surreals ...
+   but also, surreals grow much faster ...
+      so some (unlabelled DAGS are isomporphic)
+      
+
+simplification is 'transitive reduction'???
+   i.e., the smallest DAG with the same reachability relation??? 
+
+operators to extra left and right sets of a surreal, instead of just x.L and x.R ?
+   parents function, cats left and right 
+
+
+
 build a set-based alternative and compare performance ...
+      - convert Alt to mainline
+      - add "size" for Dict(Dict) -> [2,4,5, ...]
+      - profile 2x5 to see what is still slow
+
+
 
 consider use of globals, and or bootstrapping the code with some cases with known results  
+	 - extend to cache results of many functions
+	    - e.g. size, depth, size_u, ... 
+         - because although we are using DAG in some sense, its still
+	   stored as a tree
+	     - could instead of a list of surreals in each, have a
+  	       list of hash values, linking to array of existing surreals
 
+                => new alt representation should be even faster 
+
+             - avoid storing a surreal number more than once
+		
 make round(0.5) match julias behaviour, or better yet implement the different rounding types
        and then precision, which is a whole nother issue
 

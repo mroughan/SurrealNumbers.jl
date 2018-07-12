@@ -3,7 +3,7 @@ using SurrealNumbers
 # var_args = "color=red"
 var_args = ""
 n=3; x_scale = 2.25
-# n=4; x_scale = 5.00
+n=4; x_scale = 5.00
 out_dir = "Data/"
 
 name_map = Dict{SurrealFinite, Integer}()
