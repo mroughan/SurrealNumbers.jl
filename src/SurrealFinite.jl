@@ -83,7 +83,7 @@ struct SurrealDAGstats
     nodes::Integer # nodes in its DAG
     edges::Integer # edges in its DAG
     generation::Integer # generation/birthday of the surreal
-    paths::Integer # number of paths from source to sink 
+    paths::Int128 # number of paths from source to sink 
 end
 # CacheNodes = Dict{SurrealFinite,Integer}()
 # CacheEdges = Dict{SurrealFinite,Integer}()
@@ -209,7 +209,7 @@ one(::SurrealFinite) = SurrealFinite("1", [ zero(SurrealFinite) ], ϕ )
 #   these are written in terms of the definition, but could
 #   rewrite in terms of max/min to make marginally faster
 #   or in terms of set operations to make more succinct
-function <=(x::SurrealFinite, y::SurrealFinite)
+function leq(x::SurrealFinite, y::SurrealFinite, processed_list::Dict{UInt64,Bool})
 #    for t in x.L
 #        if y <= t
 #            return false
@@ -222,13 +222,22 @@ function <=(x::SurrealFinite, y::SurrealFinite)
 #    end
     # global Count
     # Count['≦'] += 1
-    if !isempty(x.L) && y <= x.L[end] 
-        return false
-    elseif !isempty(y.R) && x >= y.R[1] 
-        return false 
-    end
-    return true 
+
+    k = hash(x,0) * hash(y,1)
+    if !haskey(processed_list,k)
+        # if !isempty(x.L) && y <= x.L[end] 
+        if !isempty(x.L) && leq(y, x.L[end],  processed_list)
+            processed_list[k] = false
+        # elseif !isempty(y.R) && x >= y.R[1] 
+        elseif !isempty(y.R) && leq(y.R[1], x,  processed_list)
+            processed_list[k] = false 
+        else
+            processed_list[k] = true
+        end 
+    end 
+    return processed_list[k]
 end 
+<=(x::SurrealFinite, y::SurrealFinite) = leq(x, y, Dict{UInt64,Bool}())
 <(x::SurrealFinite, y::SurrealFinite) = x<=y && !(y<=x)
 # ===(x::SurrealFinite, y::SurrealFinite) = x<=y && y<x # causes an error
 #   === is 'egal', and hardcoded for mutables to test they are same object in memory
@@ -243,24 +252,34 @@ end
 
 # much faster version because doesn't evaluate the whole array every time
 #   potential bug because sort order of equivalent values is not defined
-function ==(x::SurrealFinite, y::SurrealFinite)
+function equals(x::SurrealFinite, y::SurrealFinite, processed_list::Dict{UInt64,Bool})
     # global Count
     # Count['='] += 1
-    if length(x.L) != length(y.L) || length(x.R) != length(y.R)
-        return false
-    end
-    for i=1:length(x.L)
-        if x.L[i] != y.L[i]
-            return false
-        end  
-    end
-    for i=1:length(x.R)
-        if x.R[i] != y.R[i]
-            return false
+    k = hash(x,0) * hash(y,1)
+    if !haskey(processed_list,k)
+        if length(x.L) != length(y.L) || length(x.R) != length(y.R)
+            processed_list[k] = false
+            return processed_list[k]
         end
+        for i=1:length(x.L)
+#             if x.L[i] != y.L[i]
+            if !equals(x.L[i], y.L[i], processed_list)
+                processed_list[k] = false
+                return processed_list[k]
+            end  
+        end
+        for i=1:length(x.R)
+#            if x.R[i] != y.R[i]
+            if !equals(x.R[i], y.R[i], processed_list)
+                processed_list[k] = false
+                return processed_list[k]
+            end 
+        end 
+        processed_list[k] = true
     end
-    return true
-end 
+    return processed_list[k]
+end
+==(x::SurrealFinite, y::SurrealFinite) = x===y || equals(x, y, Dict{UInt64,Bool}())
 iszero(x::SurrealFinite) = isempty(x.L) && isempty(x.R)
 
 # comparisons between sets (i.e., arrays) are all-to-all, so
