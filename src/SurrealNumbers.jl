@@ -26,7 +26,7 @@ abstract type Surreal <: Real end
 # include("Dyadic.jl")
 include("SurrealFinite.jl")
 # include("SurrealTrans.jl")
-include("SurrealAlt2.jl")
+# include("SurrealAlt2.jl")
 
 end # module 
 
