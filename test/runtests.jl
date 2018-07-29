@@ -381,14 +381,17 @@ end
 end
 
 @testset "DAG statistics" begin
-    @test dag_stats(x1) == SurrealDAGstats(2,1,1,1)
-    @test dag_stats(x41) == SurrealDAGstats(5,4,4,1)
-    @test dag_stats(x43) == SurrealDAGstats(11,14,6,5)
-    @test dag_stats(x00) == SurrealDAGstats(4,4,2,2)
-    @test dag_stats(x5) == SurrealDAGstats(5,9,3,6)
-    @test dag_stats(s2) == SurrealDAGstats(4,5,3,3)    
-    @test dag_stats(x6) == SurrealDAGstats(45,82,12,625) 
-    @test dag_stats(x1, Dict{SurrealFinite,SurrealDAGstats}())[2] .== Dict(x0=>SurrealDAGstats(1,0,0,1),
-                                                                           x1=>SurrealDAGstats(2,1,1,1)    )
+    @test dag_stats(x1) == SurrealDAGstats(2,1,1,1,1,0,1)
+    @test dag_stats(x41) == SurrealDAGstats(5,4,4,1,4,0,4)
+    @test dag_stats(x43) == SurrealDAGstats(11,14,6,5,4,-1,4)
+    @test dag_stats(x00) == SurrealDAGstats(4,4,2,2,0,-1,1)
+    @test dag_stats(x5) == SurrealDAGstats(5,9,3,6,1//2,-1,1)
+    @test dag_stats(s2) == SurrealDAGstats(4,5,3,3,3//4,0,1)    
+    @test dag_stats(x6) == SurrealDAGstats(45,82,12,625,6,-3,7) 
+    @test dag_stats(x1, Dict{SurrealFinite,SurrealDAGstats}())[2] .== Dict(x0=>SurrealDAGstats(1,0,0,1,0,0,0),
+                                                                           x1=>SurrealDAGstats(2,1,1,1,1,0,1)    )
+    @test breadth(x1) == 1
+    @test breadth(x43) == 5
 end
+
 

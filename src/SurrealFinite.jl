@@ -996,6 +996,10 @@ end
 dag_stats(s::SurrealFinite) = dag_stats(s, Dict{SurrealFinite,SurrealDAGstats}())[1] 
 nodes(s::SurrealFinite) = dag_stats(s).nodes 
 edges(s::SurrealFinite) = dag_stats(s).edges
+function breadth(s::SurrealFinite) 
+    d = dag_stats(s)
+    return d.maxval - d.minval
+end
 
 # could do a better implementation of this
 # size_u(s::SurrealFinite) = length(unique(list_n(s)))
