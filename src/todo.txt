@@ -1,4 +1,48 @@
 
+
+"width" of DAG,
+   where this is the max of the number of nodes at any generation in
+   the DAG
+         - so for each generation number less than g(x), we need to
+           record the number of nodes at that generation
+
+
+one pattern that seems to recur, is that when there are repeated
+
+x y only involves multiplications of all of the elements of the DAGs
+of x y, so the number of multiplications is quite constrained
+   new algorithm
+      1st compute multiplications for all the pieces from the ground up
+      compose these into the pieces, and build up instead of recursing
+          down (through times -- still recursing for add)
+
+x + y is similar
+   but x-y is not!
+   
+
+numbers in the expansion of xy, e.g., X_L is non singleton, the
+numbers seem to have
+   (i) the same generation XXXX (not always true for fractions)
+   (ii) the same value
+at least this is true for 2x3, which is the first place to see
+repeated values
+    check for other cases
+
+
+box function from Conway
+
+
+principle of caching results vs internal passing of results in DAG in function
+   (1) if the result is a surreal, then cache it
+   (2) if the result is, Bool, don't
+
+   (3) if there isn't a good way to cache in the function then don't do it internally
+
+   (4) binary operation, then cache, uniary recursion through tree, then don't?
+
+   (5) cache negations???
+
+
 check that sort ordering by VALUE isn't creating a bug where some
 surreals are considered unequal because sort ordering is different
     -- in sort order, use hash() as a tie break
@@ -12,6 +56,10 @@ surreals are considered unequal because sort ordering is different
        which is weak 
 
        - create "ancestor" function, and (wobbly <=) 
+
+       - could be thought of as a "contains" relationship
+
+
 
 
 sparsity measure, or rather density ...

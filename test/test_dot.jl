@@ -25,6 +25,7 @@ z = zero(SurrealFinite)
 z = one(x1)
 s1 = convert(SurrealFinite, 1//2)
 s2 = convert(SurrealFinite, 3//4)
+s3 = convert(SurrealFinite, 1//2) + convert(SurrealFinite, 1//4) 
 
 x3 = convert(SurrealFinite, 3)
 x41 = convert(SurrealFinite, 4)
@@ -63,6 +64,20 @@ run(`dot -Tsvg -O $file`)
 file = "$(out_dir)test_dag_s2.dot"
 FID = open(file, "w")
 surreal2dag(FID, s2)
+close(FID)
+run(`dot -Tpdf -O $file`) 
+run(`dot -Tsvg -O $file`) 
+
+file = "$(out_dir)test_dot_s3.dot"
+FID = open(file, "w")
+surreal2dot(FID, s3)
+close(FID)
+run(`dot -Tpdf -O $file`) 
+run(`dot -Tsvg -O $file`) 
+
+file = "$(out_dir)test_dag_s3.dot"
+FID = open(file, "w")
+surreal2dag(FID, s3)
 close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 

@@ -5,7 +5,7 @@ digraph "1.0" {
          <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="0,1"> 0 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> ϕ </TD></TR>
          </TABLE>>,
          ];
-   node_1:"0,1" -> node_2;
+   node_1:"0,1" -> node_2 [color="red3"];
    node_2 [shape=none,margin=0,label=
          <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
          <TR><TD COLSPAN="2">0</TD></TR>

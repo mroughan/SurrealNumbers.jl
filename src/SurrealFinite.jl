@@ -83,7 +83,10 @@ struct SurrealDAGstats
     nodes::Integer # nodes in its DAG
     edges::Integer # edges in its DAG
     generation::Integer # generation/birthday of the surreal
-    paths::Int128 # number of paths from source to sink 
+    paths::Int128 # number of paths from source to sink
+    value::Rational
+    minval::Rational 
+    maxval::Rational
 end
 # CacheNodes = Dict{SurrealFinite,Integer}()
 # CacheEdges = Dict{SurrealFinite,Integer}()
@@ -623,10 +626,10 @@ function surreal2dag_f(io::IO, x::SurrealFinite, k::Integer, SurrealsinDAG)
             if !haskey(SurrealsinDAG, s)
                 m += 1
                 # println(io, "   node_$k:L -> node_$m;")
-                println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c) * "\" -> node_$m;")
+                println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c) * "\" -> node_$m [color=\"red3\"];")
                 m = surreal2dag_f(io, s, m, SurrealsinDAG)
             else
-                println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c)  * "\" -> node_$(SurrealsinDAG[s]);") 
+                println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c)  * "\" -> node_$(SurrealsinDAG[s]) [color=\"red3\"];") 
             end
             c += 1 
         end
@@ -635,10 +638,10 @@ function surreal2dag_f(io::IO, x::SurrealFinite, k::Integer, SurrealsinDAG)
             if !haskey(SurrealsinDAG, s)
                 m += 1
                 # println(io, "   node_$k:R -> node_$m;")
-                println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c) * "\" -> node_$m;")
+                println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c) * "\" -> node_$m [color=\"blue3\"];")
                 m = surreal2dag_f(io, s, m, SurrealsinDAG)
             else
-                println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c) * "\" -> node_$(SurrealsinDAG[s]);")
+                println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c) * "\" -> node_$(SurrealsinDAG[s]) [color=\"blue3\"];")
             end
             c += 1 
         end
@@ -958,13 +961,19 @@ function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealD
         nodes = 1
         edges = 0
         generation = 0
-        paths = 1 
+        paths = 1
+        value = 0
+        minval = 0
+        maxval = 0
     else
         P = parents(s) 
         nodes = 1
         edges = length(P)
         generation = 1
         paths = 0
+        value = convert(Rational, s)
+        minval = value
+        maxval = value
         for p in P
             if !haskey(processed_list, p)
                 (stats,l) = dag_stats(p, processed_list) 
@@ -973,15 +982,17 @@ function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealD
                 generation = max(generation, 1+stats.generation) 
                 # processed_list = unique([processed_list; l]) # prolly not best way to implement this?
                 paths += stats.paths
+                minval = min(minval, stats.minval)
+                maxval = max(maxval, stats.maxval)
             else
                 paths += processed_list[p].paths
             end
         end 
     end 
-    stats = SurrealDAGstats(nodes, edges, generation, paths)
+    stats = SurrealDAGstats(nodes, edges, generation, paths, value, minval, maxval) 
     processed_list[s] = stats # could make this a reverse list, ...
     return ( stats, processed_list) 
-end
+end 
 dag_stats(s::SurrealFinite) = dag_stats(s, Dict{SurrealFinite,SurrealDAGstats}())[1] 
 nodes(s::SurrealFinite) = dag_stats(s).nodes 
 edges(s::SurrealFinite) = dag_stats(s).edges
