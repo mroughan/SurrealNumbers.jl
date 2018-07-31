@@ -1,3 +1,7 @@
+check all "generation" results from tables, as there was a bug that
+may break some
+
+
 reverse direction of the arrows
 
 "width" of DAG,
@@ -49,7 +53,8 @@ principle of caching results vs internal passing of results in DAG in function
 
 check that sort ordering by VALUE isn't creating a bug where some
 surreals are considered unequal because sort ordering is different
-    -- in sort order, use hash() as a tie break
+    -- in sort order, use hash() as a tie break because the sort at
+       the moment is based on value, and there are equivalent values
 
 
 

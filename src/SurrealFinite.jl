@@ -11,10 +11,10 @@ mutable struct SurrealFinite <: Surreal
         global Count
         Count['c'] += 1 
         if length(L) > 1
-            L = sort(unique( L ))
+            L = sort(unique( L ), by=x->(x,hash(x)) ) # use hash as tie break in sort
         end
         if length(R) > 1
-            R = sort(unique( R ))
+            R = sort(unique( R ), by=x->(x,hash(x)) )
         end
         # println("L = $L, R = $R")
         # use the fact they are sorted to not do a complete comparison
@@ -22,7 +22,7 @@ mutable struct SurrealFinite <: Surreal
         if isempty(L) || isempty(R) || L[end] < R[1]
             return new(shorthand, L, R, h)
         else 
-            error("Surreal number must have L < R (currently they are $(L) and $(R) )")
+            error("Surreal number must have L < R (currently they are $(L) and $(R) )") 
         end  
     end 
 end 
