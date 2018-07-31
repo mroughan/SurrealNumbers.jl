@@ -8,17 +8,17 @@ import Base: convert, promote, promote_rule, hash, show, read, expand,
 export Surreal, SurrealFinite, SurrealShort, SurrealDyadic, SurrealDAGstats
 export ExistingSurreals, ExistingProducts, ExistingSums, Count
   
-# export SurrealAlt2 
+# export SurrealAlt2  
 # export ExistingSurrealsAlt2, ExistingProductsAlt2, ExistingSumsAlt2
 
-export <=, zero, one, ==, ≅, ≇, <, -, +, *, ϕ, ≀, ↑, ↓, 
+export <=, zero, one, ==, ≅, ≇, <, -, +, *, ϕ, ≀, ↑, ↓, dag_add,
     dali, convert, promote, hash,
     pf, pff, spf, show, surreal2node, surreal2dot, surreal2dag, surreal2tex, read, expand,
     generation, canonicalise, iscanonical, parents, isancestor, ≺, ≻, ⪯, ⪰, 
     unique2!, size, size_u, n_zeros, depth_max, depth_av, list_n, count_n, depth, 
     sign, round, floor, ceil, trunc, mod, 
     isinteger, isinf, isnan, isfinite, isodd, iseven, isdivisible,
-    dag_stats, breadth, width, clearcache
+    dag_stats, surrealDAG, breadth, width, clearcache
 
 abstract type Surreal <: Real end 
  

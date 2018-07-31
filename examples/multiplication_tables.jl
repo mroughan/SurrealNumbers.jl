@@ -9,6 +9,8 @@ a = convert(SurrealFinite, 2) * convert(SurrealFinite, 2)
 
 ns1 = convert.(SurrealFinite, [0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 3; a])
 ns2 = convert.(SurrealFinite, [2; 2; 2; 2; 2; 2; 2; 2; 2; 2; 3; 2])
+ns1 = convert.(SurrealFinite, [0; 1; 2; 3; 4;])
+ns2 = convert.(SurrealFinite, [2; 2; 2; 2; 2;])
 # ns1 = [2; 4]
 # ns2 = [1/2; 1/4]
 n = length(ns1) 
@@ -109,6 +111,7 @@ surreal2tex(x[3], level=2)
 
 for i=1:4
     file = "$(out_dir)multiplication_ex_$i.dot"
+    println("outputting $file")
     FID = open(file, "w")
     surreal2dag(FID, x[i])
     close(FID)

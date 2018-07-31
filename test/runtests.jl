@@ -380,18 +380,24 @@ end
     # should compare these against a reference, but sort could get non-unique order, so potential for difference
 end
 
+
+x32 = convert(SurrealFinite, 3/4) + convert(SurrealFinite, 3/4)
 @testset "DAG statistics" begin
-    @test dag_stats(x1) == SurrealDAGstats(2,1,1,1,1,0,1)
-    @test dag_stats(x41) == SurrealDAGstats(5,4,4,1,4,0,4)
-    @test dag_stats(x43) == SurrealDAGstats(11,14,6,5,4,-1,4)
-    @test dag_stats(x00) == SurrealDAGstats(4,4,2,2,0,-1,1)
-    @test dag_stats(x5) == SurrealDAGstats(5,9,3,6,1//2,-1,1)
-    @test dag_stats(s2) == SurrealDAGstats(4,5,3,3,3//4,0,1)    
-    @test dag_stats(x6) == SurrealDAGstats(45,82,12,625,6,-3,7) 
-    @test dag_stats(x1, Dict{SurrealFinite,SurrealDAGstats}())[2] .== Dict(x0=>SurrealDAGstats(1,0,0,1,0,0,0),
-                                                                           x1=>SurrealDAGstats(2,1,1,1,1,0,1)    )
+    @test dag_stats(x1) == SurrealDAGstats(2,1,1,ϕ,1,1,0,1)
+    @test dag_stats(x41) == SurrealDAGstats(5,4,4,ϕ,1,4,0,4)
+    @test dag_stats(x43) == SurrealDAGstats(11,14,6,ϕ,5,4,-1,4)
+    @test dag_stats(x00) == SurrealDAGstats(4,4,2,ϕ,2,0,-1,1) 
+    @test dag_stats(x5) == SurrealDAGstats(5,9,3,ϕ,6,1//2,-1,1)
+    @test dag_stats(s2) == SurrealDAGstats(4,5,3,ϕ,3,3//4,0,1)    
+    @test dag_stats(x6) == SurrealDAGstats(45,82,12,ϕ,625,6,-3,7) 
+    @test dag_stats(x1, Dict{SurrealFinite,SurrealDAGstats}())[2] .== Dict(x0=>SurrealDAGstats(1,0,0,ϕ,1,0,0,0),
+                                                                           x1=>SurrealDAGstats(2,1,1,ϕ,1,1,0,1)    )
     @test breadth(x1) == 1
     @test breadth(x43) == 5
+    
+    @test dag_stats(x32).generation == 6
+    @test dag_stats(x32).generation == generation(x32)
+
+    # @test dag_stats(x41; LP=true) == SurrealDAGstats(5, 4, 4, [0, 1, 2, 3, 4], 1,4,0,4)
+    @test dag_stats(x41; LP=true).longest_path == convert.(SurrealFinite, [0, 1, 2, 3, 4])
 end
-
-

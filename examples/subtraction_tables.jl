@@ -31,14 +31,14 @@ x = Array{SurrealFinite,1}(n)
 t = Array{Float64,1}(n) 
 bytes = Array{Float64,1}(n) 
 gctime = Array{Float64,1}(n)
-c_plus = Array{Integer,1}(n) jul
+c_plus = Array{Integer,1}(n) 
 c_times = Array{Integer,1}(n) 
 c_created = Array{Integer,1}(n) 
 c_equals = Array{Integer,1}(n) 
 c_leq = Array{Integer,1}(n) 
 i = 0
 for i=1:n 
-    println(ns1[i], " x ", ns2[i])
+    println(ns1[i], " - ", ns2[i])
     t[i] = 0 
     b = 0
     g = 0

@@ -1,11 +1,10 @@
-
+reverse direction of the arrows
 
 "width" of DAG,
    where this is the max of the number of nodes at any generation in
    the DAG
          - so for each generation number less than g(x), we need to
            record the number of nodes at that generation
-
 
 one pattern that seems to recur, is that when there are repeated
 
@@ -27,6 +26,11 @@ numbers seem to have
 at least this is true for 2x3, which is the first place to see
 repeated values
     check for other cases
+
+
+surreal2dag
+   - convert to a DAG data structure
+   - then "print" outputs the dag structure in dot format
 
 
 box function from Conway

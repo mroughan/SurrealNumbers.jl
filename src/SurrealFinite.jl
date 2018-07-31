@@ -83,6 +83,7 @@ struct SurrealDAGstats
     nodes::Integer # nodes in its DAG
     edges::Integer # edges in its DAG
     generation::Integer # generation/birthday of the surreal
+    longest_path::Array{SurrealFinite,1} 
     paths::Int128 # number of paths from source to sink
     value::Rational
     minval::Rational 
@@ -951,54 +952,96 @@ isancestor(s::SurrealFinite, t::SurrealFinite) = s ⪯ t && s!=t
 ≻(s::SurrealFinite, t::SurrealFinite) = t ≺ s
 ⪰(s::SurrealFinite, t::SurrealFinite) = t ⪯ s
 
+
 ############################################
 
 # extra analysis functions
-#    add in depth/generation/birthday
-#    could do some of the other stats below ... and shortest path to zero as well ... 
-function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealDAGstats}) 
-    if s==zero(s)   
-        nodes = 1
+#    LP=true means keep track of a longest path
+function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealDAGstats}; LP=false ) 
+    if s==zero(s)    
+        nodes = 1 
         edges = 0
         generation = 0
+        LP ? longest_path = [zero(s)] : longest_path = ϕ # important this be \phi and not an arbitrary empty array
         paths = 1
         value = 0
-        minval = 0
+        minval = 0  
         maxval = 0
     else
         P = parents(s) 
         nodes = 1
         edges = length(P)
-        generation = 1
-        paths = 0
+        generation = 0
+        LP ? longest_path = [zero(s)] : longest_path = ϕ
+        paths = 0 
         value = convert(Rational, s)
         minval = value
-        maxval = value
-        for p in P
+        maxval = value 
+        for p in P 
             if !haskey(processed_list, p)
-                (stats,l) = dag_stats(p, processed_list) 
-                nodes += stats.nodes
-                edges += stats.edges
-                generation = max(generation, 1+stats.generation) 
+                (stats,l) = dag_stats(p, processed_list; LP=LP) 
+                nodes += stats.nodes 
+                edges += stats.edges 
+                if stats.generation > generation
+                    generation = stats.generation 
+                    LP ? longest_path = copy(stats.longest_path) : longest_path = ϕ
+                end  
                 # processed_list = unique([processed_list; l]) # prolly not best way to implement this?
                 paths += stats.paths
                 minval = min(minval, stats.minval)
                 maxval = max(maxval, stats.maxval)
             else
+                if processed_list[p].generation > generation
+                    generation = processed_list[p].generation 
+                    LP ? longest_path = copy(processed_list[p].longest_path)  : longest_path = ϕ
+                end   
                 paths += processed_list[p].paths
             end
-        end 
-    end 
-    stats = SurrealDAGstats(nodes, edges, generation, paths, value, minval, maxval) 
+        end
+        generation += 1
+        LP ? longest_path = [longest_path; s] : longest_path = ϕ
+    end   
+    stats = SurrealDAGstats(nodes, edges, generation, longest_path, paths, value, minval, maxval) 
     processed_list[s] = stats # could make this a reverse list, ...
-    return ( stats, processed_list) 
+    return ( stats, processed_list)  
 end 
-dag_stats(s::SurrealFinite) = dag_stats(s, Dict{SurrealFinite,SurrealDAGstats}())[1] 
+dag_stats(s::SurrealFinite; LP=false) = dag_stats(s, Dict{SurrealFinite,SurrealDAGstats}(); LP=LP)[1] 
 nodes(s::SurrealFinite) = dag_stats(s).nodes 
 edges(s::SurrealFinite) = dag_stats(s).edges
 function breadth(s::SurrealFinite) 
     d = dag_stats(s)
     return d.maxval - d.minval
+end
+function width(s::SurrealFinite) 
+    # not yet defined exactly what I mean here --
+    #    maybe maxval - minval for a given generation?
+    0
+end
+function surrealDAG(s::SurrealFinite)
+    dag_dict = dag_stats(s, Dict{SurrealFinite,SurrealDAGstats}())[2] 
+    # dag = Array{SurrealDAGstats}(length(dag_dict)) # sort from simplest to least simple
+    dag = Array{SurrealFinite}(length(dag_dict)) # sort from simplest to least simple
+    i = 1 
+    for x in sort( collect(keys(dag_dict)); by = x->(dag_dict[x].generation,dag_dict[x].value,dag_dict[x].nodes) )
+        dag[i] = x
+        i += 1 
+    end
+    return dag # an array containing sorted list of all nodes of the surreal form
+end
+function dag_add(x::SurrealFinite, y::SurrealFinite)
+    # bit of a cheat -- not reworking links, just relying on sub-sums
+    # just intended to check the sums and cartesian products
+    dag_x = surrealDAG(x)
+    n_x = length(dag_x)
+    dag_y = surrealDAG(y)
+    n_y = length(dag_y)
+    dag_z = Array{SurrealFinite}( n_x * n_y )
+    for i=1:n_x
+        for j=1:n_y
+            dag_z[(i-1)*n_y + j] = dag_x[i] + dag_y[j]
+        end
+    end
+    return unique(dag_z)
 end
 
 # could do a better implementation of this

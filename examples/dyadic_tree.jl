@@ -3,7 +3,7 @@ using SurrealNumbers
 # var_args = "color=red"
 var_args = ""
 n=3; x_scale = 2.25
-n=4; x_scale = 5.00
+# n=4; x_scale = 5.00
 out_dir = "Data/"
 
 name_map = Dict{SurrealFinite, Integer}()
@@ -29,7 +29,7 @@ for k=1:n
     name_map[x] = m
     println(" k = $k, x = $x")
     tmp = name_map[x.R[1]]
-    println(io, "   node_$m:R -> node_$tmp;")
+    println(io, "   node_$m:R -> node_$tmp [color=\"blue3\"];")
 
     var_args = "pos=\"$(x_scale*k),$(k)!\""
     x = convert(SurrealFinite, k)
@@ -38,7 +38,7 @@ for k=1:n
     name_map[x] = m
     println(" k = $k, x = $x")
     tmp = name_map[x.L[1]]
-    println(io, "   node_$m:L -> node_$tmp;")
+    println(io, "   node_$m:L -> node_$tmp [color=\"red3\"];")
 
     for f=2:k
         for j=(f-2)*2^(k-f+1) + (1:2:2^(k-f+1))
@@ -49,9 +49,10 @@ for k=1:n
             name_map[x] = m
             println(" k = $k, f = $f, x = $x")
             tmp = name_map[x.L[1]]
-            println(io, "   node_$m:L -> node_$tmp;")
+            println(io, "   node_$m:L -> node_$tmp [color=\"red3\"];")
             tmp = name_map[x.R[1]]
-            println(io, "   node_$m:R -> node_$tmp;")
+            
+            println(io, "   node_$m:R -> node_$tmp [color=\"blue3\"];")
 
             x = convert(SurrealFinite, -j // 2^(k-f+1))
             var_args = "pos=\"$(x_scale*convert(Float64, x)),$(k)!\""
@@ -60,9 +61,9 @@ for k=1:n
             name_map[x] = m
             println(" k = $k, f = $f, x = $x")
             tmp = name_map[x.L[1]]
-            println(io, "   node_$m:L -> node_$tmp;")
+            println(io, "   node_$m:L -> node_$tmp [color=\"red3\"];")
             tmp = name_map[x.R[1]]
-            println(io, "   node_$m:R -> node_$tmp;") 
+            println(io, "   node_$m:R -> node_$tmp [color=\"blue3\"];") 
         end
     end
 end
