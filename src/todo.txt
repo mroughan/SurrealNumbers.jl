@@ -1,6 +1,12 @@
+
+- put "values" into surreals in the same way as hashes,
+     - but for surreals resulting from computations this should be easy 
+     - only for arbitrarily created will it be harder
+     - instead of "convert" (which should just read the value, create
+       a "value" function to calculate it where needed
+
 check all "generation" results from tables, as there was a bug that
 may break some
-
 
 reverse direction of the arrows
 
@@ -18,6 +24,19 @@ of x y, so the number of multiplications is quite constrained
       1st compute multiplications for all the pieces from the ground up
       compose these into the pieces, and build up instead of recursing
           down (through times -- still recursing for add)
+   current version cheats on DAGs
+      prolly should have a structure DAG
+            list of nodes
+	    list of left and right edges
+      but still current version of output to dot would require more
+            because of nice printing of arrows
+
+   could do an abbreviated DAG picture though, where we only do
+   values and arrows, not subboxes
+
+   surreal2dag
+    - convert to a DAG data structure
+    - then "print" outputs the dag structure in dot format
 
 x + y is similar
    but x-y is not!
@@ -30,12 +49,7 @@ numbers seem to have
 at least this is true for 2x3, which is the first place to see
 repeated values
     check for other cases
-
-
-surreal2dag
-   - convert to a DAG data structure
-   - then "print" outputs the dag structure in dot format
-
+ 
 
 box function from Conway
 
@@ -49,14 +63,6 @@ principle of caching results vs internal passing of results in DAG in function
    (4) binary operation, then cache, uniary recursion through tree, then don't?
 
    (5) cache negations???
-
-
-check that sort ordering by VALUE isn't creating a bug where some
-surreals are considered unequal because sort ordering is different
-    -- in sort order, use hash() as a tie break because the sort at
-       the moment is based on value, and there are equivalent values
-
-
 
 ... 
 

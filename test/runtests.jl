@@ -401,3 +401,8 @@ x32 = convert(SurrealFinite, 3/4) + convert(SurrealFinite, 3/4)
     # @test dag_stats(x41; LP=true) == SurrealDAGstats(5, 4, 4, [0, 1, 2, 3, 4], 1,4,0,4)
     @test dag_stats(x41; LP=true).longest_path == convert.(SurrealFinite, [0, 1, 2, 3, 4])
 end
+
+@testset "memory allocation" begin
+    @test Base.summarysize( dali(33//2) ) == 943   # 1775 was the old size before we made "dali" reuse cached numbers
+end
+

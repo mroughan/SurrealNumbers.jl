@@ -11,11 +11,11 @@ mutable struct SurrealFinite <: Surreal
         global Count
         Count['c'] += 1 
         if length(L) > 1
-            L = sort(unique( L ), by=x->(x,hash(x)) ) # use hash as tie break in sort
+            L = sort(unique( L ), by=x->(x,hash(x)) ) # use hash as tie break in sort so that order is deterministic
         end
         if length(R) > 1
-            R = sort(unique( R ), by=x->(x,hash(x)) )
-        end
+            R = sort(unique( R ), by=x->(x,hash(x)) ) # use hash as tie break in sort so that order is deterministic
+        end 
         # println("L = $L, R = $R")
         # use the fact they are sorted to not do a complete comparison
         # also means that == is much easier than if they were unsorted
@@ -56,7 +56,10 @@ hash(x::SurrealFinite, h::Integer) = hash(x, convert(UInt64, h) )
 hash(X::Array{SurrealFinite}) = hash(X, zero(UInt64) )
  
 # global dictionaries to avoid repeated calculations of the same things
+#   in particular to speed up calculations, but also to ensure that resulting
+#   structures are actually DAGs, i.e., pointers to the same "number" point at the same bit of memory
 ExistingSurreals = Dict{SurrealFinite,Rational}()
+ExistingCanonicals = Dict{Rational,SurrealFinite}()
 # ExistingProducts = Dict{SurrealFinite, Dict{SurrealFinite,SurrealFinite}}()
 ExistingProducts = Dict{UInt64, Dict{UInt64,SurrealFinite}}()
 ExistingSums     = Dict{UInt64, Dict{UInt64,SurrealFinite}}() 
@@ -67,10 +70,12 @@ Count = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≦'=>0)
 
 function clearcache() 
     global ExistingSurreals
+    global ExistingCanonicals
     global ExistingProducts
     global ExistingSums
     global Count
     ExistingSurreals = Dict{SurrealFinite,Rational}()
+    ExistingCanonicals = Dict{Rational,SurrealFinite}()
     # ExistingProducts = Dict{SurrealFinite, Dict{SurrealFinite,SurrealFinite}}()
     ExistingProducts = Dict{UInt64, Dict{UInt64,SurrealFinite}}()
     ExistingSums     = Dict{UInt64, Dict{UInt64,SurrealFinite}}()
@@ -94,30 +99,40 @@ end
 # can't cache these in recursive calculation on DAG because there are overlaps
 
 function convert(::Type{SurrealFinite}, n::Int ) 
-    if n==0  
-        return SurrealFinite("0", ϕ, ϕ )
+    global ExistingCanonicals
+    if haskey(ExistingCanonicals, Rational(n)) 
+        return ExistingCanonicals[Rational(n)]
+    elseif n==0 
+        result = SurrealFinite("0", ϕ, ϕ )
     elseif n>0
-        return SurrealFinite(string(n), [convert(SurrealFinite, n-1)], ϕ )
+        result = SurrealFinite(string(n), [convert(SurrealFinite, n-1)], ϕ )
     else
-        return SurrealFinite(string(n), ϕ, [convert(SurrealFinite, n+1)] )
+        result = SurrealFinite(string(n), ϕ, [convert(SurrealFinite, n+1)] )
     end
+    ExistingCanonicals[Rational(n)] = result
+    return result 
     # should check to make sure abs(n) is not too big, i.e., causes too much recursion
 end 
 function convert(::Type{SurrealFinite}, r::Rational )  
-    if isinteger(r) 
+    global ExistingCanonicals
+    if haskey(ExistingCanonicals, r)  
+        return ExistingCanonicals[r]
+    elseif isinteger(r)  
         return convert(SurrealFinite, convert(Int64,r) )
     elseif ispow2(r.den)
         # Non-integer dyadic numbers
         n = convert(Int64, round( log2(r.den) ))
         if abs(r) + n < 60 # 60 is a bit arbitrary -- could experiment more on real limits
-            return SurrealFinite("$r", [convert(SurrealFinite, r - 1//2^n)], [convert(SurrealFinite, r + 1//2^n)] )
+            result = SurrealFinite("$r", [convert(SurrealFinite, r - 1//2^n)], [convert(SurrealFinite, r + 1//2^n)] )
         else 
             error("Generation too large")
         end 
     else 
         error("we can't do these yet as they require infinite sets")
         # return convert(SurrealFinite, r.num) // convert(SurrealFinite, r.den)
-    end  
+    end
+    ExistingCanonicals[r] = result
+    return result
 end
 function convert(::Type{SurrealFinite}, f::Float64 ) 
     if isinteger(f) 
@@ -413,6 +428,8 @@ function *(x::SurrealFinite, y::SurrealFinite)
              vec([s*y + x*t - s*t for s in x.R, t in y.R])]
         R = [vec([s*y + x*t - s*t for s in x.L, t in y.R]);
              vec([s*y + x*t - s*t for s in x.R, t in y.L])]
+        # L = [subtimes( x, y, x.L, y.L ); subtimes( x, y, x.R, y.R )]
+        # R = [subtimes( x, y, x.L, y.R ); subtimes( x, y, x.R, y.L )]
         result = SurrealFinite("", L, R)
     end
     if !haskey(ExistingProducts, hx)
@@ -425,7 +442,20 @@ function *(x::SurrealFinite, y::SurrealFinite)
     ExistingProducts[hy][hx] = result
     Count['*'] += 1 
     return result
-end 
+end
+#function subtimes( x, y, X::Array{SurrealFinite}, Y::Array{SurrealFinite} )
+#    n = length(X)
+#    m = length(Y)
+#    result = Array{SurrealFinite}(m*n)
+#    for i=1:n
+#        for j=1:m
+#            result[(i-1)*m + j] = X[i]*y + x*Y[j] - X[i]*Y[j]
+#        end
+#    end 
+#    return result
+#end
+
+# old cache version where we don't use hash values for caching
 function times(x::SurrealFinite, y::SurrealFinite)
     global ExistingProducts
     global Count
@@ -957,14 +987,16 @@ isancestor(s::SurrealFinite, t::SurrealFinite) = s ⪯ t && s!=t
 
 # extra analysis functions
 #    LP=true means keep track of a longest path
-function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealDAGstats}; LP=false ) 
+#    V =true means keep track of values
+# have these as switches, because they are expensive to calculate on large DAGs
+function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealDAGstats}; LP=false, V=true ) 
     if s==zero(s)    
         nodes = 1 
         edges = 0
         generation = 0
-        LP ? longest_path = [zero(s)] : longest_path = ϕ # important this be \phi and not an arbitrary empty array
+        longest_path = LP ? [zero(s)] : ϕ # important this be \phi and not an arbitrary empty array
         paths = 1
-        value = 0
+        value = 0 
         minval = 0  
         maxval = 0
     else
@@ -972,19 +1004,19 @@ function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealD
         nodes = 1
         edges = length(P)
         generation = 0
-        LP ? longest_path = [zero(s)] : longest_path = ϕ
+        longest_path = LP ? [zero(s)] : ϕ
         paths = 0 
-        value = convert(Rational, s)
-        minval = value
-        maxval = value 
+        value = V ? convert(Rational, s) : 0
+        minval = value 
+        maxval = value
         for p in P 
             if !haskey(processed_list, p)
-                (stats,l) = dag_stats(p, processed_list; LP=LP) 
+                (stats,l) = dag_stats(p, processed_list; LP=LP, V=V) 
                 nodes += stats.nodes 
                 edges += stats.edges 
                 if stats.generation > generation
                     generation = stats.generation 
-                    LP ? longest_path = copy(stats.longest_path) : longest_path = ϕ
+                    longest_path = LP ? copy(stats.longest_path) : ϕ
                 end  
                 # processed_list = unique([processed_list; l]) # prolly not best way to implement this?
                 paths += stats.paths
@@ -993,19 +1025,19 @@ function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealD
             else
                 if processed_list[p].generation > generation
                     generation = processed_list[p].generation 
-                    LP ? longest_path = copy(processed_list[p].longest_path)  : longest_path = ϕ
+                    longest_path = LP ? copy(processed_list[p].longest_path) : ϕ
                 end   
                 paths += processed_list[p].paths
             end
         end
-        generation += 1
-        LP ? longest_path = [longest_path; s] : longest_path = ϕ
+        generation += 1 
+        longest_path = LP ? [longest_path; s] : ϕ
     end   
     stats = SurrealDAGstats(nodes, edges, generation, longest_path, paths, value, minval, maxval) 
     processed_list[s] = stats # could make this a reverse list, ...
-    return ( stats, processed_list)  
+    return ( stats, processed_list )  
 end 
-dag_stats(s::SurrealFinite; LP=false) = dag_stats(s, Dict{SurrealFinite,SurrealDAGstats}(); LP=LP)[1] 
+dag_stats(s::SurrealFinite; LP=false, V=true) = dag_stats(s, Dict{SurrealFinite,SurrealDAGstats}(); LP=LP, V=V)[1] 
 nodes(s::SurrealFinite) = dag_stats(s).nodes 
 edges(s::SurrealFinite) = dag_stats(s).edges
 function breadth(s::SurrealFinite) 
@@ -1024,7 +1056,7 @@ function surrealDAG(s::SurrealFinite)
     i = 1 
     for x in sort( collect(keys(dag_dict)); by = x->(dag_dict[x].generation,dag_dict[x].value,dag_dict[x].nodes) )
         dag[i] = x
-        i += 1 
+        i += 1  
     end
     return dag # an array containing sorted list of all nodes of the surreal form
 end
