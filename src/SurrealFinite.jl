@@ -31,7 +31,7 @@ SurrealFinite(shorthand::String, L::Array, R::Array ) =
 SurrealFinite(L::Array, R::Array ) =
     SurrealFinite( "", convert(Array{SurrealFinite},L), convert(Array{SurrealFinite},R), zero(UInt64))
 ≀(L::Array, R::Array) = SurrealFinite(L::Array, R::Array )
-
+ 
 SurrealShort  = SurrealFinite 
 SurrealDyadic = SurrealFinite 
 
@@ -58,11 +58,12 @@ hash(X::Array{SurrealFinite}) = hash(X, zero(UInt64) )
 # global dictionaries to avoid repeated calculations of the same things
 #   in particular to speed up calculations, but also to ensure that resulting
 #   structures are actually DAGs, i.e., pointers to the same "number" point at the same bit of memory
-ExistingSurreals = Dict{SurrealFinite,Rational}()
+ExistingSurreals   = Dict{SurrealFinite,Rational}()
 ExistingCanonicals = Dict{Rational,SurrealFinite}()
 # ExistingProducts = Dict{SurrealFinite, Dict{SurrealFinite,SurrealFinite}}()
-ExistingProducts = Dict{UInt64, Dict{UInt64,SurrealFinite}}()
-ExistingSums     = Dict{UInt64, Dict{UInt64,SurrealFinite}}() 
+ExistingProducts   = Dict{UInt64, Dict{UInt64,SurrealFinite}}()
+ExistingSums       = Dict{UInt64, Dict{UInt64,SurrealFinite}}() 
+ExistingNegations  = Dict{UInt64, SurrealFinite}() 
 function size(d::Dict)
     [length(d[k]) for k in sort(collect(keys(d)))]        
 end 
@@ -73,12 +74,14 @@ function clearcache()
     global ExistingCanonicals
     global ExistingProducts
     global ExistingSums
-    global Count
-    ExistingSurreals = Dict{SurrealFinite,Rational}()
+    global ExistingNegations 
+    global Count  
+    ExistingSurreals   = Dict{SurrealFinite,Rational}()
     ExistingCanonicals = Dict{Rational,SurrealFinite}()
     # ExistingProducts = Dict{SurrealFinite, Dict{SurrealFinite,SurrealFinite}}()
-    ExistingProducts = Dict{UInt64, Dict{UInt64,SurrealFinite}}()
-    ExistingSums     = Dict{UInt64, Dict{UInt64,SurrealFinite}}()
+    ExistingProducts   = Dict{UInt64, Dict{UInt64,SurrealFinite}}()
+    ExistingSums       = Dict{UInt64, Dict{UInt64,SurrealFinite}}()
+    ExistingNegations  = Dict{UInt64, SurrealFinite}() 
     Count = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≦'=>0)
     return 1
 end
@@ -335,18 +338,25 @@ end
 
 # unary operators
 function -(x::SurrealFinite)
+    global ExistingNegations
     global Count
-    Count['-'] += 1
-    if isempty(x.shorthand)
-        SurrealFinite("", -x.R, -x.L )
+    hx = hash(x) # build the dictionary in terms of hashs, because it is used quite a bit
+    if haskey(ExistingNegations, hx)
+        return ExistingNegations[hx]
+    elseif isempty(x.shorthand)
+        result = SurrealFinite("", -x.R, -x.L )
     elseif x.shorthand == "0"
-        zero(x)
+        result = zero(x)
     elseif x.shorthand[1] == '-'
-        SurrealFinite(x.shorthand[2:end], -x.R, -x.L )
+        result = SurrealFinite(x.shorthand[2:end], -x.R, -x.L )
     else
-        SurrealFinite("-"*x.shorthand, -x.R, -x.L )
+        result = SurrealFinite("-"*x.shorthand, -x.R, -x.L )
     end 
-end
+    ExistingNegations[hx] = result
+    ExistingNegations[hash(result)] = x
+    Count['-'] += 1
+    return result
+end 
 function /(x::SurrealFinite, y::SurrealFinite)
     xr = convert(Rational, x)
     yr = convert(Rational, y) 
@@ -453,44 +463,7 @@ end
 #        end
 #    end 
 #    return result
-#end
-
-# old cache version where we don't use hash values for caching
-function times(x::SurrealFinite, y::SurrealFinite)
-    global ExistingProducts
-    global Count
-    if haskey(ExistingProducts, x) && haskey(ExistingProducts[x], y)
-        return ExistingProducts[x][y]
-    elseif iszero(x) || iszero(y)
-        result = zero(x)
-#     elseif x == 1 
-#        result = y 
-#    elseif y == 1 
-#        result = x
-    else  
-        # tmp1 = vec([s*y + x*t - s*t for s in x.L, t in y.L])
-        # tmp2 = vec([s*y + x*t - s*t for s in x.R, t in y.R])
-        # tmp3 = vec([s*y + x*t - s*t for s in x.L, t in y.R])
-        # tmp4 = vec([s*y + x*t - s*t for s in x.R, t in y.L])
-        # L = [ tmp1; tmp2 ] 
-        # R = [ tmp3; tmp4 ] 
-        L = [vec([s*y + x*t - s*t for s in x.L, t in y.L]);
-             vec([s*y + x*t - s*t for s in x.R, t in y.R])]
-        R = [vec([s*y + x*t - s*t for s in x.L, t in y.R]);
-             vec([s*y + x*t - s*t for s in x.R, t in y.L])]
-        result = SurrealFinite("", L, R)
-    end
-    if !haskey(ExistingProducts, x)
-        ExistingProducts[x] = Dict{SurrealFinite,SurrealFinite}()
-    end
-    if !haskey(ExistingProducts, y)
-        ExistingProducts[y] = Dict{SurrealFinite,SurrealFinite}()
-    end 
-    ExistingProducts[x][y] = result
-    ExistingProducts[y][x] = result
-    Count['*'] += 1
-    return result
-end 
+#end 
 *(x::SurrealFinite, Y::Array{SurrealFinite}) = [ x*s for s in Y ]
 *(X::Array{SurrealFinite}, y::SurrealFinite) = y*X
 

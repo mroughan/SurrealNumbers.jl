@@ -1,5 +1,5 @@
 
-- put "values" into surreals in the same way as hashes,
+- put "values" into surreals in the sa e way as hashes,
      - but for surreals resulting from computations this should be easy 
      - only for arbitrarily created will it be harder
      - instead of "convert" (which should just read the value, create
@@ -17,6 +17,9 @@ reverse direction of the arrows
            record the number of nodes at that generation
 
 one pattern that seems to recur, is that when there are repeated
+
+add code to test error conditions
+   and check bounds on conversion routines make sense
 
 x y only involves multiplications of all of the elements of the DAGs
 of x y, so the number of multiplications is quite constrained
