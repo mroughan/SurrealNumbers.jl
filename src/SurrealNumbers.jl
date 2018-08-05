@@ -19,7 +19,7 @@ export <=, zero, one, ==, ≅, ≇, <, -, +, *, ϕ, ≀, ↑, ↓, dag_add,
     unique2!, size, size_u, n_zeros, depth_max, depth_av, list_n, count_n, depth, 
     sign, round, floor, ceil, trunc, mod, 
     isinteger, isinf, isnan, isfinite, isodd, iseven, isdivisible,
-    dag_stats, surrealDAG, breadth, width, clearcache
+    dag_stats, nodes, edges, surrealDAG, breadth, width, clearcache
 
 abstract type Surreal <: Real end 
  

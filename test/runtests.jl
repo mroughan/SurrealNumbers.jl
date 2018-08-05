@@ -189,16 +189,20 @@ unique2!(Y)
     @test A + ϕ == ϕ
     @test ϕ - B == ϕ
 
+    @test ϕ <= A # can see from this that <= is not a proper ordering on 'sets' of surreals
+    @test A <= ϕ # its just a convenience comparison operator
+    @test ϕ < A
+    @test A < ϕ
     @test B <= A
     @test B < A
     @test !(B > A)
     @test !(B >= A)
-
+ 
     @test all( x1*A .≅ A )
     @test all( x23*A .≅ A*x23 )
 end
  
-V = [-4.0, -3.25, -2.5, -2.0, -1.625, -1.0, -0.25, 0.0, 1.0, 7.0, 0.5, 1.625, 2.25, 4.5, 6.75, 8.0, 12.125]
+V = [-6.25, -4.0, -3.25, -2.5, -2.0, -1.625, -1.0, -0.25, 0.0, 1.0, 7.0, 0.5, 1.625, 2.25, 4.5, 6.75, 8.0, 12.125]
 @testset "simple functions" begin
     @test sign(x0) == x0
     @test sign(x1) == x1
@@ -362,6 +366,7 @@ ss = convert(SurrealFinite, s)
     surreal2tex(io, a4; level = 0)
     surreal2tex(io, a4; level = 1)
     surreal2tex(io, a4; level = 2)
+    surreal2tex(a4; level = 2)
     close(io)
     # should compare this to a calibration file
     #  but not sure if this might introduce potential for system dependencies that aren't real errors
@@ -372,9 +377,11 @@ end
 
 @testset "structured output" begin
     @test surreal2dot(DevNull, x0) == 1
+    @test surreal2dot(x0) == 1
     @test surreal2dot(DevNull, x23) == 5
     @test surreal2dot(DevNull, x43) == size(x43)
     @test surreal2dag(DevNull, x0) == 1
+    @test surreal2dag(x0) == 1
     @test surreal2dag(DevNull, x23) == 4
     @test surreal2dag(DevNull, x43) == size_u(x43)
     # should compare these against a reference, but sort could get non-unique order, so potential for difference
@@ -392,6 +399,17 @@ x32 = convert(SurrealFinite, 3/4) + convert(SurrealFinite, 3/4)
     @test dag_stats(x6) == SurrealDAGstats(45,82,12,ϕ,625,6,-3,7) 
     @test dag_stats(x1, Dict{SurrealFinite,SurrealDAGstats}())[2] .== Dict(x0=>SurrealDAGstats(1,0,0,ϕ,1,0,0,0),
                                                                            x1=>SurrealDAGstats(2,1,1,ϕ,1,1,0,1)    )
+
+    @test dag_stats(x43).nodes == 11
+    @test dag_stats(x43).nodes == nodes(x43)
+    @test dag_stats(x43).edges == 14
+    @test dag_stats(x43).edges == edges(x43)
+    @test dag_stats(x43).generation == 6
+    @test dag_stats(x43).paths == 5
+    @test dag_stats(x43).value == 4
+    @test dag_stats(x43).minval == -1
+    @test dag_stats(x43).maxval == 4
+   
     @test breadth(x1) == 1
     @test breadth(x43) == 5
     
@@ -402,7 +420,25 @@ x32 = convert(SurrealFinite, 3/4) + convert(SurrealFinite, 3/4)
     @test dag_stats(x41; LP=true).longest_path == convert.(SurrealFinite, [0, 1, 2, 3, 4])
 end
 
-@testset "memory allocation" begin
+@testset "memory allocation and caching" begin
     @test Base.summarysize( dali(33//2) ) == 943   # 1775 was the old size before we made "dali" reuse cached numbers
+
+    # depends on previous results -- could be changed by earlier operations
+    @test ExistingCanonicals[-1//2] == -1//2
+    @test ExistingProducts[0x013b60c22ac142fa][0x84037d1bb0afff04] == -1
+    clearcache()
+    @test isempty(ExistingSurreals)
+    @test isempty(ExistingCanonicals)
+    @test isempty(ExistingProducts)
+    @test isempty(ExistingSums)
+    Count['+'] == 0
+    Count['*'] == 0
+
+    m = dali(2) * dali(2)
+    Count['+'] == 4
+    Count['+'] == 13
+    Count['*'] == 6 
+    Count['c'] == 20 
 end
+
 
