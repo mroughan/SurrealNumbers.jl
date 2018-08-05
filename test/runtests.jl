@@ -17,8 +17,9 @@ x23  = SurrealFinite( [x11,x1],  ϕ)
 x24  = SurrealFinite( [x11,x0,x1],  ϕ)
 x25 = [x11,x0,x1] ≀ ϕ
 z = zero(x1)
-z = zero(SurrealFinite)
-z = one(x1)
+z0 = zero(SurrealFinite)
+o = one(x1) 
+o1 = one(SurrealFinite)
 x00 = SurrealFinite([x11],[x1])
 
 x3 = convert(SurrealFinite, 3)
@@ -48,7 +49,7 @@ println("x41 = ", x41, ", x42 = ", x42, ", x43 = ", x43)
 
 pf(x43)
 println()
-
+ 
 spf(x43)
 println()
 
@@ -56,7 +57,10 @@ println()
     @test SurrealFinite("1/2", [0], [1]) ≅ 1/2
     @test_throws ErrorException SurrealFinite("1", [x1], [x0])
     @test all( convert(Array{SurrealFinite}, [1,2]) .== convert.(SurrealFinite, [1,2]) )
-    
+    @test z === zero(SurrealFinite)
+    @test z0 === zero(SurrealFinite)
+    @test o === one(SurrealFinite) 
+    @test o1 === one(SurrealFinite) 
 end
 
 @testset "comparisons" begin
@@ -91,7 +95,8 @@ end
 @testset "basic operators" begin
     @test -x1 == x11
     @test - -x0 == x0
-    @test - -x4 == x4 
+    @test - -x4 == x4
+    @test - -x4 === x4
     @test x1 + x11 ≅ x0
     @test x1 - x1 ≅ x0
     @test x1 + x0 == x1

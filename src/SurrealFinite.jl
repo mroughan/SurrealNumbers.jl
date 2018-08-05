@@ -39,7 +39,7 @@ function hash(x::SurrealFinite, h::UInt)
     if x.h == 0
         x.h = hash(x.L, convert(UInt64, 0) ) * hash(x.R, convert(UInt64, 1))
     end
-    return hash(x.h, h)  
+    return hash(x.h, h)   
 end
 function hash(X::Array{SurrealFinite}, h::UInt)
     if isempty(X)
@@ -101,13 +101,17 @@ end
 # CacheEdges = Dict{SurrealFinite,Integer}()
 # can't cache these in recursive calculation on DAG because there are overlaps
 
-function convert(::Type{SurrealFinite}, n::Int ) 
+function convert(::Type{SurrealFinite}, n::Int )  
     global ExistingCanonicals
+    global SurrealFiniteZero
+    global SurrealFiniteOne 
     if haskey(ExistingCanonicals, Rational(n)) 
         return ExistingCanonicals[Rational(n)]
     elseif n==0 
-        result = SurrealFinite("0", ϕ, ϕ )
-    elseif n>0
+        result = SurrealFiniteZero
+    elseif n==1 
+        result = SurrealFiniteOne
+    elseif n>1
         result = SurrealFinite(string(n), [convert(SurrealFinite, n-1)], ϕ )
     else
         result = SurrealFinite(string(n), ϕ, [convert(SurrealFinite, n+1)] )
@@ -222,8 +226,10 @@ end
 promote_rule(::Type{T}, ::Type{SurrealFinite}) where {T<:Real} = SurrealFinite
 
 ϕ = Array{SurrealFinite,1}(0) # empty array of SurrealFinites
-zero(::SurrealFinite) = SurrealFinite("0", ϕ, ϕ )
-one(::SurrealFinite) = SurrealFinite("1", [ zero(SurrealFinite) ], ϕ )
+SurrealFiniteZero = SurrealFinite("0", ϕ, ϕ ) 
+SurrealFiniteOne  = SurrealFinite("1", [ zero(SurrealFinite) ], ϕ ) 
+zero(::SurrealFinite) = SurrealFiniteZero # always use the same zero
+one(::SurrealFinite)  = SurrealFiniteOne  # always use the same one
 # ↑ = one(SurrealFinite)  # this causes an error???
 # ↓ = -one(SurrealFinite) 
 

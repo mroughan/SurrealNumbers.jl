@@ -7,12 +7,13 @@ import Base: convert, promote, promote_rule, hash, show, read, expand,
     summarysize
 
 export Surreal, SurrealFinite, SurrealShort, SurrealDyadic, SurrealDAGstats
-export ExistingSurreals, ExistingCanonicals, ExistingProducts, ExistingSums, Count
-  
+export ExistingSurreals, ExistingCanonicals, ExistingProducts, ExistingSums, ExistingNegations, Count
+export SurrealFiniteZero, SurrealFiniteOne, ϕ  
+   
 # export SurrealAlt2  
 # export ExistingSurrealsAlt2, ExistingProductsAlt2, ExistingSumsAlt2
 
-export <=, zero, one, ==, ≅, ≇, <, -, +, *, ϕ, ≀, ↑, ↓, dag_add,
+export <=, zero, one, ==, ≅, ≇, <, -, +, *, ≀, ↑, ↓, dag_add,
     dali, convert, promote, hash, 
     pf, pff, spf, show, surreal2node, surreal2dot, surreal2dag, surreal2tex, read, expand,
     generation, canonicalise, iscanonical, parents, isancestor, ≺, ≻, ⪯, ⪰, 
