@@ -9,6 +9,7 @@ end
 x0 = SurrealFinite("0", ϕ,   ϕ)  
 x1 = SurrealFinite("1", [x0], ϕ)
 x11 = SurrealFinite("-1", ϕ,  [x0])
+x111  = SurrealDyadic("-1", ϕ,  [x0])
 x4 = SurrealFinite( [x11],  [x1,x0])
 x5 = SurrealFinite( [x11,x0,x4],  [x1])
 x21  = SurrealFinite("2", [x1],  ϕ)
@@ -38,6 +39,8 @@ println("x5 = ", x5)
 
 s1 = convert(SurrealFinite, 1//2)
 s2 = convert(SurrealFinite, 3//4)
+s2a = convert(SurrealShort, 3//4)
+s2b = convert(SurrealDyadic, 3//4) 
 print("s1 = ")
 pf(s1)
 println()
@@ -60,7 +63,10 @@ println()
     @test z === zero(SurrealFinite)
     @test z0 === zero(SurrealFinite)
     @test o === one(SurrealFinite) 
-    @test o1 === one(SurrealFinite) 
+    @test o1 === one(SurrealFinite)
+    @test s2a === s2
+    @test s2b === s2
+    @test x11 == x111
 end
 
 @testset "comparisons" begin
