@@ -61,6 +61,11 @@ numbers. There are many out there better than I can write, e.g.,
 + https://www.cut-the-knot.org/WhatIs/Infinity/SurrealNumbers.shtml
 + https://www.whitman.edu/Documents/Academics/Mathematics/Grimm.pdf
 + https://www.tondering.dk/download/sur16.pdf
++ https://en.wikibooks.org/wiki/Surreal_Numbers_and_Games
++ https://www.encyclopediaofmath.org/index.php/Surreal_numbers
++ https://www.scmp.com/article/241601/game-go-inspires-new-surreal-numbers-theory
++ https://www.edge.org/response-detail/27156
++ https://ncatlab.org/nlab/show/surreal+number#conwaystyle_definitions
 
 The purpose here is simply to introduce the key reasons for
 implementing this in Julia -- it enables users to define

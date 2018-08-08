@@ -595,7 +595,7 @@ spf(x::SurrealFinite) = print("{ ", canonicalise.(x.L), " | ", canonicalise.(x.R
     surreal2dag(io::IO, x::SurrealFinite)
 
  Writes a surreal representation as a DAG out in DOT format for drawing using GraphVis,
- and returns the number of nodes in the graph.
+ and returns the number of nodes in the graph. Returns the number of nodes in the graph. 
 
 ## Arguments
 * `io::IO`: output stream, default is STDOUT

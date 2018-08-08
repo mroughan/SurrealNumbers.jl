@@ -1,13 +1,10 @@
 
-- put "values" into surreals in the sa e way as hashes,
+- put "values" into surreals in the same way as hashes,
      - but for surreals resulting from computations this should be easy 
      - only for arbitrarily created will it be harder
      - instead of "convert" (which should just read the value, create
-       a "value" function to calculate it where needed
-
-check all "generation" results from tables, as there was a bug that
-may break some
-
+       a "value" function to calculate
+       
 reverse direction of the arrows
 
 "width" of DAG,
@@ -16,10 +13,8 @@ reverse direction of the arrows
          - so for each generation number less than g(x), we need to
            record the number of nodes at that generation
 
-one pattern that seems to recur, is that when there are repeated
-
 add code to test error conditions
-   and check bounds on conversion routines make sense
+   and check bounds on conversion routines make sense, e.g., how big a float can we convert
 
 x y only involves multiplications of all of the elements of the DAGs
 of x y, so the number of multiplications is quite constrained
@@ -33,7 +28,7 @@ of x y, so the number of multiplications is quite constrained
 	    list of left and right edges
       but still current version of output to dot would require more
             because of nice printing of arrows
-
+  
    could do an abbreviated DAG picture though, where we only do
    values and arrows, not subboxes
 
@@ -56,7 +51,6 @@ repeated values
 
 box function from Conway
 
-
 principle of caching results vs internal passing of results in DAG in function
    (1) if the result is a surreal, then cache it
    (2) if the result is, Bool, don't
@@ -66,17 +60,6 @@ principle of caching results vs internal passing of results in DAG in function
    (4) binary operation, then cache, uniary recursion through tree, then don't?
 
    (5) cache negations???
-
-... 
-
-"depends on or is a child of" creates a partial order on the surreal forms
-   over and above their 'natural' ordering
-       which is weak 
-
-       - create "ancestor" function, and (wobbly <=) 
-
-       - could be thought of as a "contains" relationship
-
 
 
 
@@ -93,21 +76,15 @@ no. of DAGs, 1,3,25,543, ....
    but also, surreals grow much faster ...
       so some (unlabelled DAGS are isomporphic)
       
+ 
 
 simplification is 'transitive reduction'???
    i.e., the smallest DAG with the same reachability relation??? 
-
-operators to extra left and right sets of a surreal, instead of just x.L and x.R ?
-   parents function, cats left and right 
-
-
 
 build a set-based alternative and compare performance ...
       - convert Alt to mainline
       - add "size" for Dict(Dict) -> [2,4,5, ...]
       - profile 2x5 to see what is still slow
-
-
 
 consider use of globals, and or bootstrapping the code with some cases with known results  
 	 - extend to cache results of many functions
@@ -136,8 +113,6 @@ transfinites and ordinals
 
 rewrite README and
    add internal documentation 
-
-3*3
 
 division
 	- can we do this natively - currently requires conversion to reals and back    
@@ -168,6 +143,7 @@ add some automatically generated random tests
 
 (1) one paper on CodeX, with general stuff on code and algorithms
 (2) one recreational maths paper on the structure and nature of surreal arithmetic
+
 
 
 

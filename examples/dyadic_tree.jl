@@ -37,7 +37,7 @@ for k=1:n
     surreal2node(io, x, m, extra_args=var_args)
     name_map[x] = m
     println(" k = $k, x = $x")
-    tmp = name_map[x.L[1]]
+    tmp = name_map[x.L[1]] 
     println(io, "   node_$m:L -> node_$tmp [color=\"red3\"];")
 
     for f=2:k

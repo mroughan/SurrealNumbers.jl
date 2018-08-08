@@ -27,7 +27,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -77,9 +77,9 @@
      inkscape:window-height="945"
      id="namedview46"
      showgrid="false"
-     inkscape:zoom="5.6568542"
-     inkscape:cx="92.958376"
-     inkscape:cy="119.70391"
+     inkscape:zoom="2.8284271"
+     inkscape:cx="68.886522"
+     inkscape:cy="109.32629"
      inkscape:window-x="1298"
      inkscape:window-y="661"
      inkscape:window-maximized="0"
@@ -163,15 +163,15 @@
      d="m 52.220144,66.29736 c 0,10.2901 0,21.4827 0,31.6782"
      id="path38"
      inkscape:connector-curvature="0"
-     style="fill:none;stroke:#000000" />
+     style="fill:none;stroke:#cc0000" />
   <polygon
      points="30.5001,-60.1374 27,-50.1375 23.5001,-60.1375 "
      id="polygon40"
-     style="fill:#000000;stroke:#000000"
+     style="fill:#cc0000;stroke:#cc0000"
      transform="translate(25.220144,158.29736)" />
   <text
      xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:condensed;font-size:11.25px;line-height:125%;font-family:'Abadi MT Condensed Extra Bold';-inkscape-font-specification:'Abadi MT Condensed Extra Bold, Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#a40000;fill-opacity:1;stroke:none;stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:condensed;font-size:11.25px;line-height:125%;font-family:'Abadi MT Condensed Extra Bold';-inkscape-font-specification:'Abadi MT Condensed Extra Bold, Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#204a87;fill-opacity:1;stroke:none;stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
      x="0.72014183"
      y="8.5473633"
      id="text1433"
@@ -180,10 +180,10 @@
        id="tspan1431"
        x="0.72014183"
        y="8.5473633"
-       style="fill:#a40000;stroke-width:0.75px">value</tspan></text>
+       style="fill:#204a87;stroke-width:0.75px;">value</tspan></text>
   <text
      xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:condensed;font-size:11.25px;line-height:125%;font-family:'Abadi MT Condensed Extra Bold';-inkscape-font-specification:'Abadi MT Condensed Extra Bold, Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:condensed;font-size:11.25px;line-height:125%;font-family:'Abadi MT Condensed Extra Bold';-inkscape-font-specification:'Abadi MT Condensed Extra Bold, Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#204a87;fill-opacity:1;stroke:none;stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
      x="121.28265"
      y="80.734871"
      id="text1441"
@@ -192,18 +192,18 @@
        id="tspan1439"
        x="121.28265"
        y="80.734871"
-       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14px;font-family:Times, serif;-inkscape-font-specification:'Times, serif Italic';fill:#a40000;stroke-width:0.75px">X<tspan
-   style="font-size:64.99999762%;baseline-shift:sub"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14px;font-family:Times, serif;-inkscape-font-specification:'Times, serif Italic';fill:#204a87;stroke-width:0.75px;">X<tspan
+   style="font-size:64.99999762%;baseline-shift:sub;fill:#204a87;"
    id="tspan1447">R</tspan></tspan></text>
   <ellipse
-     style="opacity:1;fill:none;fill-opacity:0;fill-rule:nonzero;stroke:#a40000;stroke-width:0.80000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     style="opacity:1;fill:#5c3566;fill-opacity:0;fill-rule:nonzero;stroke:#204a87;stroke-width:0.80000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
      id="path1427"
      cx="66.048203"
      cy="29.980009"
      rx="9.1875467"
      ry="9.1521921" />
   <path
-     style="opacity:1;fill:none;fill-opacity:0;fill-rule:nonzero;stroke:#a40000;stroke-width:0.80000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     style="opacity:1;fill:#5c3566;fill-opacity:0;fill-rule:nonzero;stroke:#204a87;stroke-width:0.80000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
      d="M 56.502258,29.714842 C 41.083191,28.186891 27.148308,22.516384 16.462336,9.5622979"
      id="path1429"
      inkscape:connector-curvature="0"
@@ -214,9 +214,9 @@
      cy="57.748528"
      cx="79.040634"
      id="ellipse1435"
-     style="opacity:1;fill:none;fill-opacity:0;fill-rule:nonzero;stroke:#a40000;stroke-width:0.8;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+     style="opacity:1;fill:#5c3566;fill-opacity:0;fill-rule:nonzero;stroke:#204a87;stroke-width:0.8;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
   <path
-     style="opacity:1;fill:#a40000;fill-opacity:0;fill-rule:nonzero;stroke:#a40000;stroke-width:0.80000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     style="opacity:1;fill:#5c3566;fill-opacity:0;fill-rule:nonzero;stroke:#204a87;stroke-width:0.80000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
      d="m 85.230195,63.374445 c 10.590426,6.937214 17.481615,10.109746 35.114955,12.672919"
      id="path1437"
      inkscape:connector-curvature="0"
@@ -226,24 +226,24 @@
      inkscape:connector-curvature="0"
      id="path1458"
      d="m 13.595589,54.691879 30.088,2.679781"
-     style="opacity:1;fill:#a40000;fill-opacity:0;fill-rule:nonzero;stroke:#a40000;stroke-width:0.80000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+     style="opacity:1;fill:#5c3566;fill-opacity:0;fill-rule:nonzero;stroke:#204a87;stroke-width:0.80000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
   <text
      id="text1464"
      y="59.359863"
      x="0.15764184"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:condensed;font-size:11.25px;line-height:125%;font-family:'Abadi MT Condensed Extra Bold';-inkscape-font-specification:'Abadi MT Condensed Extra Bold, Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:condensed;font-size:11.25px;line-height:125%;font-family:'Abadi MT Condensed Extra Bold';-inkscape-font-specification:'Abadi MT Condensed Extra Bold, Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#204a87;fill-opacity:1;stroke:none;stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
      xml:space="preserve"
      sodipodi:linespacing="125%"><tspan
-       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14px;font-family:Times, serif;-inkscape-font-specification:'Times, serif Italic';fill:#a40000;stroke-width:0.75px"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14px;font-family:Times, serif;-inkscape-font-specification:'Times, serif Italic';fill:#204a87;stroke-width:0.75px;"
        y="59.359863"
        x="0.15764184"
        id="tspan1462"
        sodipodi:role="line">X<tspan
    id="tspan1460"
-   style="font-size:64.99999762%;baseline-shift:sub">L</tspan></tspan></text>
+   style="font-size:64.99999762%;baseline-shift:sub;fill:#204a87;">L</tspan></tspan></text>
   <text
      xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:condensed;font-size:11.25px;line-height:125%;font-family:'Abadi MT Condensed Extra Bold';-inkscape-font-specification:'Abadi MT Condensed Extra Bold, Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:condensed;font-size:11.25px;line-height:125%;font-family:'Abadi MT Condensed Extra Bold';-inkscape-font-specification:'Abadi MT Condensed Extra Bold, Condensed';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#204a87;fill-opacity:1;stroke:none;stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
      x="56.431545"
      y="103.66055"
      id="text1480"
@@ -252,9 +252,9 @@
        id="tspan1478"
        x="56.431545"
        y="103.66055"
-       style="fill:#a40000;stroke-width:0.75px">parent</tspan></text>
+       style="fill:#204a87;stroke-width:0.75px;">parent</tspan></text>
   <ellipse
-     style="opacity:1;fill:none;fill-opacity:0;fill-rule:nonzero;stroke:#a40000;stroke-width:0.80000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     style="opacity:1;fill:#5c3566;fill-opacity:0;fill-rule:nonzero;stroke:#204a87;stroke-width:0.80000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
      id="ellipse4216"
      cx="52.453419"
      cy="58.031372"
