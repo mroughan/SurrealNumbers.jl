@@ -27,8 +27,8 @@ abstract type Surreal <: Real end
  
 @static if VERSION < v"0.7.0"
     const stdout = STDOUT
-end
-
+end 
+  
 # include("Dyadic.jl")
 include("SurrealFinite.jl")
 # include("SurrealTrans.jl") 

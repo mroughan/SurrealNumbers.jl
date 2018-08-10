@@ -70,7 +70,7 @@ end
 Count = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≦'=>0)
 
 function clearcache() 
-    global ExistingSurreals
+    global ExistingSurreals 
     global ExistingCanonicals
     global ExistingProducts
     global ExistingSums
@@ -154,6 +154,7 @@ function convert(::Type{SurrealFinite}, f::Float64 )
     end 
 end 
 dali(x) = convert(SurrealFinite, x)
+SurrealFinite(x) = convert(SurrealFinite, x)
 
 function convert(::Type{Rational}, s::SurrealFinite )
     global ExistingSurreals
@@ -196,10 +197,13 @@ function convert(::Type{Rational}, s::SurrealFinite )
     return ExistingSurreals[s]
 end
 
+
 # some catch alls
 convert(::Type{T}, s::SurrealFinite ) where {T <: AbstractFloat} = convert(T, convert(Rational, s) )
 convert(::Type{T}, s::SurrealFinite ) where {T <: Integer} = convert(T, convert(Rational, s) )
 convert(::Type{Rational{T}}, s::SurrealFinite ) where {T <: Integer} = convert(Rational{T}, convert(Rational, s) )
+AbstractFloat(x::SurrealFinite) = convert(AbstractFloat, x)
+# Int64(x::SurrealFinite) = convert(Int64, x)
 
 function convert(::Type{String}, s::SurrealFinite ) 
     # try to work out a nice way to print it
@@ -219,7 +223,7 @@ promote_rule(::Type{T}, ::Type{SurrealFinite}) where {T<:Real} = SurrealFinite
     const ϕ = Array{SurrealFinite,1}(0) # empty array of SurrealFinites
 else
     const ϕ = Array{SurrealFinite,1}(undef,0) # empty array of SurrealFinites
-end
+end 
 const SurrealZero = SurrealFinite("0", ϕ, ϕ ) 
 const SurrealOne  = SurrealFinite("1", [ zero(SurrealFinite) ], ϕ ) 
 const SurrealMinusOne  = SurrealFinite("-1", ϕ, [ zero(SurrealFinite) ] ) 
@@ -307,7 +311,7 @@ function equals(x::SurrealFinite, y::SurrealFinite, processed_list::Dict{UInt64,
 end
 ==(x::SurrealFinite, y::SurrealFinite) = x===y || equals(x, y, Dict{UInt64,Bool}())
 iszero(x::SurrealFinite) = isempty(x.L) && isempty(x.R)
-
+ 
 # comparisons between sets (i.e., arrays) are all-to-all, so
 #   (1) don't have to be the same size
 #   (2) the < is not exactly the same as the < defined above
@@ -522,32 +526,57 @@ expand(X::Array{SurrealFinite}; level=0) = isempty(X) ? "ϕ" : join(expand.(X; l
 # this has to parse a surreal written into a string 
 function convert(::Type{SurrealFinite}, s::AbstractString ) 
     # interpret, (i) numbers as canonical, (ii) phi, \phi, ϕ correctly, (iii) structure
-    s = replace(s, r"\s+", "") # remove white space
-    s = replace(s, r"phi|\\phi|ϕ|\{\}", "") # replace phi or \phi with empty set
+    @static if VERSION < v"0.7.0"
+        s = replace(s, r"\s+", "") # remove white space
+        s = replace(s, r"phi|\\phi|ϕ|\{\}", "") # replace phi or \phi with empty set
+    else
+        s = replace(s, r"\s+" => "") # remove white space
+        s = replace(s, r"phi|\\phi|ϕ|\{\}" => "") # replace phi or \phi with empty set
+    end
     # println("     s1 = $s")
     not_end = true
     basic_number = r"\{([^{}|]*)\|([^{|}]*)\}"
     while not_end
-        if ismatch(basic_number, s)
-            s = replace(s, basic_number, s"SurrealFinite([\1],[\2])") # remove comments
-        else 
-            not_end = false
+        @static if VERSION < v"0.7.0"
+            if ismatch(basic_number, s)
+                s = replace(s, basic_number, s"SurrealFinite([\1],[\2])") # remove comments
+            else 
+                not_end = false
+            end
+        else
+            if occursin(basic_number, s)
+                s = replace(s, basic_number => s"SurrealFinite([\1],[\2])") # remove comments
+            else 
+                not_end = false
+            end
         end
     end
     # println("     s2 = $s")
-    return eval(parse(s))
+    return eval(Meta.parse(s))
 end
 
 # read in the full format
 function read(io::IO, ::Type{SurrealFinite}, n::Int=1)
-    X = Array{SurrealFinite}(n,)
+    @static if VERSION < v"0.7.0"
+        X = Array{SurrealFinite,1}(n)
+    else
+        X = Array{SurrealFinite,1}(undef,n) 
+    end  
     k = 1
     while !eof(io) && k<=n
-        line = replace(readline(io), r"#.*", s"") # remove comments
         # println(" $k:   $line")
-        if ismatch(r"\S", line)
-            X[k] = convert(SurrealFinite, line)
-            k += 1
+        @static if VERSION < v"0.7.0"
+            line = replace(readline(io), r"#.*", s"") # remove comments
+            if ismatch(r"\S", line)
+                X[k] = convert(SurrealFinite, line)
+                k += 1
+            end 
+        else
+            line = replace(readline(io), r"#.*" => s"") # remove comments
+            if occursin(r"\S", line)
+                X[k] = convert(SurrealFinite, line)
+                k += 1
+            end
         end
     end 
     return X
@@ -557,11 +586,19 @@ end
 # write out a string suitable for inclusion into latex docs
 function surreal2tex(io::IO, x::SurrealFinite; level=0)
     s = expand(x; level=level)
-    s = replace(s, r"\{", " \\{ ") 
-    s = replace(s, r"ϕ", " \\phi ") 
-    s = replace(s, r"\|", " \\mid ") 
-    s = replace(s, r"\}", " \\} ")
-    s = replace(s, r"(\d+)//(\d+)", s"\\frac{\1}{\2}")
+    @static if VERSION < v"0.7.0"
+        s = replace(s, r"\{", " \\{ ") 
+        s = replace(s, r"ϕ", " \\phi ") 
+        s = replace(s, r"\|", " \\mid ") 
+        s = replace(s, r"\}", " \\} ")
+        s = replace(s, r"(\d+)//(\d+)", s"\\frac{\1}{\2}")
+    else
+        s = replace(s, r"\{" => " \\{ ") 
+        s = replace(s, r"ϕ" => " \\phi ") 
+        s = replace(s, r"\|" => " \\mid ") 
+        s = replace(s, r"\}" => " \\} ")
+        s = replace(s, r"(\d+)//(\d+)" => s"\\frac{\1}{\2}")
+    end
     println(io,s)
 end
 surreal2tex(x::SurrealFinite; level=0) = surreal2tex(stdout, x; level=level)
@@ -861,7 +898,7 @@ function floor(T::Type, s::SurrealFinite)
             end
             return convert(T, a) # N.B. returns canonical form of floor 
         end
-    elseif s < one(s)
+    elseif s < one(s) 
         return zero(T)
     elseif s < 2
         return one(T)
