@@ -32,8 +32,8 @@ SurrealFinite(L::Array, R::Array ) =
     SurrealFinite( "", convert(Array{SurrealFinite},L), convert(Array{SurrealFinite},R), zero(UInt64))
 ≀(L::Array, R::Array) = SurrealFinite(L::Array, R::Array )
  
-SurrealShort  = SurrealFinite 
-SurrealDyadic = SurrealFinite 
+const SurrealShort  = SurrealFinite 
+const SurrealDyadic = SurrealFinite 
 
 function hash(x::SurrealFinite, h::UInt)
     if x.h == 0
@@ -224,10 +224,12 @@ end
 
 # promote all numbers to surreals for calculations
 promote_rule(::Type{T}, ::Type{SurrealFinite}) where {T<:Real} = SurrealFinite
-
-ϕ = Array{SurrealFinite,1}(0) # empty array of SurrealFinites
-SurrealFiniteZero = SurrealFinite("0", ϕ, ϕ ) 
-SurrealFiniteOne  = SurrealFinite("1", [ zero(SurrealFinite) ], ϕ ) 
+ 
+const ϕ = Array{SurrealFinite,1}(0) # empty array of SurrealFinites
+const SurrealFiniteZero = SurrealFinite("0", ϕ, ϕ ) 
+const SurrealFiniteOne  = SurrealFinite("1", [ zero(SurrealFinite) ], ϕ ) 
+const SurrealFiniteMinusOne  = SurrealFinite("-1", ϕ, [ zero(SurrealFinite) ] ) 
+const SurrealFiniteTwo  = SurrealFinite("2", [SurrealFiniteOne], ϕ ) 
 zero(::SurrealFinite) = SurrealFiniteZero # always use the same zero
 one(::SurrealFinite)  = SurrealFiniteOne  # always use the same one
 # ↑ = one(SurrealFinite)  # this causes an error???

@@ -6,6 +6,7 @@ out_dir = "Data/"
   
 convert(SurrealFinite, 1) * convert(SurrealFinite, 2) 
 a = convert(SurrealFinite, 2) * convert(SurrealFinite, 2) 
+b = convert(SurrealFinite, 1) - convert(SurrealFinite, 1) 
 
 n2 = 12
 n3 = 4
@@ -19,8 +20,8 @@ n_14 = 3
 # n_12 = 4
 # n_14 = 2
 
-ns1 = convert.(SurrealFinite, [0; 1:n2;        2;      1:n3;       1:n4;          1:n_12;          1:n_14; 1//2; 1//2; 1//4; a])
-ns2 = convert.(SurrealFinite, [2; 2*ones(n2); -2; 3*ones(n3); 4*ones(n4); 1//2*ones(n_12); 1//4*ones(n_14); 1//2; 1//4; 1//4; 2]) 
+ns1 = convert.(SurrealFinite, [0; 1:n2;        2;      1:n3;       1:n4;          1:n_12;          1:n_14; 1//2; 1//2; 1//4; a; b])
+ns2 = convert.(SurrealFinite, [2; 2*ones(n2); -2; 3*ones(n3); 4*ones(n4); 1//2*ones(n_12); 1//4*ones(n_14); 1//2; 1//4; 1//4; 2; 2]) 
 # ns1 = convert.(SurrealFinite, [0:n2-1;           1:n3;       1:n4;         1:n_12;           1:n_14; 1//2; 1//2])
 # ns2 = convert.(SurrealFinite, [2*ones(n2); 3*ones(n3); 4*ones(n4); 1//2*ones(n_12); 1//4*ones(n_14); 1//2; 1//4]) 
 # ns1 = convert.(SurrealFinite, [0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 3; a]) 

@@ -8,7 +8,7 @@ import Base: convert, promote, promote_rule, hash, show, read, expand,
 
 export Surreal, SurrealFinite, SurrealShort, SurrealDyadic, SurrealDAGstats
 export ExistingSurreals, ExistingCanonicals, ExistingProducts, ExistingSums, ExistingNegations, Count
-export SurrealFiniteZero, SurrealFiniteOne, ϕ  
+export SurrealFiniteZero, SurrealFiniteOne, SurrealFiniteMinusOne, SurrealFiniteTwo, ϕ  
    
 # export SurrealAlt2  
 # export ExistingSurrealsAlt2, ExistingProductsAlt2, ExistingSumsAlt2
@@ -27,7 +27,7 @@ abstract type Surreal <: Real end
  
 # include("Dyadic.jl")
 include("SurrealFinite.jl")
-# include("SurrealTrans.jl")
+# include("SurrealTrans.jl") 
 # include("SurrealAlt2.jl")
 
 end # module 
