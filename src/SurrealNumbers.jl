@@ -8,7 +8,7 @@ import Base: convert, promote, promote_rule, hash, show, read, expand,
 
 export Surreal, SurrealFinite, SurrealShort, SurrealDyadic, SurrealDAGstats
 export ExistingSurreals, ExistingCanonicals, ExistingProducts, ExistingSums, ExistingNegations, Count
-export SurrealFiniteZero, SurrealFiniteOne, SurrealFiniteMinusOne, SurrealFiniteTwo, ϕ  
+export SurrealZero, SurrealOne, SurrealMinusOne, SurrealTwo, ϕ  
    
 # export SurrealAlt2  
 # export ExistingSurrealsAlt2, ExistingProductsAlt2, ExistingSumsAlt2

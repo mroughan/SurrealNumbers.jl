@@ -67,6 +67,10 @@ println()
     @test s2a === s2
     @test s2b === s2
     @test x11 == x111
+    @test dali(0) === SurrealZero
+    @test dali(1) === SurrealOne
+    @test dali(-1) == SurrealMinusOne
+    @test dali(2) == SurrealTwo
 end
 
 @testset "comparisons" begin

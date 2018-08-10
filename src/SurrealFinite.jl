@@ -103,14 +103,14 @@ end
 
 function convert(::Type{SurrealFinite}, n::Int )  
     global ExistingCanonicals
-    global SurrealFiniteZero
-    global SurrealFiniteOne 
+    global SurrealZero
+    global SurrealOne 
     if haskey(ExistingCanonicals, Rational(n)) 
         return ExistingCanonicals[Rational(n)]
     elseif n==0 
-        result = SurrealFiniteZero
+        result = SurrealZero
     elseif n==1 
-        result = SurrealFiniteOne
+        result = SurrealOne
     elseif n>1
         result = SurrealFinite(string(n), [convert(SurrealFinite, n-1)], ϕ )
     else
@@ -226,12 +226,12 @@ end
 promote_rule(::Type{T}, ::Type{SurrealFinite}) where {T<:Real} = SurrealFinite
  
 const ϕ = Array{SurrealFinite,1}(0) # empty array of SurrealFinites
-const SurrealFiniteZero = SurrealFinite("0", ϕ, ϕ ) 
-const SurrealFiniteOne  = SurrealFinite("1", [ zero(SurrealFinite) ], ϕ ) 
-const SurrealFiniteMinusOne  = SurrealFinite("-1", ϕ, [ zero(SurrealFinite) ] ) 
-const SurrealFiniteTwo  = SurrealFinite("2", [SurrealFiniteOne], ϕ ) 
-zero(::SurrealFinite) = SurrealFiniteZero # always use the same zero
-one(::SurrealFinite)  = SurrealFiniteOne  # always use the same one
+const SurrealZero = SurrealFinite("0", ϕ, ϕ ) 
+const SurrealOne  = SurrealFinite("1", [ zero(SurrealFinite) ], ϕ ) 
+const SurrealMinusOne  = SurrealFinite("-1", ϕ, [ zero(SurrealFinite) ] ) 
+const SurrealTwo  = SurrealFinite("2", [SurrealOne], ϕ ) 
+zero(::SurrealFinite) = SurrealZero # always use the same zero
+one(::SurrealFinite)  = SurrealOne  # always use the same one
 # ↑ = one(SurrealFinite)  # this causes an error???
 # ↓ = -one(SurrealFinite) 
 
