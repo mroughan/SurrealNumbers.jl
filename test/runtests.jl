@@ -127,52 +127,6 @@ end
 end
 
 
-@testset "surreal specific functions" begin
-    @test generation(x0) == 0
-    @test generation(x1) == 1
-    @test generation(x21) == 2
-    @test generation(x22) == 2
-    @test generation(x4) == 2
-    @test generation(x5) == 3
-    @test generation( x43 ) == 6
-    @test generation( convert(SurrealFinite,4) ) == 4
-
-    @test size(x0) == 1
-    @test size(x1) == 2
-    @test size(x41) == 5
-    @test size(x43) == 21
-    @test size(x5) == 12
-    @test size(s2) == 7
-
-    @test n_zeros(x0) == 1
-    @test n_zeros(x1) == 1
-    @test n_zeros(x41) == 1
-    @test n_zeros(x43) == 5
-    @test n_zeros(x5) == 6
-    @test n_zeros(s2) == 3
-
-    @test depth_max(x0) == 0
-    @test depth_max(x1) == 1
-    @test depth_max(x41) == 4
-    @test depth_max(x43) == 6
-    @test depth_max(x5) == 3
-    @test depth_max(s2) == 3
-
-    @test depth_av(x0) == 0.0
-    @test depth_av(x1) == 1.0
-    @test depth_av(x41) == 4.0
-    @test depth_av(x43) == 6.0
-    @test depth_av(x5) == 13/6
-    @test depth_av(s2) == 7/3
-
-    @test all( sort(count_n(x0)) .== [0] )
-    @test all( sort(count_n(x1)) .== [0, 1] )
-    @test all( sort(count_n(x41)) .== [0,1,2,3,4] )
-    @test all( sort(count_n(x43)) .== [-1,0,0,0,0,0,0,1,1,1,1,1,2,2,2,2,3,3,3,4,4] )
-    @test all( sort(count_n(x5)) .== [-1, -1, -1//2, 0, 0, 0, 0, 0, 0, 1//2, 1, 1] )
-    @test all( sort(count_n(s2)) .== [0, 0, 0, 1//2, 3//4, 1, 1] )
-end
-
 @testset "convert to surreal" begin
     @test convert(SurrealFinite,2)*convert(SurrealFinite,2) ≅ convert(SurrealFinite,4)
     @test convert(SurrealFinite,2)*convert(SurrealFinite,-3) ≅ convert(SurrealFinite,-6)
@@ -394,29 +348,30 @@ end
     @test surreal2dot(DevNull, x0) == 1
     @test surreal2dot(x0) == 1
     @test surreal2dot(DevNull, x23) == 5
-    @test surreal2dot(DevNull, x43) == size(x43)
+    @test surreal2dot(DevNull, x43) == tree_nodes(x43)
     @test surreal2dag(DevNull, x0) == 1
     @test surreal2dag(x0) == 1
     @test surreal2dag(DevNull, x23) == 4
-    @test surreal2dag(DevNull, x43) == size_u(x43)
+    @test surreal2dag(DevNull, x43) == nodes(x43)
     # should compare these against a reference, but sort could get non-unique order, so potential for difference
 end
 
 
 x32 = convert(SurrealFinite, 3/4) + convert(SurrealFinite, 3/4)
 @testset "DAG statistics" begin
-    @test dag_stats(x1) == SurrealDAGstats(2,1,1,ϕ,1,1,0,1)
-    @test dag_stats(x41) == SurrealDAGstats(5,4,4,ϕ,1,4,0,4)
-    @test dag_stats(x43) == SurrealDAGstats(11,14,6,ϕ,5,4,-1,4)
-    @test dag_stats(x00) == SurrealDAGstats(4,4,2,ϕ,2,0,-1,1) 
-    @test dag_stats(x5) == SurrealDAGstats(5,9,3,ϕ,6,1//2,-1,1)
-    @test dag_stats(s2) == SurrealDAGstats(4,5,3,ϕ,3,3//4,0,1)    
-    @test dag_stats(x6) == SurrealDAGstats(45,82,12,ϕ,625,6,-3,7) 
-    @test dag_stats(x1, Dict{SurrealFinite,SurrealDAGstats}())[2] .== Dict(x0=>SurrealDAGstats(1,0,0,ϕ,1,0,0,0),
-                                                                           x1=>SurrealDAGstats(2,1,1,ϕ,1,1,0,1)    )
-
+    @test dag_stats(x1) == SurrealDAGstats(2,2,1,1,ϕ,1,1,0,1)
+    @test dag_stats(x41) == SurrealDAGstats(5,5,4,4,ϕ,1,4,0,4)
+    @test dag_stats(x43) == SurrealDAGstats(11,21,14,6,ϕ,5,4,-1,4)
+    @test dag_stats(x00) == SurrealDAGstats(4,5,4,2,ϕ,2,0,-1,1) 
+    @test dag_stats(x5) == SurrealDAGstats(5,12,9,3,ϕ,6,1//2,-1,1)
+    @test dag_stats(s2) == SurrealDAGstats(4,7,5,3,ϕ,3,3//4,0,1)    
+    @test dag_stats(x6) == SurrealDAGstats(45,2574,82,12,ϕ,625,6,-3,7) 
+    @test dag_stats(x1, Dict{SurrealFinite,SurrealDAGstats}())[2] .== Dict(x0=>SurrealDAGstats(1,1,0,0,ϕ,1,0,0,0),
+                                                                           x1=>SurrealDAGstats(2,2,1,1,ϕ,1,1,0,1)    )
     @test dag_stats(x43).nodes == 11
     @test dag_stats(x43).nodes == nodes(x43)
+    @test dag_stats(x43).tree_nodes == 21
+    @test dag_stats(x43).tree_nodes == tree_nodes(x43)
     @test dag_stats(x43).edges == 14
     @test dag_stats(x43).edges == edges(x43)
     @test dag_stats(x43).generation == 6
@@ -424,7 +379,23 @@ x32 = convert(SurrealFinite, 3/4) + convert(SurrealFinite, 3/4)
     @test dag_stats(x43).value == 4
     @test dag_stats(x43).minval == -1
     @test dag_stats(x43).maxval == 4
-   
+    @test generation(x0) == 0
+    
+    @test generation(x1) == 1
+    @test generation(x21) == 2
+    @test generation(x22) == 2
+    @test generation(x4) == 2
+    @test generation(x5) == 3
+    @test generation( x43 ) == 6
+    @test generation( convert(SurrealFinite,4) ) == 4
+
+    @test nodes(x0) == 1
+    @test nodes(x1) == 2
+    @test nodes(x41) == 5
+    @test nodes(x43) == 11
+    @test nodes(x5) == 5
+    @test nodes(s2) == 4
+
     @test breadth(x1) == 1
     @test breadth(x43) == 5
     

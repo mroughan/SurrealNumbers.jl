@@ -86,21 +86,6 @@ function clearcache()
     return 1
 end
 
-# structure to hold stats on a surreal form
-struct SurrealDAGstats
-    nodes::Integer # nodes in its DAG
-    edges::Integer # edges in its DAG
-    generation::Integer # generation/birthday of the surreal
-    longest_path::Array{SurrealFinite,1} 
-    paths::Int128 # number of paths from source to sink
-    value::Rational
-    minval::Rational 
-    maxval::Rational
-end
-# CacheNodes = Dict{SurrealFinite,Integer}()
-# CacheEdges = Dict{SurrealFinite,Integer}()
-# can't cache these in recursive calculation on DAG because there are overlaps
-
 function convert(::Type{SurrealFinite}, n::Int )  
     global ExistingCanonicals
     global SurrealZero
@@ -150,7 +135,11 @@ function convert(::Type{SurrealFinite}, f::Float64 )
         s = sign(f)
         c = significand(f) 
         q = exponent(f)
-        t = bits(f)[13:end]
+        @static if VERSION < v"0.7.0"
+            t = bits(f)[13:end]
+        else
+            t = bitstring(f)[13:end]
+        end
         p1 = parse(Int, "0b1" * t)
         p2 = p1 * 2.0^(-52 + q)
         r = convert(Rational,s) * p1 // 2^(52 - q)  # rational representation of the Float
@@ -225,12 +214,18 @@ end
 # promote all numbers to surreals for calculations
 promote_rule(::Type{T}, ::Type{SurrealFinite}) where {T<:Real} = SurrealFinite
  
-const ϕ = Array{SurrealFinite,1}(0) # empty array of SurrealFinites
+
+@static if VERSION < v"0.7.0"
+    const ϕ = Array{SurrealFinite,1}(0) # empty array of SurrealFinites
+else
+    const ϕ = Array{SurrealFinite,1}(undef,0) # empty array of SurrealFinites
+end
 const SurrealZero = SurrealFinite("0", ϕ, ϕ ) 
 const SurrealOne  = SurrealFinite("1", [ zero(SurrealFinite) ], ϕ ) 
 const SurrealMinusOne  = SurrealFinite("-1", ϕ, [ zero(SurrealFinite) ] ) 
 const SurrealTwo  = SurrealFinite("2", [SurrealOne], ϕ ) 
-const SurrealMinusTwo  = SurrealFinite("-1", ϕ, [SurrealOne] ) 
+const SurrealThree  = SurrealFinite("3", [SurrealTwo], ϕ )  
+const SurrealMinusTwo  = SurrealFinite("-2", ϕ, [SurrealOne] ) 
 zero(::SurrealFinite) = SurrealZero # always use the same zero
 one(::SurrealFinite)  = SurrealOne  # always use the same one
 # ↑ = one(SurrealFinite)  # this causes an error???
@@ -483,7 +478,7 @@ end
 # print the first level in full (ignoring the top level shorthand if present)
 #   these should be replaced using "expand"
 pf(io::IO, x::SurrealFinite) = println(io, "{ ", x.L, " | ", x.R, " }")
-pf(x::SurrealFinite) = pf(STDOUT, x) 
+pf(x::SurrealFinite) = pf(stdout, x) 
 
 """
     expand(x::SurrealFinite; level=0) 
@@ -569,12 +564,16 @@ function surreal2tex(io::IO, x::SurrealFinite; level=0)
     s = replace(s, r"(\d+)//(\d+)", s"\\frac{\1}{\2}")
     println(io,s)
 end
-surreal2tex(x::SurrealFinite; level=0) = surreal2tex(STDOUT, x; level=level)
+surreal2tex(x::SurrealFinite; level=0) = surreal2tex(stdout, x; level=level)
  
 # standard show will use shorthand when available
 function show(io::IO, x::SurrealFinite)
-    if io==STDOUT && x.shorthand != ""
-        print_with_color(:bold, io, x.shorthand ) # could be :red
+    if io==stdout && x.shorthand != ""       
+        @static if VERSION < v"0.7.0"
+            print_with_color(:bold, io, x.shorthand ) # could be :red
+        else
+            printstyled(io, x.shorthand; bold=true)
+        end
     elseif x.shorthand != ""
         print(io, x.shorthand )
     else
@@ -601,7 +600,7 @@ spf(x::SurrealFinite) = print("{ ", canonicalise.(x.L), " | ", canonicalise.(x.R
  and returns the number of nodes in the graph. Returns the number of nodes in the graph. 
 
 ## Arguments
-* `io::IO`: output stream, default is STDOUT
+* `io::IO`: output stream, default is stdout
 * `x::SurrealFinite`: the number to write out
     
 ## Examples
@@ -661,7 +660,7 @@ function surreal2dag_f(io::IO, x::SurrealFinite, k::Integer, SurrealsinDAG)
     end 
     return m 
 end
-surreal2dag(x::SurrealFinite) = surreal2dag(STDOUT, x)
+surreal2dag(x::SurrealFinite) = surreal2dag(stdout, x)
 
 
 """ 
@@ -672,7 +671,7 @@ surreal2dag(x::SurrealFinite) = surreal2dag(STDOUT, x)
  and returns the number of nodes in the graph.
 
 ## Arguments
-* `io::IO`: output stream, default is STDOUT
+* `io::IO`: output stream, default is stdout
 * `x::SurrealFinite`: the number to write out
     
 ## Examples
@@ -770,7 +769,7 @@ function surreal2node(io::IO, x::SurrealFinite, k::Integer; extra_args::String="
                          </TABLE>>,$extra_args
                          ];""")
 end
-surreal2dot(x::SurrealFinite) = surreal2dot(STDOUT, x)
+surreal2dot(x::SurrealFinite) = surreal2dot(stdout, x)
 
 #######################################################
 
@@ -968,12 +967,27 @@ isancestor(s::SurrealFinite, t::SurrealFinite) = s ⪯ t && s!=t
 ############################################
 
 # extra analysis functions
+
+# structure to hold stats on a surreal form
+struct SurrealDAGstats
+    nodes::Integer # nodes in its DAG
+    tree_nodes::Integer # nodes in a tree-based representation of the graph
+    edges::Integer # edges in its DAG
+    generation::Integer # generation/birthday of the surreal
+    longest_path::Array{SurrealFinite,1} 
+    paths::Int128 # number of paths from source to sink
+    value::Rational
+    minval::Rational 
+    maxval::Rational
+end
+ 
 #    LP=true means keep track of a longest path
 #    V =true means keep track of values
-# have these as switches, because they are expensive to calculate on large DAGs
+# have these as switches, because they are expensive to calculate on large DAGs 
 function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealDAGstats}; LP=false, V=true ) 
-    if s==zero(s)    
+    if s == zero(s)    
         nodes = 1 
+        tree_nodes = 1
         edges = 0
         generation = 0
         longest_path = LP ? [zero(s)] : ϕ # important this be \phi and not an arbitrary empty array
@@ -984,6 +998,7 @@ function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealD
     else
         P = parents(s) 
         nodes = 1
+        tree_nodes = 1
         edges = length(P)
         generation = 0
         longest_path = LP ? [zero(s)] : ϕ
@@ -996,32 +1011,30 @@ function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealD
                 (stats,l) = dag_stats(p, processed_list; LP=LP, V=V) 
                 nodes += stats.nodes 
                 edges += stats.edges 
-                if stats.generation > generation
-                    generation = stats.generation 
-                    longest_path = LP ? copy(stats.longest_path) : ϕ
-                end  
-                # processed_list = unique([processed_list; l]) # prolly not best way to implement this?
-                paths += stats.paths
                 minval = min(minval, stats.minval)
                 maxval = max(maxval, stats.maxval)
             else
-                if processed_list[p].generation > generation
-                    generation = processed_list[p].generation 
-                    longest_path = LP ? copy(processed_list[p].longest_path) : ϕ
-                end   
-                paths += processed_list[p].paths
-            end
+                stats = processed_list[p]
+            end 
+            if stats.generation > generation
+                generation = stats.generation 
+                longest_path = LP ? copy(stats.longest_path) : ϕ
+            end  
+            tree_nodes += stats.tree_nodes
+            paths += stats.paths
         end
         generation += 1 
         longest_path = LP ? [longest_path; s] : ϕ
-    end   
-    stats = SurrealDAGstats(nodes, edges, generation, longest_path, paths, value, minval, maxval) 
+    end  
+    stats = SurrealDAGstats(nodes, tree_nodes, edges, generation, longest_path, paths, value, minval, maxval) 
     processed_list[s] = stats # could make this a reverse list, ...
     return ( stats, processed_list )  
 end 
 dag_stats(s::SurrealFinite; LP=false, V=true) = dag_stats(s, Dict{SurrealFinite,SurrealDAGstats}(); LP=LP, V=V)[1] 
 nodes(s::SurrealFinite) = dag_stats(s).nodes 
 edges(s::SurrealFinite) = dag_stats(s).edges
+paths(s::SurrealFinite) = dag_stats(s).paths
+tree_nodes(s::SurrealFinite) = dag_stats(s).tree_nodes 
 function breadth(s::SurrealFinite) 
     d = dag_stats(s)
     return d.maxval - d.minval
@@ -1031,6 +1044,10 @@ function width(s::SurrealFinite)
     #    maybe maxval - minval for a given generation?
     0
 end
+
+###########################################################
+### work towards a formal DAG representation and tools
+
 function surrealDAG(s::SurrealFinite)
     dag_dict = dag_stats(s, Dict{SurrealFinite,SurrealDAGstats}())[2] 
     # dag = Array{SurrealDAGstats}(length(dag_dict)) # sort from simplest to least simple
@@ -1047,7 +1064,7 @@ function dag_add(x::SurrealFinite, y::SurrealFinite)
     # just intended to check the sums and cartesian products
     dag_x = surrealDAG(x)
     n_x = length(dag_x)
-    dag_y = surrealDAG(y)
+    dag_y = surrealDAG(y) 
     n_y = length(dag_y)
     dag_z = Array{SurrealFinite}( n_x * n_y )
     for i=1:n_x
@@ -1057,59 +1074,5 @@ function dag_add(x::SurrealFinite, y::SurrealFinite)
     end
     return unique(dag_z)
 end
-
-# could do a better implementation of this
-# size_u(s::SurrealFinite) = length(unique(list_n(s)))
-size_u(s::SurrealFinite) = dag_stats(s).nodes
-
-# do a "tree stats" version 
-
-function size(x::SurrealFinite)
-    if x==zero(x)
-        return 1
-    else
-        return 1 + sum(size.(x.L)) + sum(size.(x.R))
-    end
-end
-function n_zeros(x::SurrealFinite)
-    if x==zero(x)
-        return 1
-    else
-        return sum(n_zeros.(x.L)) + sum(n_zeros.(x.R))
-    end
-end 
-function count_n(x::Surreal)
-    return convert.(Rational, list_n(x) )
-end
- function list_n(x::Surreal)
-    tmp = [ x ]
-    for s in x.L
-        tmp = [tmp; list_n(s) ]
-    end
-    for s in x.R 
-        tmp = [tmp; list_n(s) ]
-    end
-    return tmp 
-end
- 
-function depth(x::Surreal)
-    if x==zero(x)
-        return [0]
-    else
-        tmp = [ ]
-        for s in x.L
-            tmp = [tmp; depth(s) ]
-        end
-        for s in x.R
-            tmp = [tmp; depth(s) ]
-        end
-        return 1 + tmp
-    end
-end
-depth_max(x::SurrealFinite) = maximum( depth(x) )
-depth_av(x::Surreal) = mean( depth(x) )
-
-
-
 
 
