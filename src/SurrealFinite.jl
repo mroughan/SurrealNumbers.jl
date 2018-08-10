@@ -230,6 +230,7 @@ const SurrealZero = SurrealFinite("0", ϕ, ϕ )
 const SurrealOne  = SurrealFinite("1", [ zero(SurrealFinite) ], ϕ ) 
 const SurrealMinusOne  = SurrealFinite("-1", ϕ, [ zero(SurrealFinite) ] ) 
 const SurrealTwo  = SurrealFinite("2", [SurrealOne], ϕ ) 
+const SurrealMinusTwo  = SurrealFinite("-1", ϕ, [SurrealOne] ) 
 zero(::SurrealFinite) = SurrealZero # always use the same zero
 one(::SurrealFinite)  = SurrealOne  # always use the same one
 # ↑ = one(SurrealFinite)  # this causes an error???
