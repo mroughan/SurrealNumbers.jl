@@ -27,11 +27,12 @@ z0 = zero(SurrealFinite)
 o = one(x1) 
 o1 = one(SurrealFinite)
 x00 = SurrealFinite([x11],[x1])
-
+    
 x3 = convert(SurrealFinite, 3)
 x41 = convert(SurrealFinite, 4)
 x42 = SurrealFinite( [x3],  ϕ)
 x43 = convert(SurrealFinite, 2) * convert(SurrealFinite, 2)
+x44 = SurrealFinite(4)
 x6 = convert(SurrealFinite, 2) * convert(SurrealFinite, 3)
 
 print("x1 = ")
@@ -64,12 +65,15 @@ println()
 @testset "constructor test" begin
     @test SurrealFinite("1/2", [0], [1]) ≅ 1/2
     @test_throws ErrorException SurrealFinite("1", [x1], [x0])
+    @test_throws DomainError convert(SurrealFinite, NaN )
+
+    @test convert(SurrealFinite, 1.3 ) == 5854679515581645//4503599627370496
     @test all( convert(Array{SurrealFinite}, [1,2]) .== convert.(SurrealFinite, [1,2]) )
     @test z === zero(SurrealFinite)
     @test z0 === zero(SurrealFinite)
     @test o === one(SurrealFinite) 
     @test o1 === one(SurrealFinite)
-    @test s2a === s2
+    @test s2a === s2 
     @test s2b === s2
     @test x11 == x111
     @test dali(0) === SurrealZero
@@ -88,6 +92,7 @@ end
     @test x21 ≅ x22 ≅ x23 ≅ x24 # should be an equivalence class
     @test x41 ≅ x42 ≅ x43
     @test x41 == x42
+    @test x44 == x41
     @test x41 != x43
 
     @test x0 ≺ x5
@@ -174,6 +179,8 @@ unique2!(Y)
  
     @test all( x1*A .≅ A )
     @test all( x23*A .≅ A*x23 )
+
+    @test hash(A) == 0x54b75ebf9d6abfa4
 end
  
 V = [-6.25, -4.0, -3.25, -2.5, -2.0, -1.625, -1.0, -0.25, 0.0, 1.0, 7.0, 0.5, 1.625, 2.25, 4.5, 6.75, 8.0, 12.125]
@@ -207,7 +214,9 @@ V = [-6.25, -4.0, -3.25, -2.5, -2.0, -1.625, -1.0, -0.25, 0.0, 1.0, 7.0, 0.5, 1.
         @test trunc( convert(SurrealFinite, v) ) ≅ trunc( v )
         @test isinteger( convert(SurrealFinite, v) ) == isinteger( v )
     end
-  
+    @test_throws ErrorException floor( convert(SurrealFinite, 10000) )
+    @test_throws ErrorException floor( convert(SurrealFinite, -10000) )
+ 
     # @test floor2(zero(SurrealFinite)) ≅ 0.0
     # @test floor2(one(SurrealFinite)) ≅ 1.0
     # @test floor2(x22) ≅ x22
@@ -227,6 +236,7 @@ V = [-6.25, -4.0, -3.25, -2.5, -2.0, -1.625, -1.0, -0.25, 0.0, 1.0, 7.0, 0.5, 1.
     @test mod(x3, x43) ≅ 3
     @test mod(-x43, x3) ≅ 2
     @test mod(s1 + 2, x21) ≅ s1
+    @test_throws ErrorException mod( x3, s2 )
 
     @test isinteger(x0) == true
     @test isinteger(x22) == true
@@ -358,6 +368,7 @@ end
     @test surreal2dag(x0) == 1
     @test surreal2dag(devnull, x23) == 4
     @test surreal2dag(devnull, x43) == nodes(x43)
+    @test surreal2dag(devnull, -x43) == nodes(x43) 
     # should compare these against a reference, but sort could get non-unique order, so potential for difference
 end
 
@@ -403,7 +414,9 @@ x32 = convert(SurrealFinite, 3/4) + convert(SurrealFinite, 3/4)
 
     @test breadth(x1) == 1
     @test breadth(x43) == 5
-    
+
+    @test paths(x43) == 5
+
     @test dag_stats(x32).generation == 6
     @test dag_stats(x32).generation == generation(x32)
 

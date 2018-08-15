@@ -11,10 +11,10 @@ mutable struct SurrealFinite <: Surreal
         global Count
         Count['c'] += 1 
         if length(L) > 1
-            L = sort(unique( L ), by=x->(x,hash(x)) ) # use hash as tie break in sort so that order is deterministic
+            L = sort( unique(L), by=x->(x,hash(x)) ) # use hash as tie break in sort so that order is deterministic
         end
         if length(R) > 1
-            R = sort(unique( R ), by=x->(x,hash(x)) ) # use hash as tie break in sort so that order is deterministic
+            R = sort( unique(R), by=x->(x,hash(x)) ) # use hash as tie break in sort so that order is deterministic
         end 
         # println("L = $L, R = $R")
         # use the fact they are sorted to not do a complete comparison
@@ -150,7 +150,7 @@ function convert(::Type{SurrealFinite}, f::Float64 )
             error("generation too large")
         end
     else
-        error(DomainError)
+        throw(DomainError())
     end 
 end 
 dali(x) = convert(SurrealFinite, x)
@@ -833,16 +833,13 @@ function generation(x::SurrealFinite)
     end
 end 
 
-# this is a bit of a cheat, but I'm not smart enough to work out how to do it otherwise
 """ 
     canonicalise(s::SurrealFinite)
 
- Convert a surreal number form into its equivalent canonical form.
-
-## Arguments
-* `x::SurrealFinite`: the number to operate on
+ Convert a surreal number form into its equivalent canonical form. It performs the 
+ conversion by converting to a Rational and then back to a Surreal.  
      
-## Examples
+## Examples 
 ```jldoctest
 julia> convert(SurrealFinite, 1) - convert(SurrealFinite, 1)
 { { ϕ | { ϕ | ϕ } } | { { ϕ | ϕ } | ϕ } }
