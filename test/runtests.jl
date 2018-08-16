@@ -66,6 +66,9 @@ println()
     @test SurrealFinite("1/2", [0], [1]) ≅ 1/2
     @test_throws ErrorException SurrealFinite("1", [x1], [x0])
     @test_throws DomainError convert(SurrealFinite, NaN )
+    @test_throws ErrorException SurrealFinite(1//3)
+    @test_throws ErrorException SurrealFinite(100000 + 1//2)
+    @test_throws ErrorException SurrealFinite(100000.000012)
 
     @test convert(SurrealFinite, 1.3 ) == 5854679515581645//4503599627370496
     @test all( convert(Array{SurrealFinite}, [1,2]) .== convert.(SurrealFinite, [1,2]) )
@@ -369,6 +372,7 @@ end
     @test surreal2dag(devnull, x23) == 4
     @test surreal2dag(devnull, x43) == nodes(x43)
     @test surreal2dag(devnull, -x43) == nodes(x43) 
+    @test surreal2dag(devnull, -s2) == nodes(s2) 
     # should compare these against a reference, but sort could get non-unique order, so potential for difference
 end
 
