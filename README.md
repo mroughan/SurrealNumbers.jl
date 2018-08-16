@@ -533,35 +533,21 @@ However, in order to use arrays as sets we need, in the constructor
 for a surreal to reduce the "set" to a sorted array containing unique
 elements. Julia has nice sort and unique functions, but they rely on
 hash functions, so we have to add a hash. These need to be recursive,
-and work for arrays of surreals as well. The hash function help says that
-we should implement such for new types such that `isequal(x,y)`
+and work for arrays of surreals as well. The hash function help says
+that we should implement such for new types such that `isequal(x,y)`
 implies `hash(x)==hash(y)`, with a second argument to be mixed in the
 results. This is linked to the idea that we should separate the == and
-the *congruent* comparisons -- my hash is based on two forms being 
+the *congruent* comparisons -- my hash is based on two forms being
 equal, not being equivalent. In any case, Julia's syntax is again
-simple and concise for specifying the hashes need.  The approach I
-adoped was the following (which may well not be the best, but seems to
-work).
-
-    hash(x::SurrealFinite, h::UInt) = hash( hash(x.X_L, h) * hash(x.X_R, h), h )
-    hash(X::Array{SurrealFinite}, h::UInt) = isempty(X) ? hash(0) : hash( hash(X[1]) * hash( X[2:end]), h )
-
-Having set this up, I realised that when specifying the component sets
-of a surreal, I actually did want my unique function to only include
-one element from each equivalence class, i.e., I could have used
-congruences as equality, but in general these are short lists (with
-lots of recursion internally, but the arrays themselves are short), so
-I just wrote my own unique function, `unique2!`. Yes I know the name
-isn't great, but for newbies note that the ! is not a `not` symbols
-here. In Julia's idiom this signifies that the function modifies its
-arguments.
-
-https://docs.julialang.org/en/stable/manual/style-guide/
-
-In any case, `unique2!` also uses sort, but then crudely eliminates
-duplicates based on congruence. It is then called as part of the
-constructor for a surreal, which also checks the condition that $X_L <
-X_R$, i.e., no element of $X_R$ is $\leq$ an element of $X_L$.
+simple and concise for specifying the hashes need (believe it or not
+its another recursive function), but I need the hash to be really
+fast. I use it to speed other pieces of code up, so I can afford to
+recurse every time. So instead, the hash value is calculated the first
+time it is needed, and then stored in the surreal data structure
+itself, so that we only need call the function once at most. We could
+have defined the hash in the constructor, but it turns out that many
+temporary surreals are created in multiplication (in particular), and
+so avoiding the overhead when it isn't needed is just fine.
 
 ## Other comments
 
@@ -570,6 +556,10 @@ never be anything but. Surreals were not created with numerical
 computing in mind. They are about as inefficient a way to do
 calculations as I can reasonably think of (excluding the addition of
 nullops everywhere).
+
+I'm still learning Julia, and part of this is absorbing the style guide
+   https://docs.julialang.org/en/stable/manual/style-guide/
+so the code is still morphing to make it more efficient, and more stylish.    
 
 And note that this isn't really exploring an entire chunk of the
 surreals, i.e., the transfinite numbers that can be represented this
