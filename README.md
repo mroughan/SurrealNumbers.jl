@@ -541,7 +541,7 @@ the *congruent* comparisons -- my hash is based on two forms being
 equal, not being equivalent. In any case, Julia's syntax is again
 simple and concise for specifying the hashes need (believe it or not
 its another recursive function), but I need the hash to be really
-fast. I use it to speed other pieces of code up, so I can afford to
+fast. I use it to speed other pieces of code up, so I can't afford to
 recurse every time. So instead, the hash value is calculated the first
 time it is needed, and then stored in the surreal data structure
 itself, so that we only need call the function once at most. We could
