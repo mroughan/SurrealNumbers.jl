@@ -29,9 +29,11 @@ the same properties. The tricky thing is that they are defined
 recursively from the very start. The nice part is that they use only
 set operations.
 
-The definition is as follows: a surreal number $x$ is an ordered pair of
-sets of surreal numbers (call them $X_L$ and $X_R$) such that every
-member of the left set is `<` all of the members of the right set.
+The definition is as follows: a surreal number $x$ is an ordered pair
+of sets of surreal numbers (call them the left set $X_L$ and right set
+$X_R$) such that every member of the left set is `<` all of the
+members of the right set (technically no member of the left set is
+$>=$ a member of the right).
 
 There is a starting point -- we can always use empty sets -- as so the
 first surreal number (usually denoted zero, because it will turn out
@@ -85,11 +87,13 @@ low pain way to get things working. That is, although the surreals use
 sets, i.e., order of the elements is not important, almost all texts
 do write these sets in order. So I felt justified in putting these
 elements into sorted arrays. It works nicely, as long as you make sure
-to only put unique entries into the array, and this is a little more
-tricky for surreals for reasons we will get to in a moment.
+to only put unique entries into the array, and sort them on
+arrival. And some surreal operations are more efficient when we know
+the set is sorted to start with. 
 
 Someone may correct me about the best way to do this, but for the
-moment, using arrays seemed like a low pain way to get surreals working. 
+moment, using arrays seemed like a low pain way to get surreals
+working, witb some efficiency advantages.
 
 ### An example
 
@@ -145,9 +149,10 @@ separately installed from [GraphViz](https://www.graphviz.org/)), e.g.,
 with the following result. Note that the red notations were added
 manually. Each box is a surreal number, designated by the number at
 the top of the box, and its left and right sets are in the
-corresponding boxes below. The recursion for each is show below, down
-to the point where each recursion stops at zero.
- 
+corresponding boxes below, with links shown in red for left, and blue
+for right. The recursion for each is show below, down to the point
+where each recursion stops at zero.
+  
 ![3/2](/test/Data/test_dot.svg)
 
 That seems like enough to get you started, so now a little about the
@@ -237,7 +242,9 @@ BTW, here we hit one of the weirdnesses of Julia; 99\% of the time,
 you can redefine operators and comparators to do whatever you like on
 your new type. But you can't redefine $===$ or $\equiv$. The blog I
 read suggests that this is because this is a core operation, that
-might cause problems if a user broke it.
+might cause problems if a user broke it. From what I can tell, $===$
+tests identity, i.e., that the things being tested are the same piece
+of memory. That doesn't seem like something we want to mess with. 
 
  + https://docs.julialang.org/en/stable/devdocs/functions/#Builtins-1
  + https://discourse.julialang.org/t/overload-for-custom-type/4898

@@ -106,7 +106,7 @@ end
 function convert(::Type{SurrealFinite}, n::Int )  
     global ExistingCanonicals
     global SurrealZero
-    global SurrealOne 
+    global SurrealOne  
     if haskey(ExistingCanonicals, Rational(n)) 
         return ExistingCanonicals[Rational(n)]
     elseif n==0 
@@ -1037,7 +1037,7 @@ end
 # have these as switches, because they are expensive to calculate on large DAGs 
 function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealDAGstats}; LP=false, V=true ) 
     if s == zero(s)    
-        nodes = 1 
+        nodes = 1  
         tree_nodes = 1
         edges = 0
         generation = 0
@@ -1092,7 +1092,7 @@ function breadth(s::SurrealFinite)
 end
 function width(s::SurrealFinite) 
     # not yet defined exactly what I mean here --
-    #    maybe maxval - minval for a given generation?
+    #    maybe maximum number of nodes for a fixed generation?
     0
 end
 
