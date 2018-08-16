@@ -436,16 +436,16 @@ d33 = dali(33//2)
     # but if it is implementation dependent it shouldn't be a test
     
     # depends on previous results -- could be changed by earlier operations
-    @test ExistingCanonicals[-1//2] == -1//2
-    @test ExistingProducts[0x013b60c22ac142fa][0x84037d1bb0afff04] == -1
+    @test SurrealNumbers.ExistingCanonicals[-1//2] == -1//2
+    @test SurrealNumbers.ExistingProducts[0x013b60c22ac142fa][0x84037d1bb0afff04] == -1
     clearcache()
-    @test isempty(ExistingSurreals)
-    @test isempty(ExistingCanonicals)
-    @test isempty(ExistingProducts)
-    @test isempty(ExistingSums)
-    @test isempty(ExistingNegations)
+    @test isempty(SurrealNumbers.ExistingSurreals)
+    @test isempty(SurrealNumbers.ExistingCanonicals)
+    @test isempty(SurrealNumbers.ExistingProducts)
+    @test isempty(SurrealNumbers.ExistingSums)
+    @test isempty(SurrealNumbers.ExistingNegations)
     Count['+'] == 0
-    Count['*'] == 0
+    Count['*'] == 0 
 
     m = dali(2) * dali(2)
     Count['+'] == 4

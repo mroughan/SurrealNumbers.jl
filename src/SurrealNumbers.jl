@@ -1,15 +1,18 @@
 module SurrealNumbers
 
-import Base: convert, promote, promote_rule, hash, show, read, expand, 
+import Base: convert, promote, promote_rule, hash, show, read, expand, delete!,
     size, sign, round, floor, ceil, mod, trunc, 
     isinteger, isinf, isnan, isfinite, isodd, iseven, iszero, 
     <, <=, zero, one, ==, <, -, +, *, /,
     summarysize
 
 export Surreal, SurrealFinite, SurrealShort, SurrealDyadic, SurrealDAGstats
-export ExistingSurreals, ExistingCanonicals, ExistingProducts, ExistingSums, ExistingNegations, Count
 export SurrealZero, SurrealOne, SurrealMinusOne, SurrealTwo, SurrealMinusTwo, SurrealThree, ϕ  
-   
+
+# eventually these will be removed, but they are convenient for testing
+export ExistingSurreals, ExistingCanonicals, ExistingProducts, ExistingSums, ExistingNegations, Count
+export clearcache
+
 # export SurrealAlt2  
 # export ExistingSurrealsAlt2, ExistingProductsAlt2, ExistingSumsAlt2
 
@@ -20,8 +23,7 @@ export <=, zero, one, ==, ≅, ≇, <, -, +, *, ≀, ↑, ↓, dag_add,
     unique2!, 
     sign, round, floor, ceil, trunc, mod, 
     isinteger, isinf, isnan, isfinite, isodd, iseven, isdivisible,
-    dag_stats, nodes, edges, paths, tree_nodes, breadth, width, surrealDAG,
-    clearcache
+    dag_stats, nodes, edges, paths, tree_nodes, breadth, width, surrealDAG
  
 abstract type Surreal <: Real end 
  

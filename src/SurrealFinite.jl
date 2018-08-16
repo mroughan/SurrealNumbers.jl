@@ -58,16 +58,23 @@ hash(X::Array{SurrealFinite}) = hash(X, zero(UInt64) )
 # global dictionaries to avoid repeated calculations of the same things
 #   in particular to speed up calculations, but also to ensure that resulting
 #   structures are actually DAGs, i.e., pointers to the same "number" point at the same bit of memory
-ExistingSurreals   = Dict{SurrealFinite,Rational}()
-ExistingCanonicals = Dict{Rational,SurrealFinite}()
+# i guess eventually these should be replaced by let-closures: https://docs.julialang.org/en/v0.6.2/manual/variables-and-scoping/
+const ExistingSurreals = Dict{SurrealFinite,Rational}()
+const ExistingCanonicals = Dict{Rational,SurrealFinite}()
 # ExistingProducts = Dict{SurrealFinite, Dict{SurrealFinite,SurrealFinite}}()
-ExistingProducts   = Dict{UInt64, Dict{UInt64,SurrealFinite}}()
-ExistingSums       = Dict{UInt64, Dict{UInt64,SurrealFinite}}() 
-ExistingNegations  = Dict{UInt64, SurrealFinite}() 
+const ExistingProducts   = Dict{UInt64, Dict{UInt64,SurrealFinite}}()
+const ExistingSums       = Dict{UInt64, Dict{UInt64,SurrealFinite}}() 
+const ExistingNegations  = Dict{UInt64, SurrealFinite}() 
+const Count = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≦'=>0)
+
 function size(d::Dict)
     [length(d[k]) for k in sort(collect(keys(d)))]        
 end 
-Count = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≦'=>0)
+function delete!(d::Dict)
+    for k in keys(d)
+        delete!(d, k)
+    end
+end 
 
 function clearcache() 
     global ExistingSurreals 
@@ -75,14 +82,24 @@ function clearcache()
     global ExistingProducts
     global ExistingSums
     global ExistingNegations 
-    global Count  
-    ExistingSurreals   = Dict{SurrealFinite,Rational}()
-    ExistingCanonicals = Dict{Rational,SurrealFinite}()
-    # ExistingProducts = Dict{SurrealFinite, Dict{SurrealFinite,SurrealFinite}}()
-    ExistingProducts   = Dict{UInt64, Dict{UInt64,SurrealFinite}}()
-    ExistingSums       = Dict{UInt64, Dict{UInt64,SurrealFinite}}()
-    ExistingNegations  = Dict{UInt64, SurrealFinite}() 
-    Count = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≦'=>0)
+    global Count
+    delete!(ExistingSurreals)
+    delete!(ExistingCanonicals)
+    delete!(ExistingProducts)
+    delete!(ExistingSums)
+    delete!(ExistingNegations)
+    Count['+'] = 0
+    Count['*'] = 0
+    Count['-'] = 0
+    Count['c'] = 0
+    Count['='] = 0
+    Count['≦'] = 0
+    # ExistingSurreals   = Dict{SurrealFinite,Rational}()
+    # ExistingCanonicals = Dict{Rational,SurrealFinite}()
+    # ExistingProducts   = Dict{UInt64, Dict{UInt64,SurrealFinite}}()
+    # ExistingSums       = Dict{UInt64, Dict{UInt64,SurrealFinite}}()
+    # ExistingNegations  = Dict{UInt64, SurrealFinite}() 
+    # Count = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≦'=>0)
     return 1
 end
 
