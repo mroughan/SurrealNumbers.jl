@@ -75,6 +75,11 @@ function delete!(d::Dict)
         delete!(d, k)
     end
 end 
+function reset!(d::Dict)
+    for k in keys(d)
+        d[k] = 0
+    end
+end 
 
 function clearcache() 
     global ExistingSurreals 
@@ -88,12 +93,7 @@ function clearcache()
     delete!(ExistingProducts)
     delete!(ExistingSums)
     delete!(ExistingNegations)
-    Count['+'] = 0
-    Count['*'] = 0
-    Count['-'] = 0
-    Count['c'] = 0
-    Count['='] = 0
-    Count['≦'] = 0
+    reset!(Count)
     # ExistingSurreals   = Dict{SurrealFinite,Rational}()
     # ExistingCanonicals = Dict{Rational,SurrealFinite}()
     # ExistingProducts   = Dict{UInt64, Dict{UInt64,SurrealFinite}}()
