@@ -16,7 +16,7 @@ mutable struct SurrealFinite <: Surreal
         if length(R) > 1
             R = sort( unique(R), by=x->(x,hash(x)) ) # use hash as tie break in sort so that order is deterministic
         end 
-        # println("L = $L, R = $R")
+        # println("L = $L, R = $R") 
         # use the fact they are sorted to not do a complete comparison
         # also means that == is much easier than if they were unsorted
         if isempty(L) || isempty(R) || L[end] < R[1]
@@ -59,12 +59,13 @@ hash(X::Array{SurrealFinite}) = hash(X, zero(UInt64) )
 #   in particular to speed up calculations, but also to ensure that resulting
 #   structures are actually DAGs, i.e., pointers to the same "number" point at the same bit of memory
 # i guess eventually these should be replaced by let-closures: https://docs.julialang.org/en/v0.6.2/manual/variables-and-scoping/
-const ExistingSurreals = Dict{SurrealFinite,Rational}()
-const ExistingCanonicals = Dict{Rational,SurrealFinite}()
+const ExistingSurreals = Dict{UInt64, SurrealFinite}()
+const ExistingConversions = Dict{UInt64,Rational}()
+const ExistingCanonicals = Dict{Rational,UInt64}()
 # ExistingProducts = Dict{SurrealFinite, Dict{SurrealFinite,SurrealFinite}}()
-const ExistingProducts   = Dict{UInt64, Dict{UInt64,SurrealFinite}}()
-const ExistingSums       = Dict{UInt64, Dict{UInt64,SurrealFinite}}() 
-const ExistingNegations  = Dict{UInt64, SurrealFinite}() 
+const ExistingProducts   = Dict{UInt64, Dict{UInt64,UInt64}}()
+const ExistingSums       = Dict{UInt64, Dict{UInt64,UInt64}}() 
+const ExistingNegations  = Dict{UInt64, UInt64}() 
 const Count = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≦'=>0)
 
 function size(d::Dict)
@@ -83,51 +84,51 @@ end
 
 function clearcache() 
     global ExistingSurreals 
+    global ExistingConversions 
     global ExistingCanonicals
     global ExistingProducts
     global ExistingSums
     global ExistingNegations 
     global Count
     delete!(ExistingSurreals)
+    delete!(ExistingConversions)
     delete!(ExistingCanonicals)
     delete!(ExistingProducts)
     delete!(ExistingSums)
     delete!(ExistingNegations)
     reset!(Count)
-    # ExistingSurreals   = Dict{SurrealFinite,Rational}()
-    # ExistingCanonicals = Dict{Rational,SurrealFinite}()
-    # ExistingProducts   = Dict{UInt64, Dict{UInt64,SurrealFinite}}()
-    # ExistingSums       = Dict{UInt64, Dict{UInt64,SurrealFinite}}()
-    # ExistingNegations  = Dict{UInt64, SurrealFinite}() 
-    # Count = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≦'=>0)
     return 1
 end
 
 function convert(::Type{SurrealFinite}, n::Int )  
-    global ExistingCanonicals
+    global ExistingSurreals 
+    global ExistingCanonicals 
     global SurrealZero
     global SurrealOne  
-    if haskey(ExistingCanonicals, Rational(n)) 
-        return ExistingCanonicals[Rational(n)]
-    elseif n==0 
-        result = SurrealZero
+    if n==0 
+        result = SurrealZero 
     elseif n==1 
         result = SurrealOne
+    elseif haskey(ExistingCanonicals, Rational(n)) 
+        return ExistingSurreals[ ExistingCanonicals[Rational(n)] ]
     elseif n>1
         result = SurrealFinite(string(n), [convert(SurrealFinite, n-1)], ϕ )
     else
         result = SurrealFinite(string(n), ϕ, [convert(SurrealFinite, n+1)] )
     end
-    ExistingCanonicals[Rational(n)] = result
+    h = hash(result)
+    ExistingSurreals[h] = result
+    ExistingCanonicals[Rational(n)] = h
     return result 
     # should check to make sure abs(n) is not too big, i.e., causes too much recursion
 end 
 function convert(::Type{SurrealFinite}, r::Rational )  
+    global ExistingSurreals 
     global ExistingCanonicals
     if haskey(ExistingCanonicals, r)  
-        return ExistingCanonicals[r]
+        return ExistingSurreals[ ExistingCanonicals[r] ]
     elseif isinteger(r)  
-        return convert(SurrealFinite, convert(Int64,r) )
+        result = convert(SurrealFinite, convert(Int64,r) )
     elseif ispow2(r.den)
         # Non-integer dyadic numbers
         n = convert(Int64, round( log2(r.den) ))
@@ -139,8 +140,10 @@ function convert(::Type{SurrealFinite}, r::Rational )
     else 
         error("we can't do these yet as they require infinite sets")
         # return convert(SurrealFinite, r.num) // convert(SurrealFinite, r.den)
-    end
-    ExistingCanonicals[r] = result
+    end 
+    h = hash(result)
+    ExistingSurreals[h] = result
+    ExistingCanonicals[r] = h
     return result
 end
 function convert(::Type{SurrealFinite}, f::Float64 ) 
@@ -173,24 +176,27 @@ end
 dali(x) = convert(SurrealFinite, x)
 SurrealFinite(x) = convert(SurrealFinite, x)
 
-function convert(::Type{Rational}, s::SurrealFinite )
-    global ExistingSurreals
-    if !haskey(ExistingSurreals, s)
+function convert(::Type{Rational}, s::SurrealFinite ) 
+    global ExistingConversions
+    h = hash(s)
+    if haskey(ExistingConversions, h)
+        return ExistingConversions[h]
+    else
         if s ≅ zero(s)
-            ExistingSurreals[s] = 0 // 1
+            result = 0 // 1
         elseif s ≅ one(s)
-            ExistingSurreals[s] = 1 // 1
+            result = 1 // 1
         elseif s < zero(s)
-            ExistingSurreals[s] = -convert(Rational, -s)
+            result = -convert(Rational, -s)
         elseif (sf = floor(Integer, s)) ≅ s
-            ExistingSurreals[s] = sf 
+            result = Rational( sf )
         else # 0 < x < 1
             # do a binary search from top down, first valid is the simplest
             xl = isempty(s.L) ? convert(SurrealFinite, sf)   : maximum(s.L)
             xr = isempty(s.R) ? convert(SurrealFinite, sf+1) : minimum(s.R) 
             not_end = true
             k = 0
-            a = sf
+            a = sf 
             b = sf+1
             while not_end && k < 24 # 24 is arbitrary, but it would be painful to go lower
                 k += 1
@@ -199,7 +205,7 @@ function convert(::Type{Rational}, s::SurrealFinite )
                 
                 c = convert(SurrealFinite,  d)
                 if xl < c < xr
-                    ExistingSurreals[s] = d
+                    result = Rational( d )
                     not_end = false 
                 elseif c <= xl
                     a = d 
@@ -210,8 +216,9 @@ function convert(::Type{Rational}, s::SurrealFinite )
                 end 
             end
         end
-    end
-    return ExistingSurreals[s]
+    end 
+    ExistingConversions[h] = result
+    return result
 end
 
 
@@ -265,7 +272,7 @@ function leq(x::SurrealFinite, y::SurrealFinite, processed_list::Dict{UInt64,Boo
 #    for t in y.R
 #        if t <= x
 #            return false 
-#        end
+#        end 
 #    end
     # global Count
     # Count['≦'] += 1
@@ -363,11 +370,12 @@ end
 
 # unary operators
 function -(x::SurrealFinite)
+    global ExistingSurreals 
     global ExistingNegations
     global Count
     hx = hash(x) # build the dictionary in terms of hashs, because it is used quite a bit
     if haskey(ExistingNegations, hx)
-        return ExistingNegations[hx]
+        return ExistingSurreals[ ExistingNegations[hx] ]
     elseif isempty(x.shorthand)
         result = SurrealFinite("", -x.R, -x.L )
     elseif x.shorthand == "0"
@@ -377,11 +385,15 @@ function -(x::SurrealFinite)
     else
         result = SurrealFinite("-"*x.shorthand, -x.R, -x.L )
     end 
-    ExistingNegations[hx] = result
-    ExistingNegations[hash(result)] = x
+    ExistingSurreals[hx] = x
+    ExistingSurreals[hash(result)] = result
+    ExistingNegations[hx] = hash(result)
+    ExistingNegations[hash(result)] = hx
     Count['-'] += 1
     return result
-end 
+end
+
+# somewhat incomplete (for reasons described), slightly a cheat, and potentially very slow
 function /(x::SurrealFinite, y::SurrealFinite)
     xr = convert(Rational, x)
     yr = convert(Rational, y) 
@@ -392,7 +404,7 @@ function /(x::SurrealFinite, y::SurrealFinite)
     elseif isinteger(y) && ispow2(yr.num)
         return x * convert(SurrealFinite,  1 // yr) 
     elseif isinteger(xr.num/yr)
-        return convert(SurrealFinite,  (xr.num/yr) // xr.den) 
+        return convert(SurrealFinite,  (xr.num/yr) // xr.den  ) 
     else
         error(InexactError)        
     end
@@ -400,12 +412,13 @@ end
 
 # binary operators
 function +(x::SurrealFinite, y::SurrealFinite)
+    global ExistingSurreals 
     global ExistingSums
     global Count
     hx = hash(x) # build the dictionary in terms of hashs, because it is used quite a bit
     hy = hash(y) #   and these amortise the cost of initial calculation of hashs 
     if haskey(ExistingSums, hx) && haskey(ExistingSums[hx], hy)
-        return ExistingSums[hx][hy]
+        return ExistingSurreals[ ExistingSums[hx][hy] ]
     elseif iszero(x)
         result = y   
     elseif iszero(y)
@@ -417,13 +430,15 @@ function +(x::SurrealFinite, y::SurrealFinite)
                                 [[x + y for x in x.R]; [x + y for y in y.R]] )
     end   
     if !haskey(ExistingSums, hx)
-        ExistingSums[hx] = Dict{UInt64,SurrealFinite}()
+        ExistingSums[hx] = Dict{UInt64,UInt64}()
     end
     if !haskey(ExistingSums, hy)
-        ExistingSums[hy] = Dict{UInt64,SurrealFinite}() 
+        ExistingSums[hy] = Dict{UInt64,UInt64}() 
     end
-    ExistingSums[hx][hy] = result
-    ExistingSums[hy][hx] = result
+    hr = hash(result)
+    ExistingSurreals[hr] = result
+    ExistingSums[hx][hy] = hr
+    ExistingSums[hy][hx] = hr
     Count['+'] += 1
     return result
 end
@@ -440,12 +455,13 @@ end
 -(X::Array{SurrealFinite}, Y::Array{SurrealFinite}) = X + -Y
 
 function *(x::SurrealFinite, y::SurrealFinite)
+    global ExistingSurreals 
     global ExistingProducts
     global Count
     hx = hash(x)
     hy = hash(y)
     if haskey(ExistingProducts, hx) && haskey(ExistingProducts[hx], hy)
-        return ExistingProducts[hx][hy]
+        return ExistingSurreals[ ExistingProducts[hx][hy] ]
     elseif iszero(x) || iszero(y) 
         result = zero(x)
 #     elseif x == 1 
@@ -468,13 +484,15 @@ function *(x::SurrealFinite, y::SurrealFinite)
         result = SurrealFinite("", L, R)
     end
     if !haskey(ExistingProducts, hx)
-        ExistingProducts[hx] = Dict{UInt64,SurrealFinite}()
+        ExistingProducts[hx] = Dict{UInt64,UInt64}()
     end
     if !haskey(ExistingProducts, hy)
-        ExistingProducts[hy] = Dict{UInt64,SurrealFinite}()
+        ExistingProducts[hy] = Dict{UInt64,UInt64}()
     end 
-    ExistingProducts[hx][hy] = result
-    ExistingProducts[hy][hx] = result
+    hr = hash(result)
+    ExistingSurreals[hr] = result
+    ExistingProducts[hx][hy] = hr
+    ExistingProducts[hy][hx] = hr
     Count['*'] += 1 
     return result
 end

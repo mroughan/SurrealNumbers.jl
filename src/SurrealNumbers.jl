@@ -10,7 +10,7 @@ export Surreal, SurrealFinite, SurrealShort, SurrealDyadic, SurrealDAGstats
 export SurrealZero, SurrealOne, SurrealMinusOne, SurrealTwo, SurrealMinusTwo, SurrealThree, ϕ  
 
 # eventually these will be removed, but they are convenient for testing
-export ExistingSurreals, ExistingCanonicals, ExistingProducts, ExistingSums, ExistingNegations, Count
+export ExistingSurreals, ExistingConversions, ExistingCanonicals, ExistingProducts, ExistingSums, ExistingNegations, Count
 export clearcache
 
 # export SurrealAlt2  

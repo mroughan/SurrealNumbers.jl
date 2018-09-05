@@ -436,8 +436,8 @@ d33 = dali(33//2)
     # but if it is implementation dependent it shouldn't be a test
     
     # depends on previous results -- could be changed by earlier operations
-    @test SurrealNumbers.ExistingCanonicals[-1//2] == -1//2
-    @test SurrealNumbers.ExistingProducts[0x013b60c22ac142fa][0x84037d1bb0afff04] == -1
+    @test SurrealNumbers.ExistingSurreals[ SurrealNumbers.ExistingCanonicals[-1//2] ] == -1//2
+    @test SurrealNumbers.ExistingSurreals[ SurrealNumbers.ExistingProducts[0x013b60c22ac142fa][0x84037d1bb0afff04] ] == -1
     clearcache()
     @test isempty(SurrealNumbers.ExistingSurreals)
     @test isempty(SurrealNumbers.ExistingCanonicals)
@@ -454,4 +454,11 @@ d33 = dali(33//2)
     Count['c'] == 20 
 end
 
+
+@testset "new identity test" begin
+    c1 = dali(1) + dali(3)
+    c2 = dali(2) + dali(2)
+    @test c1 == c2
+    @test c1 === c2
+end
 
