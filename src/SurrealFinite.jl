@@ -169,8 +169,12 @@ function convert(::Type{SurrealFinite}, f::Float64 )
         else 
             error("generation too large")
         end
-    else
-        throw(DomainError())
+    else 
+        @static if VERSION < v"0.7.0"
+            throw(DomainError())
+        else
+            throw(DomainError(f))
+        end
     end 
 end 
 dali(x) = convert(SurrealFinite, x)
@@ -986,7 +990,7 @@ function mod(s::SurrealFinite, n::SurrealFinite)
     end
     if s ≅ zero(s) 
         return s 
-    elseif s < zero(s)
+    elseif s < zero(s) 
         return mod(s + n, n)
     elseif s >= n
         return mod(s - n, n)
