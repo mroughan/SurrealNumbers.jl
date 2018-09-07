@@ -116,15 +116,15 @@ function convert(::Type{SurrealFinite}, n::Int )
     else
         result = SurrealFinite(string(n), ϕ, [convert(SurrealFinite, n+1)] )
     end
-    h = hash(result)
-    ExistingSurreals[h] = result
-    ExistingCanonicals[Rational(n)] = h
+    hr = hash(result)
+    ExistingSurreals[hr] = result
+    ExistingCanonicals[Rational(n)] = hr
     return result 
     # should check to make sure abs(n) is not too big, i.e., causes too much recursion
 end 
 function convert(::Type{SurrealFinite}, r::Rational )  
     global ExistingSurreals 
-    global ExistingCanonicals
+    global ExistingCanonicals 
     if haskey(ExistingCanonicals, r)  
         return ExistingSurreals[ ExistingCanonicals[r] ]
     elseif isinteger(r)  
@@ -143,7 +143,7 @@ function convert(::Type{SurrealFinite}, r::Rational )
     end 
     h = hash(result)
     ExistingSurreals[h] = result
-    ExistingCanonicals[r] = h
+    ExistingCanonicals[r] = h 
     return result
 end
 function convert(::Type{SurrealFinite}, f::Float64 ) 
@@ -249,8 +249,10 @@ promote_rule(::Type{T}, ::Type{SurrealFinite}) where {T<:Real} = SurrealFinite
 
 @static if VERSION < v"0.7.0"
     const ϕ = Array{SurrealFinite,1}(0) # empty array of SurrealFinites
+    const ∅ = ϕ 
 else
     const ϕ = Array{SurrealFinite,1}(undef,0) # empty array of SurrealFinites
+    const ∅ = ϕ
 end 
 const SurrealZero = SurrealFinite("0", ϕ, ϕ ) 
 const SurrealOne  = SurrealFinite("1", [ zero(SurrealFinite) ], ϕ ) 
@@ -388,11 +390,16 @@ function -(x::SurrealFinite)
         result = SurrealFinite(x.shorthand[2:end], -x.R, -x.L )
     else
         result = SurrealFinite("-"*x.shorthand, -x.R, -x.L )
-    end 
+    end
+    hr = hash(result)
+    if haskey(ExistingSurreals, hr)
+        result = ExistingSurreals[hr] # don't double up on memory
+    else
+        ExistingSurreals[hr] = result
+    end
     ExistingSurreals[hx] = x
-    ExistingSurreals[hash(result)] = result
     ExistingNegations[hx] = hash(result)
-    ExistingNegations[hash(result)] = hx
+    ExistingNegations[hr] = hx
     Count['-'] += 1
     return result
 end
@@ -440,7 +447,11 @@ function +(x::SurrealFinite, y::SurrealFinite)
         ExistingSums[hy] = Dict{UInt64,UInt64}() 
     end
     hr = hash(result)
-    ExistingSurreals[hr] = result
+    if haskey(ExistingSurreals, hr)
+        result = ExistingSurreals[hr] # don't double up on memory
+    else
+        ExistingSurreals[hr] = result
+    end    
     ExistingSums[hx][hy] = hr
     ExistingSums[hy][hx] = hr
     Count['+'] += 1
@@ -494,7 +505,11 @@ function *(x::SurrealFinite, y::SurrealFinite)
         ExistingProducts[hy] = Dict{UInt64,UInt64}()
     end 
     hr = hash(result)
-    ExistingSurreals[hr] = result
+    if haskey(ExistingSurreals, hr)
+        result = ExistingSurreals[hr] # don't double up on memory
+    else
+        ExistingSurreals[hr] = result
+    end
     ExistingProducts[hx][hy] = hr
     ExistingProducts[hy][hx] = hr
     Count['*'] += 1 
@@ -550,8 +565,8 @@ function expand(x::SurrealFinite; level=0)
     if level==0
         s = x.shorthand != "" ? x.shorthand : expand(x; level=1)
     elseif level==1
-        tmpL = isempty(x.L) ? "ϕ" : join(convert.(String, x.L), ',')
-        tmpR = isempty(x.R) ? "ϕ" : join(convert.(String, x.R), ',')
+        tmpL = isempty(x.L) ? "∅" : join(convert.(String, x.L), ',')
+        tmpR = isempty(x.R) ? "∅" : join(convert.(String, x.R), ',')
         s = "{ " * tmpL * " | " * tmpR  * " }"
         return s 
     elseif level>=1
@@ -567,10 +582,10 @@ function convert(::Type{SurrealFinite}, s::AbstractString )
     # interpret, (i) numbers as canonical, (ii) phi, \phi, ϕ correctly, (iii) structure
     @static if VERSION < v"0.7.0"
         s = replace(s, r"\s+", "") # remove white space
-        s = replace(s, r"phi|\\phi|ϕ|\{\}", "") # replace phi or \phi with empty set
+        s = replace(s, r"phi|\\phi|ϕ|∅|\{\}", "") # replace phi or \phi with empty set
     else
         s = replace(s, r"\s+" => "") # remove white space
-        s = replace(s, r"phi|\\phi|ϕ|\{\}" => "") # replace phi or \phi with empty set
+        s = replace(s, r"phi|\\phi|ϕ|∅|\{\}" => "") # replace phi or \phi with empty set
     end
     # println("     s1 = $s")
     not_end = true
@@ -627,13 +642,15 @@ function surreal2tex(io::IO, x::SurrealFinite; level=0)
     s = expand(x; level=level)
     @static if VERSION < v"0.7.0"
         s = replace(s, r"\{", " \\{ ") 
-        s = replace(s, r"ϕ", " \\phi ") 
+        s = replace(s, r"ϕ", " \\emptyset ") 
+        s = replace(s, r"∅", " \\emptyset ") 
         s = replace(s, r"\|", " \\mid ") 
         s = replace(s, r"\}", " \\} ")
         s = replace(s, r"(\d+)//(\d+)", s"\\frac{\1}{\2}")
     else
         s = replace(s, r"\{" => " \\{ ") 
-        s = replace(s, r"ϕ" => " \\phi ") 
+        s = replace(s, r"ϕ" => " \\emptyset ") 
+        s = replace(s, r"∅" => " \\emptyset ") 
         s = replace(s, r"\|" => " \\mid ") 
         s = replace(s, r"\}" => " \\} ")
         s = replace(s, r"(\d+)//(\d+)" => s"\\frac{\1}{\2}")
@@ -660,7 +677,7 @@ end
 # show(io::IO, X::Array{SurrealFinite}) = print(io, "{", join(X, ", "), "}")
 function show(io::IO, X::Array{SurrealFinite})
     if isempty(X)
-        print(io, "ϕ")
+        print(io, "∅")
     else
         print(io, join(X, ", "))
     end

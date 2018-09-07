@@ -572,13 +572,14 @@ There are other implementations of the surreals. For instance
 + Haskell https://github.com/Lacaranian/surreal (only integers)
 + Haskell https://github.com/serialhex/Surreal-Numbers (not quite working)
 + Haskell https://github.com/elfakyn/Haskell-surreals (only integers)
++ Javascript http://www.iwriteiam.nl/SurrealNumbers.html
 + Mathematica http://demonstrations.wolfram.com/GeneratingTheSurrealNumbers/
               (only generation)
++ Lua https://github.com/Ryan1729/lua-Surreal-numbers?files=1 
 + Python https://github.com/codeinthehole/python-surreal (not much
          implemented)
 + Python https://github.com/314eter/surreal-numbers
 + Ruby http://raganwald.com/2009/03/07/elegance-and-the-surreals.html
-
 
 And some of these languages might be more appropriate in some ways for
 this task. But I wanted to learn Julia, and see how far I could take

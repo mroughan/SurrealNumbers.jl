@@ -1,9 +1,6 @@
 
-*** replace caches with dict -> another hash, and have a global list
-    of all surreals to
-      (a) reduce memory footprint
-      (b) avoid the problem that 1+3 == 2 +2, but at the moment might
-          point to new memory
+- use a hash based cache in DAG stats, so that we avoid doubling up if
+  by mistake the same surreal is allocated twice
 
 - put "values" into surreals in the same way as hashes,
      - but for surreals resulting from computations this should be easy 

@@ -16,7 +16,7 @@ export clearcache
 # export SurrealAlt2  
 # export ExistingSurrealsAlt2, ExistingProductsAlt2, ExistingSumsAlt2
 
-export <=, zero, one, ==, ≅, ≇, <, -, +, *, ≀, ↑, ↓, dag_add,
+export ∅, ϕ, <=, zero, one, ==, ≅, ≇, <, -, +, *, ≀, ↑, ↓, dag_add,
     dali, convert, promote, hash, 
     pf, pff, spf, show, surreal2node, surreal2dot, surreal2dag, surreal2tex, read, expand,
     generation, canonicalise, iscanonical, parents, isancestor, ≺, ≻, ⪯, ⪰, 
@@ -24,7 +24,7 @@ export <=, zero, one, ==, ≅, ≇, <, -, +, *, ≀, ↑, ↓, dag_add,
     sign, round, floor, ceil, trunc, mod, 
     isinteger, isinf, isnan, isfinite, isodd, iseven, isdivisible,
     dag_stats, nodes, edges, paths, tree_nodes, breadth, width, surrealDAG
- 
+  
 abstract type Surreal <: Real end 
  
 @static if VERSION < v"0.7.0"
