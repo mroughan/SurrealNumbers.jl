@@ -1,6 +1,6 @@
 module SurrealNumbers
 
-import Base: convert, promote, promote_rule, hash, show, read, expand, delete!,
+import Base: convert, promote, promote_rule, hash, show, read, expand, delete!, empty!, 
     size, sign, round, floor, ceil, mod, trunc, 
     isinteger, isinf, isnan, isfinite, isodd, iseven, iszero, 
     <, <=, zero, one, ==, <, -, +, *, /,
@@ -23,7 +23,8 @@ export ∅, ϕ, <=, zero, one, ==, ≅, ≇, <, -, +, *, ≀, ↑, ↓, dag_add,
     unique2!, 
     sign, round, floor, ceil, trunc, mod, 
     isinteger, isinf, isnan, isfinite, isodd, iseven, isdivisible,
-    dag_stats, nodes, edges, paths, tree_nodes, breadth, width, surrealDAG
+    dag_stats, nodes, edges, paths, tree_nodes, breadth, width, surrealDAG,
+    uniqueness, uniqueness_max, uniqueness_failure
   
 abstract type Surreal <: Real end 
  

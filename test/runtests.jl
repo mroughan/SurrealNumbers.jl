@@ -9,7 +9,8 @@ end
     const devnull = DevNull
 end 
  
-
+clearcache()
+ 
 # recursive construction and one and zero
 x0 = SurrealFinite("0", ϕ,   ϕ)  
 x1 = SurrealFinite("1", [x0], ϕ)
@@ -139,11 +140,10 @@ end
     @test convert(SurrealFinite, 6)/ convert(SurrealFinite, 3) ≅ convert(SurrealFinite, 2)
 end
 
-
 @testset "convert to surreal" begin
     @test convert(SurrealFinite,2)*convert(SurrealFinite,2) ≅ convert(SurrealFinite,4)
     @test convert(SurrealFinite,2)*convert(SurrealFinite,-3) ≅ convert(SurrealFinite,-6)
-    @test convert(SurrealFinite,2)*x0 ≅ x0
+    @test convert(SurrealFinite,2)*x0 ≅ x0 
     @test convert(SurrealFinite,2)*x1 ≅ convert(SurrealFinite,2)
     @test x4 ≅ -s1
     @test convert(SurrealFinite, 0.5) == convert(SurrealFinite, 1//2 )
@@ -227,7 +227,7 @@ V = [-6.25, -4.0, -3.25, -2.5, -2.0, -1.625, -1.0, -0.25, 0.0, 1.0, 7.0, 0.5, 1.
     @test ceil(zero(SurrealFinite)) ≅ 0.0
     @test ceil(one(SurrealFinite)) ≅ 1.0
     @test ceil(x22) ≅ x22 
-    @test ceil(x4) ≅ zero(x4)
+    @test ceil(x4) ≅ zero(x4) 
     @test ceil(x4) ≇ x4
     @test ceil(-x4) ≇ -x4
     @test ceil(-x4) == one(x4)
@@ -360,23 +360,27 @@ ss = convert(SurrealFinite, s)
 
     @test ss ≅ 4.0
     @test ss == convert(SurrealShort, 2.0) * convert(SurrealDyadic, 2.0)
-end 
+end
 
 @testset "structured output" begin
     @test surreal2dot(devnull, x0) == 1
     @test surreal2dot(x0) == 1 
     @test surreal2dot(devnull, x23) == 5
-    @test surreal2dot(devnull, x43) == tree_nodes(x43)
-    @test surreal2dag(devnull, x0) == 1
-    @test surreal2dag(x0) == 1
+    # @test surreal2dot(devnull, x43) == tree_nodes(x43)
     @test surreal2dag(devnull, x23) == 4
-    @test surreal2dag(devnull, x43) == nodes(x43)
-    @test surreal2dag(devnull, -x43) == nodes(x43) 
+    # @test surreal2dag(devnull, x43) == nodes(x43)
+    # @test surreal2dag(devnull, -x43) == nodes(x43) 
     @test surreal2dag(devnull, -s2) == nodes(s2) 
+
     # should compare these against a reference, but sort could get non-unique order, so potential for difference
 end
 
-
+a24 = dali(2) * dali(4);
+(P,Q,U,V) = uniqueness(a24);   
+V2 = uniqueness_failure( U, V)
+U2 = filter( (k,v) -> v>1 , U) 
+P2 = filter( (k,v) -> v==0xa09c3927cec6b030, P )
+ 
 x32 = convert(SurrealFinite, 3/4) + convert(SurrealFinite, 3/4)
 @testset "DAG statistics" begin
     @test dag_stats(x1) == SurrealDAGstats(2,2,1,1,ϕ,1,1,0,1)
@@ -415,7 +419,7 @@ x32 = convert(SurrealFinite, 3/4) + convert(SurrealFinite, 3/4)
     @test nodes(x43) == 11
     @test nodes(x5) == 5
     @test nodes(s2) == 4
-
+ 
     @test breadth(x1) == 1
     @test breadth(x43) == 5
 
@@ -426,6 +430,8 @@ x32 = convert(SurrealFinite, 3/4) + convert(SurrealFinite, 3/4)
 
     # @test dag_stats(x41; LP=true) == SurrealDAGstats(5, 4, 4, [0, 1, 2, 3, 4], 1,4,0,4)
     @test dag_stats(x41; LP=true).longest_path == convert.(SurrealFinite, [0, 1, 2, 3, 4])
+  
+    @test uniqueness_max(U) == 1 # this test causes an error if we do say 2*4, without the caching in +
 end
  
 d33 = dali(33//2)

@@ -12,7 +12,7 @@ mutable struct SurrealFinite <: Surreal
         Count['c'] += 1 
         if length(L) > 1
             L = sort( unique(L), by=x->(x,hash(x)) ) # use hash as tie break in sort so that order is deterministic
-        end
+        end 
         if length(R) > 1
             R = sort( unique(R), by=x->(x,hash(x)) ) # use hash as tie break in sort so that order is deterministic
         end 
@@ -71,11 +71,6 @@ const Count = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≦'=
 function size(d::Dict)
     [length(d[k]) for k in sort(collect(keys(d)))]        
 end 
-function delete!(d::Dict)
-    for k in keys(d)
-        delete!(d, k)
-    end
-end 
 function reset!(d::Dict)
     for k in keys(d)
         d[k] = 0
@@ -90,12 +85,12 @@ function clearcache()
     global ExistingSums
     global ExistingNegations 
     global Count
-    delete!(ExistingSurreals)
-    delete!(ExistingConversions)
-    delete!(ExistingCanonicals)
-    delete!(ExistingProducts)
-    delete!(ExistingSums)
-    delete!(ExistingNegations)
+    empty!(ExistingSurreals)
+    empty!(ExistingConversions)
+    empty!(ExistingCanonicals)
+    empty!(ExistingProducts)
+    empty!(ExistingSums)
+    empty!(ExistingNegations)
     reset!(Count)
     return 1
 end
@@ -117,8 +112,12 @@ function convert(::Type{SurrealFinite}, n::Int )
         result = SurrealFinite(string(n), ϕ, [convert(SurrealFinite, n+1)] )
     end
     hr = hash(result)
-    ExistingSurreals[hr] = result
-    ExistingCanonicals[Rational(n)] = hr
+    if haskey(ExistingSurreals, hr)
+       result = ExistingSurreals[hr] # don't double up on memory
+    else
+       ExistingSurreals[hr] = result
+    end
+    ExistingCanonicals[Rational(n)] = hr 
     return result 
     # should check to make sure abs(n) is not too big, i.e., causes too much recursion
 end 
@@ -140,10 +139,14 @@ function convert(::Type{SurrealFinite}, r::Rational )
     else 
         error("we can't do these yet as they require infinite sets")
         # return convert(SurrealFinite, r.num) // convert(SurrealFinite, r.den)
-    end 
-    h = hash(result)
-    ExistingSurreals[h] = result
-    ExistingCanonicals[r] = h 
+    end  
+    hr = hash(result)
+    if haskey(ExistingSurreals, hr)
+       result = ExistingSurreals[hr] # don't double up on memory
+    else
+       ExistingSurreals[hr] = result
+    end
+    ExistingCanonicals[r] = hr 
     return result
 end
 function convert(::Type{SurrealFinite}, f::Float64 ) 
@@ -185,7 +188,7 @@ function convert(::Type{Rational}, s::SurrealFinite )
     h = hash(s)
     if haskey(ExistingConversions, h)
         return ExistingConversions[h]
-    else
+    else 
         if s ≅ zero(s)
             result = 0 // 1
         elseif s ≅ one(s)
@@ -219,7 +222,7 @@ function convert(::Type{Rational}, s::SurrealFinite )
                     error("this case should not happen")
                 end 
             end
-        end
+        end 
     end 
     ExistingConversions[h] = result
     return result
@@ -263,7 +266,7 @@ const SurrealMinusTwo  = SurrealFinite("-2", ϕ, [SurrealOne] )
 zero(::SurrealFinite) = SurrealZero # always use the same zero
 one(::SurrealFinite)  = SurrealOne  # always use the same one
 # ↑ = one(SurrealFinite)  # this causes an error???
-# ↓ = -one(SurrealFinite) 
+# ↓ = -one(SurrealFinite)  
 
 # relations
 #   these are written in terms of the definition, but could
@@ -380,25 +383,27 @@ function -(x::SurrealFinite)
     global ExistingNegations
     global Count
     hx = hash(x) # build the dictionary in terms of hashs, because it is used quite a bit
-    if haskey(ExistingNegations, hx)
+    if iszero(x) 
+        result = x
+    elseif haskey(ExistingNegations, hx)
         return ExistingSurreals[ ExistingNegations[hx] ]
     elseif isempty(x.shorthand)
         result = SurrealFinite("", -x.R, -x.L )
-    elseif x.shorthand == "0"
-        result = zero(x)
     elseif x.shorthand[1] == '-'
         result = SurrealFinite(x.shorthand[2:end], -x.R, -x.L )
     else
         result = SurrealFinite("-"*x.shorthand, -x.R, -x.L )
-    end
+    end  
     hr = hash(result)
     if haskey(ExistingSurreals, hr)
         result = ExistingSurreals[hr] # don't double up on memory
     else
         ExistingSurreals[hr] = result
     end
-    ExistingSurreals[hx] = x
-    ExistingNegations[hx] = hash(result)
+    if !haskey(ExistingSurreals, hx)
+        ExistingSurreals[hx] = x
+    end 
+    ExistingNegations[hx] = hr
     ExistingNegations[hr] = hx
     Count['-'] += 1
     return result
@@ -436,22 +441,27 @@ function +(x::SurrealFinite, y::SurrealFinite)
         result = x 
     else 
 #       result = SurrealFinite( [x.L .+ y; x .+ y.L],
-#                               [x.R .+ y; x .+ y.R] )
-        result = SurrealFinite( [[x + y for x in x.L]; [x + y for y in y.L]],
-                                [[x + y for x in x.R]; [x + y for y in y.R]] )
-    end   
+        #                               [x.R .+ y; x .+ y.R] )
+        shorthand = "($(x.shorthand) + $(y.shorthand))"
+        result = SurrealFinite(shorthand,
+                               [[x + y for x in x.L]; [x + y for y in y.L]],
+                               [[x + y for x in x.R]; [x + y for y in y.R]] )
+    end    
+    hr = hash(result)
+    # println(" $x+$y:   $hr   $result")   
+    if haskey(ExistingSurreals, hr)
+       result = ExistingSurreals[hr] # don't double up on memory
+    else
+       ExistingSurreals[hr] = result
+    end
+    # ExistingSurreals[hr] = result
+
     if !haskey(ExistingSums, hx)
         ExistingSums[hx] = Dict{UInt64,UInt64}()
     end
     if !haskey(ExistingSums, hy)
         ExistingSums[hy] = Dict{UInt64,UInt64}() 
     end
-    hr = hash(result)
-    if haskey(ExistingSurreals, hr)
-        result = ExistingSurreals[hr] # don't double up on memory
-    else
-        ExistingSurreals[hr] = result
-    end    
     ExistingSums[hx][hy] = hr
     ExistingSums[hy][hx] = hr
     Count['+'] += 1
@@ -490,13 +500,14 @@ function *(x::SurrealFinite, y::SurrealFinite)
         # tmp4 = vec([s*y + x*t - s*t for s in x.R, t in y.L])
         # L = [ tmp1; tmp2 ] 
         # R = [ tmp3; tmp4 ] 
+        shorthand = "($(x.shorthand) * $(y.shorthand))"
         L = [vec([s*y + x*t - s*t for s in x.L, t in y.L]);
              vec([s*y + x*t - s*t for s in x.R, t in y.R])]
         R = [vec([s*y + x*t - s*t for s in x.L, t in y.R]);
              vec([s*y + x*t - s*t for s in x.R, t in y.L])]
         # L = [subtimes( x, y, x.L, y.L ); subtimes( x, y, x.R, y.R )]
         # R = [subtimes( x, y, x.L, y.R ); subtimes( x, y, x.R, y.L )]
-        result = SurrealFinite("", L, R)
+        result = SurrealFinite(shorthand, L, R)
     end
     if !haskey(ExistingProducts, hx)
         ExistingProducts[hx] = Dict{UInt64,UInt64}()
@@ -507,7 +518,7 @@ function *(x::SurrealFinite, y::SurrealFinite)
     hr = hash(result)
     if haskey(ExistingSurreals, hr)
         result = ExistingSurreals[hr] # don't double up on memory
-    else
+    else 
         ExistingSurreals[hr] = result
     end
     ExistingProducts[hx][hy] = hr
@@ -714,9 +725,6 @@ function surreal2dag(io::IO, x::SurrealFinite)
     println(io, "digraph \"", float(x), "\" {")
     k = 1
     SurrealsinDAG = Dict{SurrealFinite,Int}()
-    # for a in keys(ExistingSurreals) 
-    #    delete!(ExistingSurreals, a)
-    # end
     m = surreal2dag_f(io, x, k, SurrealsinDAG)
     println(io, "}")
     return m
@@ -1074,7 +1082,7 @@ end
 #    LP=true means keep track of a longest path
 #    V =true means keep track of values
 # have these as switches, because they are expensive to calculate on large DAGs 
-function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealDAGstats}; LP=false, V=true ) 
+function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealDAGstats}; LP=false, V=true) 
     if s == zero(s)    
         nodes = 1  
         tree_nodes = 1
@@ -1084,7 +1092,7 @@ function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealD
         paths = 1
         value = 0 
         minval = 0  
-        maxval = 0
+        maxval = 0 
     else
         P = parents(s) 
         nodes = 1
@@ -1133,6 +1141,56 @@ function width(s::SurrealFinite)
     # not yet defined exactly what I mean here --
     #    maybe maximum number of nodes for a fixed generation?
     0
+end
+
+# for debugging uniqueness of nodes in memory
+#    check whether an entry in processed list is unique according to hash tables
+#    the values in U should all be 1, but if we do say 2*4, without the caching in +,
+#       we'll get a '2' because identical forms are being allocated multiple times in memory
+function increment( U::Dict{UInt64, Int64}, h::UInt64 )
+    if haskey(U, h)
+        U[h] += 1
+    else
+        U[h] = 1
+    end
+end
+function uniqueness(s::SurrealFinite,
+                    P::Dict{UInt64, UInt64},
+                    Q::Dict{UInt64, SurrealFinite},
+                    U::Dict{UInt64, Int64},
+                    V::Dict{UInt64, SurrealFinite} )
+    h = hash(s)
+    increment(U, h)
+    @static if VERSION < v"0.7.0"
+        os = object_id(s)
+    else
+        os = objectid(s)
+    end 
+    P[ os ] = h
+    Q[ os ] = s
+    V[h] = s
+    for p in parents(s)
+        @static if VERSION < v"0.7.0"
+            op = object_id(p)
+        else
+            op = objectid(p)
+        end  
+        if !haskey( P, op )
+            uniqueness(p, P, Q, U, V )
+        end  
+    end 
+    return (P, Q, U, V ) 
+end 
+uniqueness(s::SurrealFinite) = uniqueness(s,
+                                          Dict{UInt64, UInt64}(),
+                                          Dict{UInt64, SurrealFinite}(),
+                                          Dict{UInt64, Int64}(),
+                                          Dict{UInt64, SurrealFinite}() )
+uniqueness_max( U::Dict{UInt64, Int64} ) = maximum( values(U) )
+function uniqueness_failure(  U::Dict{UInt64, Int64}, V::Dict{UInt64, SurrealFinite} )
+    U2 = filter( (k,v) -> v>1 , U) # not Julia 1.0 compliant
+    V2 = [V[i] for i in keys(U2) ]
+    return V2
 end
 
 ###########################################################

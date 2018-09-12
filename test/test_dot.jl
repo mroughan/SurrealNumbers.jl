@@ -33,6 +33,7 @@ x42 = SurrealFinite( [x3],  ϕ)
 x43 = convert(SurrealFinite, 2) * convert(SurrealFinite, 2)
 
 x6 = convert(SurrealFinite, 3) * convert(SurrealFinite, 2)
+x8 = convert(SurrealFinite, 2) * convert(SurrealFinite, 4)
 x9 = convert(SurrealFinite, 3) * convert(SurrealFinite, 3)
 
 x03 = convert(SurrealFinite, 3) - convert(SurrealFinite, 3)
@@ -112,8 +113,8 @@ close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
-temp1 = values(ExistingSurreals)
-temp1 = sort(collect(temp1))
+# temp1 = values(ExistingSurreals)
+# temp1 = sort(collect(temp1))
 
 file = "$(out_dir)test_dot_x5.dot"
 FID = open(file, "w")
@@ -135,11 +136,18 @@ run(`dot -Tsvg -O $file`)
 # close(FID)
 # run(`dot -Tpdf -O $file`) 
 # run(`dot -Tsvg -O $file`) 
-
+ 
 file = "$(out_dir)test_dag_x6.dot"
 FID = open(file, "w")
 surreal2dag(FID, x6)
 close(FID)
+run(`dot -Tpdf -O $file`) 
+run(`dot -Tsvg -O $file`) 
+
+file = "$(out_dir)test_dag_x8.dot"
+FID = open(file, "w")
+surreal2dag(FID, x8) 
+close(FID) 
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 

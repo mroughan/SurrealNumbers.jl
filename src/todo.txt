@@ -1,6 +1,9 @@
 
-- use a hash based cache in DAG stats, so that we avoid doubling up if
-  by mistake the same surreal is allocated twice
+- maybe need to
+    calculate hash when constructing surreal
+    put the surreal into the cache during construction
+      and thus avoid ever doubling up???
+
 
 - put "values" into surreals in the same way as hashes,
      - but for surreals resulting from computations this should be easy 
