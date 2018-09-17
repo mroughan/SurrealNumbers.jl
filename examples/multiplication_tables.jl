@@ -9,7 +9,7 @@ a = convert(SurrealFinite, 2) * convert(SurrealFinite, 2)
 b = convert(SurrealFinite, 1) - convert(SurrealFinite, 1) 
 
 n2 = 12
-n3 = 4
+n3 = 5
 n4 = 2
 n_12 = 12
 n_14 = 3

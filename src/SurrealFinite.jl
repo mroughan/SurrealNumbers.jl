@@ -453,8 +453,8 @@ function +(x::SurrealFinite, y::SurrealFinite)
        result = ExistingSurreals[hr] # don't double up on memory
     else
        ExistingSurreals[hr] = result
-    end
-    # ExistingSurreals[hr] = result
+    end 
+    # ExistingSurreals[hr] = result  # swap to just using this if we want to see all the ways an addition can given the same result
 
     if !haskey(ExistingSums, hx)
         ExistingSums[hx] = Dict{UInt64,UInt64}()
