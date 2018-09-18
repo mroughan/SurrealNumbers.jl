@@ -87,7 +87,7 @@ special functions, e.g., `zero` and `one`. There are two constructors,
 one includes an extra string we'll call the *shorthand* for the
 surreal. It's use in printing out numbers. The second constructor, and
 many other operators leave this blank. The empty set is designated by
-∅, which you can get in Julia by typing `\phi TAB`. 
+∅, which you can get in Julia by typing `\emptyset TAB`. 
 
     julia> using SurrealNumbers
     julia> z = zero(SurrealShort)
@@ -104,7 +104,7 @@ subset of surreals that are implemented here (those with finite
 representations) is called the short surreals. There are several
 aliases to this in the code: `SurrealFinite` (which was what I started
 with, and so is the fundamental type), and `SurrealDyadic` (for
-reasons described below. 
+reasons described below). 
 
 Note that the output of these varies: in the case where a shorthand
 was defined it just outputs (in bold) the shorthand, but otherwise it
@@ -185,12 +185,17 @@ just
         shorthand::String
         L::Array{SurrealShort,1} 
         R::Array{SurrealShort,1} 
-    end 
+    	h::UInt64 
+   end 
 
 Note the addition of a `shorthand` string, which isn't necessary, but
-carries a little bit of extra information to make pretty printing a
-little easier.
+carries a little bit of extra information to make pretty printing and
+hence debugging a little easier.
 
+The variable `h` contains the hash value of the surreal, which is
+calculated the first time it is used. This avoids incurring the cost
+of this (recursive) calculation every time the value is needed, which
+is often as the hash is used to speed up other operations. 
 
 ### Dyadic numbers
 
@@ -227,14 +232,17 @@ we can identify these with the real numbers. However, there are many
 if $x \leq y$ and $y \leq x$.
 
 I think of this loosely by analogy to the rationals, e.g., we can have
+two different forms that have the same value, and we usually call the
+same "number" 
 
-    2 // 4 == 1 // 2
+    2 // 4 = 1 // 2
 
-However, it seems important to distinguish equality from equivalence
-here. In programming terms two "things" are equal when they are the
-same, not some airy-fairy notion of equivalence, so equality and
-equivalence have different meanings and uses. Hence, here we have the
-relation ≅ defined to test equivalence separate from ==. 
+However, it seems important to distinguish equality (where two forms
+are identical) from equivalence (where they have the same value). In
+programming terms two "things" are equal when they are the same, not
+some airy-fairy notion of equivalence, so equality and equivalence
+have different meanings and uses. Hence, here we have the relation ≅
+defined to test equivalence separate from ==.
 
 BTW, here we hit one of the weirdnesses of Julia; 99\% of the time,
 you can redefine operators and comparators to do whatever you like on
