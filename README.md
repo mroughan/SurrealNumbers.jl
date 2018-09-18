@@ -78,16 +78,6 @@ recursively defined.
 I know you can do this in other languages, and in some cases also
 achieve high performance. But it's *so* easy in Julia. 
 
-On the other hand, while surreals use sets, and Julia has a Set type,
-implementation wise, sorted arrays of surreals were a better bet
-because that exchanges a once off cost when constructing a surreal
-with a reduced cost for many operations throughout the lifetime of the
-surreal. Also Julia creates a whole suite of array functions
-automagically when you define scalars so using arrays was a low pain
-way to get things working. Also, although the surreals use sets, i.e.,
-order of the elements is not important, almost all texts do write
-these sets in order. 
-
 ### An example
 
 Let's start off with some small examples of using the package. After
@@ -157,6 +147,16 @@ That seems like enough to get you started, so now a little about the
 implementation. 
 
 ## Icky bits -- implementation details
+
+While surreals use sets, and Julia has a Set type, implementation
+wise, sorted arrays of surreals were a better bet because that
+exchanges a once off cost when constructing a surreal with a reduced
+cost for many operations throughout the lifetime of the surreal. Also
+Julia creates a whole suite of array functions automagically when you
+define scalars so using arrays was a low pain way to get things
+working. Also, although the surreals use sets, i.e., order of the
+elements is not important, almost all texts do write these sets in
+order.
 
 The surreals include all real numbers (and infinity and epsilon and
 others). However, many of these require infinitely large sets $X_L$
