@@ -1,9 +1,10 @@
-using IndexedTables
+# using IndexedTables
 using FileIO
 using LatexPrint
 using SurrealNumbers 
 out_dir = "Data/"
-  
+
+convert.(SurrealFinite, 1:12)
 convert(SurrealFinite, 1) * convert(SurrealFinite, 2) 
 a = convert(SurrealFinite, 2) * convert(SurrealFinite, 2) 
 b = convert(SurrealFinite, 1) - convert(SurrealFinite, 1) 
@@ -31,15 +32,29 @@ ns2 = convert.(SurrealFinite, [2; 2*ones(n2); -2; 3*ones(n3); 4*ones(n4); 1//2*o
 n = length(ns1) 
 # m = [10; 10; 10; 10; 10; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1]
 m = ones(Integer, n)
-x = Array{SurrealFinite,1}(n) 
-t = Array{Float64,1}(n) 
-bytes = Array{Float64,1}(n)  
-gctime = Array{Float64,1}(n)
-c_plus = Array{Integer,1}(n) 
-c_times = Array{Integer,1}(n) 
-c_created = Array{Integer,1}(n) 
-c_equals = Array{Integer,1}(n) 
-c_leq = Array{Integer,1}(n) 
+
+@static if VERSION < v"0.7.0"
+    x = Array{SurrealFinite,1}(n) 
+    t = Array{Float64,1}(n) 
+    bytes = Array{Float64,1}(n)  
+    gctime = Array{Float64,1}(n)
+    c_plus = Array{Integer,1}(n) 
+    c_times = Array{Integer,1}(n) 
+    c_created = Array{Integer,1}(n) 
+    c_equals = Array{Integer,1}(n) 
+    c_leq = Array{Integer,1}(n) 
+else
+    x = Array{SurrealFinite,1}(undef,n) 
+    t = Array{Float64,1}(undef,n) 
+    bytes = Array{Float64,1}(undef,n)  
+    gctime = Array{Float64,1}(undef,n)
+    c_plus = Array{Integer,1}(undef,n) 
+    c_times = Array{Integer,1}(undef,n) 
+    c_created = Array{Integer,1}(undef,n) 
+    c_equals = Array{Integer,1}(undef,n) 
+    c_leq = Array{Integer,1}(undef,n) 
+end
+
 i = 0
 println("calculating products")
 for i=1:n 
@@ -80,27 +95,27 @@ b = [s[i].maxval - s[i].minval for i=1:length(s)]
 t = t./m[1:n]
 bytes = bytes
 
-# add in 2x2x2
 
-t1 = table(@NT(i=0:n-1,
-               n1=Rational.(ns1), 
-               n2=Rational.(ns2), 
-               generation=g,
-               nodes=no,
-               edges=ed,
-               paths=float.(p),
-               density=d,
-               time=t,
-               bytes=bytes,
-               adds=c_plus,
-               prods=c_times,
-               created=c_created,
-               equals=c_equals,
-               leq=c_leq);
-           pkey = [:i])
-
-save("$(out_dir)multiplication_tables.csv", t1)
-
+@static if VERSION < v"0.7.0"
+    t1 = table(@NT(i=0:n-1,
+                   n1=Rational.(ns1), 
+                   n2=Rational.(ns2), 
+                   generation=g,
+                   nodes=no,
+                   edges=ed,
+                   paths=float.(p),
+                   density=d,
+                   time=t,
+                   bytes=bytes,
+                   adds=c_plus,
+                   prods=c_times,
+                   created=c_created,
+                   equals=c_equals,
+                   leq=c_leq);
+               pkey = [:i])
+    
+    save("$(out_dir)multiplication_tables.csv", t1)
+end
 
 
 A = Array{Any}(n+1,9);

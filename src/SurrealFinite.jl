@@ -4,7 +4,7 @@ mutable struct SurrealFinite <: Surreal
     #   (ii) calculating it for even temporary surreals
     shorthand::String 
     L::Array{SurrealFinite,1}  
-    R::Array{SurrealFinite,1}
+    R::Array{SurrealFinite,1} 
     h::UInt64 # this is only set the first time the hash function is called
     # constructor should check that L < R
     function SurrealFinite(shorthand::String, L::Array{SurrealFinite}, R::Array{SurrealFinite}, h::UInt64)
@@ -68,9 +68,9 @@ const ExistingSums       = Dict{UInt64, Dict{UInt64,UInt64}}()
 const ExistingNegations  = Dict{UInt64, UInt64}() 
 const Count = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≦'=>0)
 
-function size(d::Dict)
-    [length(d[k]) for k in sort(collect(keys(d)))]        
-end 
+# function size(d::Dict)
+#     [length(d[k]) for k in sort(collect(keys(d)))]        
+# end 
 function reset!(d::Dict)
     for k in keys(d)
         d[k] = 0
@@ -624,7 +624,7 @@ end
 function read(io::IO, ::Type{SurrealFinite}, n::Int=1)
     @static if VERSION < v"0.7.0"
         X = Array{SurrealFinite,1}(n)
-    else
+    else 
         X = Array{SurrealFinite,1}(undef,n) 
     end  
     k = 1

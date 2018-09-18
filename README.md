@@ -8,19 +8,20 @@
 
 
 ## Intro 
+ 
+This is a package implementing some parts of the Surreal Number system
+invented by John Horton Conway, and explained by Knuth in ["Surreal
+Numbers: How Two Ex-Students Turned on to Pure Mathematics and Found
+Total
+Happiness."](http://www.math.harvard.edu/~knill/teaching/mathe320_2015_fall/blog15/surreal1.pdf)
 
-This is a slightly crazy package implementing some parts of the
-Surreal Number system invented by John Horton Conway, and explained by
-Knuth in ["Surreal Numbers: How Two Ex-Students Turned on to Pure
-Mathematics and Found Total Happiness."](http://www.math.harvard.edu/~knill/teaching/mathe320_2015_fall/blog15/surreal1.pdf)
-
-It isn't intended to be useful, so much as educational. It was
-educational for me to write, in terms of learning Julia. I wanted a
-task that would be painful to do in Matlab but "easy" to do in
-Julia. It might also be helpful, I hope, for someone trying to learn
-about Surreal numbers. I certainly did learn a lot about them that
-would have been easily brushed to the side if I had only gone through
-the theorems.
+It isn't intended to be useful, so much as educational, and an
+interesting test of Julia itseld. It was educational for me to write,
+in terms of learning Julia. I wanted a task that would be painful to
+do in Matlab but "easy" to do in Julia. It might also be helpful, I
+hope, for someone trying to learn about Surreal numbers. I certainly
+did learn a lot about them that would have been easily brushed to the
+side if I had only gone through the theorems.
 
 ## Background: the Surreal Numbers
 
@@ -40,7 +41,7 @@ first surreal number (usually denoted zero, because it will turn out
 to be the additive identity) is $\{ | \}$, where I will use this
  bracket and pipe notation to denote $x = \{ X_L | X_R\}$. Also, to
  make the empty spaces clearer (and the coding more efficient) I have
- defined $ ϕ = \{ \} $ the empty set. 
+ defined $ ∅ = \{ \} $ the empty set. 
 
 Then on the "first day" a new generation of surreals can be created in
 terms of the initial case. On the second day we create a new generation
@@ -78,22 +79,14 @@ I know you can do this in other languages, and in some cases also
 achieve high performance. But it's *so* easy in Julia. 
 
 On the other hand, while surreals use sets, and Julia has a Set type,
-I didn't find that easy to work with. As a type, it doesn't seem to
-have all the bells and whistles I would expect from sets.
-
-I could have added these, but Julia creates a whole suite of array
-functions automagically when you define scalars so using arrays was a
-low pain way to get things working. That is, although the surreals use
-sets, i.e., order of the elements is not important, almost all texts
-do write these sets in order. So I felt justified in putting these
-elements into sorted arrays. It works nicely, as long as you make sure
-to only put unique entries into the array, and sort them on
-arrival. And some surreal operations are more efficient when we know
-the set is sorted to start with. 
-
-Someone may correct me about the best way to do this, but for the
-moment, using arrays seemed like a low pain way to get surreals
-working, witb some efficiency advantages.
+implementation wise, sorted arrays of surreals were a better bet
+because that exchanges a once off cost when constructing a surreal
+with a reduced cost for many operations throughout the lifetime of the
+surreal. Also Julia creates a whole suite of array functions
+automagically when you define scalars so using arrays was a low pain
+way to get things working. Also, although the surreals use sets, i.e.,
+order of the elements is not important, almost all texts do write
+these sets in order. 
 
 ### An example
 
@@ -104,19 +97,24 @@ special functions, e.g., `zero` and `one`. There are two constructors,
 one includes an extra string we'll call the *shorthand* for the
 surreal. It's use in printing out numbers. The second constructor, and
 many other operators leave this blank. The empty set is designated by
-ϕ, which you can get in Julia by typing `\phi TAB`. 
+∅, which you can get in Julia by typing `\phi TAB`. 
 
     julia> using SurrealNumbers
-    julia> z = zero(SurrealFinite)
-    julia> x1 = SurrealFinite("1", [z], ϕ)
-    julia> x2 = SurrealFinite("2", [x1], ϕ)
-    julia> x_something = SurrealFinite([z, x1], ϕ)
-    julia> x_half = convert(SurrealFinite, 1 // 2)
+    julia> z = zero(SurrealShort)
+    julia> x1 = SurrealShort("1", [z], ∅)
+    julia> x2 = SurrealShort("2", [x1], ∅)
+    julia> x_something = SurrealShort([z, x1], ∅)
+    julia> x_half = convert(SurrealShort, 1 // 2)
 
 These commands create several surreals, starting at zero, then 1, and
 2, showing the recursive construction. Then a surreal whose value we
 might not know (to start with), and then we convert the rational value
-1/2 into a surreal.
+1/2 into a surreal. The type `SurrealShort` is named because the
+subset of surreals that are implemented here (those with finite
+representations) is called the short surreals. There are several
+aliases to this in the code: `SurrealFinite` (which was what I started
+with, and so is the fundamental type), and `SurrealDyadic` (for
+reasons described below. 
 
 Note that the output of these varies: in the case where a shorthand
 was defined it just outputs (in bold) the shorthand, but otherwise it
@@ -168,7 +166,7 @@ restrict myself to finite surreals, i.e., surreals with finite sets
 $X_L$ and $X_R$. 
 
 So the type `Surreal` is an abstract type (a subtype of `Real`) with
-at present only one useful subtype `SurrealFinite`, where finite
+at present only one useful subtype `SurrealShort`, where finite
 (here) means that the representation is finite, not that the number
 itself is finite. 
 
@@ -183,10 +181,10 @@ do, so I leave that for the moment.
 The actual type structure (minus the constructor -- see the code) is
 just
 
-    struct SurrealFinite <: Surreal
+    struct SurrealShort <: Surreal
         shorthand::String
-        L::Array{SurrealFinite,1} 
-        R::Array{SurrealFinite,1} 
+        L::Array{SurrealShort,1} 
+        R::Array{SurrealShort,1} 
     end 
 
 Note the addition of a `shorthand` string, which isn't necessary, but
@@ -274,11 +272,11 @@ work is needed.
 
 Examples:
 
-    julia> pf( convert(SurrealFinite, 1//2) )
+    julia> pf( convert(SurrealShort, 1//2) )
     { 0 | 1 }
-    julia> pf( convert(SurrealFinite, 3//4) )
+    julia> pf( convert(SurrealShort, 3//4) )
     { 1//2 | 1 } 
-    julia> pf( convert(SurrealFinite, -11//8) )
+    julia> pf( convert(SurrealShort, -11//8) )
     { -3//2 | -5//4 }
 
 The `pf` function used here is a "print-in-full", which prints the
@@ -351,7 +349,7 @@ them in Julia is easy. They are all recursive, as you might guess,
 and so very inefficient -- I wouldn't want to do demanding
 computations this way, but they are easy to understand, for instance
 
-     +(x::SurrealFinite, y::SurrealFinite) = SurrealFinite([x.X_L .+ y; x .+ y.X_L], [x.X_R .+ y; x .+ y.X_R] )
+     +(x::SurrealShort, y::SurrealShort) = SurrealShort([x.X_L .+ y; x .+ y.X_L], [x.X_R .+ y; x .+ y.X_R] )
 
 Notice that we are exploiting here Julia's natural extension of
 operators from scalar to vectors (this is one of the reasons that
@@ -406,8 +404,8 @@ can be easily added.
 There are two approaches: one is to use intrinsic surreal arithmetic,
 e.g. `sign` and `abs` are implemented using native surreal arithmetic and operators. The result is that they looks almost exactly like it would for any other number.
 
-    sign(x::SurrealFinite) = x<zero(x) ? -one(x) : x>zero(x) ? one(x) : zero(x)
-    abs(x::SurrealFinite) = x<zero(x) ? -x : x
+    sign(x::SurrealShort) = x<zero(x) ? -one(x) : x>zero(x) ? one(x) : zero(x)
+    abs(x::SurrealShort) = x<zero(x) ? -x : x
 
 Actually, I don't even have to define `abs` as I get this for free
 because Julia has a similar operation defined `abs(x::Real)` for all
@@ -450,14 +448,14 @@ parsed (assuming you have GraphVis installed) by commands such as
 
     using SurrealNumbers
 
-    s2 = convert(SurrealFinite, 3//4)
+    s2 = convert(SurrealShort, 3//4)
     file = "test_dot_s2.dot"
     FID = open(file, "w")
     surreal2dot(FID, s2)
     close(FID)
     run(`dot -Tsvg -O $file`)
 
-    x5 = SurrealFinite( convert.(SurrealFinite, [-1, -1//2, 0]), [one(SurrealFinite)] )
+    x5 = SurrealShort( convert.(SurrealShort, [-1, -1//2, 0]), [one(SurrealShort)] )
     file = "test_dot_x5.dot"
     FID = open(file, "w")
     surreal2dot(FID, x5)
@@ -515,19 +513,19 @@ implementation instead of sets. One of the nice things about Julia us
 that you get many of the array operators and functions for free when
 you create scalar operators. So, for instance, you can write
 
-    convert.(SurrealFinite, [-1, 0, 1, 2] )
+    convert.(SurrealShort, [-1, 0, 1, 2] )
 
 which will broadcasts the convert function across the array of
 integers to create an array containing the respective
 surreals. Likewise, we can use *comprehensions* to construct arrays,
 e.g.,
 
-    [ convert(SurrealFinite, i) for i=-1:2 ]
+    [ convert(SurrealShort, i) for i=-1:2 ]
 
 Or we could construct and iterator for the same thing (once `floor`
 and some promotion rules are defined), e.g.., the iterator from -1 to 2 is  
 
-    convert(SurrealFinite, -1 ):convert(SurrealFinite, 2)
+    convert(SurrealShort, -1 ):convert(SurrealShort, 2)
 
 However, in order to use arrays as sets we need, in the constructor
 for a surreal to reduce the "set" to a sorted array containing unique
@@ -602,24 +600,25 @@ Some examples of code are included here to make a little of this more real.
 
 Let's start by creating some surreals
 
-    x0 = SurrealFinite("0", ϕ,   ϕ)  
-    x1 = SurrealFinite("1", [x0], ϕ)
-    x11 = SurrealFinite("-1", ϕ,  [x0])
-    x4 = SurrealFinite( [x11],  [x1,x0])
-    x5 = SurrealFinite( [x11,x0,x4],  [x1])
-    x21  = SurrealFinite("2", [x1],  ϕ)
-    x22  = SurrealFinite( [x0, x1],  ϕ)
-    x23  = SurrealFinite( [x11,x1],  ϕ)
-    x24  = SurrealFinite( [x11,x0,x1],  ϕ)
-    x25 = [x11,x0,x1] ≀ ϕ
+    x0 = SurrealShort("0", ∅,   ∅)  
+    x1 = SurrealShort("1", [x0], ∅)
+    x11 = SurrealShort("-1", ∅,  [x0])
+    x4 = SurrealShort( [x11],  [x1,x0])
+    x5 = SurrealShort( [x11,x0,x4],  [x1])
+    x21  = SurrealShort("2", [x1],  ∅)
+    x22  = SurrealShort( [x0, x1],  ∅)
+    x23  = SurrealShort( [x11,x1],  ∅)
+    x24  = SurrealShort( [x11,x0,x1],  ∅)
+    x25 = [x11,x0,x1] ≀ ∅
     z = zero(x1)
-    z = zero(SurrealFinite)
+    z = zero(SurrealShort)
     z = one(x1)
-    s1 = convert(SurrealFinite, 1//2)
-    s2 = convert(SurrealFinite, 3//4)
+    s1 = convert(SurrealShort, 1//2)
+    s2 = convert(SurrealShort, 3//4)
 
 You can check the values using `float` to convert them back to
-standard floating point numbers. Note that ϕ is shorthand for an empty array of surreal numbers, which is quite helpful in many places.
+standard floating point numbers. Note that ∅ is shorthand for an empty
+array of surreal numbers, which is quite helpful in many places.
 
 Try printing them out in various forms:
 
@@ -651,7 +650,7 @@ Test out some operations on the above variables with expected results
      x1*x1 ≅ x1
      x0*x1 ≅ x0
      x4*x0 ≅ x0 
-     convert(SurrealFinite,2)*convert(SurrealFinite,2) ≅ convert(SurrealFinite,4)
+     convert(SurrealShort,2)*convert(SurrealShort,2) ≅ convert(SurrealShort,4)
      
      # division
      x11/one(x11) ≅ -x1
@@ -659,7 +658,7 @@ Test out some operations on the above variables with expected results
      x22/x1 ≅ x22
      x4/x1 ≅ x4
      float(x1/x4) == float(x1)/float(x4)
-     convert(SurrealFinite, 6)/ convert(SurrealFinite, 3) ≅ convert(SurrealFinite, 2)
+     convert(SurrealShort, 6)/ convert(SurrealShort, 3) ≅ convert(SurrealShort, 2)
 
 #### Simple functions
 
@@ -669,16 +668,16 @@ advanced ones such as `log`. The two specific to surreals are
 and `canonicalise` which reduces it to the canonical form of the
 surreal. 
 
-     generation( zero(SurrealFinite) ) == 0
-     canonicalise( convert(SurrealFinite,2)*convert(SurrealFinite,2) ) == convert(SurrealFinite,4)
+     generation( zero(SurrealShort) ) == 0
+     canonicalise( convert(SurrealShort,2)*convert(SurrealShort,2) ) == convert(SurrealShort,4)
      
 #### Converting back to standard real
 
 Examples of how to convert a number back to rationals or floats. 
 
-     convert(Rational, convert(SurrealFinite, 1//8)) == 1//8
+     convert(Rational, convert(SurrealShort, 1//8)) == 1//8
      float( x4 ) == -0.5
-     convert( Rational, SurrealFinite( [ 7//16 ], [ 15//16 ] ) ) == 1//2
+     convert( Rational, SurrealShort( [ 7//16 ], [ 15//16 ] ) ) == 1//2
      convert(String, x4) == "-1/2"
 
 And of how conversion is automatically applied by promotion rules
