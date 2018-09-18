@@ -249,17 +249,18 @@ you can redefine operators and comparators to do whatever you like on
 your new type. But you can't redefine $===$ or $\equiv$. The blog I
 read suggests that this is because this is a core operation, that
 might cause problems if a user broke it. From what I can tell, $===$
-tests identity, i.e., that the things being tested are the same piece
-of memory. That doesn't seem like something we want to mess with. 
+tests that the things being tested are the same object, i.e. ,the same
+piece of memory. That doesn't seem like something we want to mess
+with. 
 
  + https://docs.julialang.org/en/stable/devdocs/functions/#Builtins-1
  + https://discourse.julialang.org/t/overload-for-custom-type/4898
 
 Anyway, I have defined *congruence* $\cong$ or `≅` to do the same
-thing, check for equivalence. However, as there are many possible
-surreal forms we could create to represent any given real number, we
-have to chose one. Call that the *canonical* form. We could define it
-in several ways, but the standard is
+thing, check for equivalence (equality of value). However, as there
+are many possible surreal forms we could create to represent any given
+real number, we have to chose one. Call that the *canonical* form. We
+could define it in several ways, but the standard is
 
 + zero => $0 = \{ | \}$
 
@@ -495,9 +496,9 @@ There are two pieces that are unique to surreals:
 the surreals used to construct it. Again this is easy to implement
 recursively.  Generation comes from Knuth's story where it's called
 the "birth day" of the surreal. Generation can be thought of as a
-function $\rho(\cdot)$
+function $g(\cdot)$
 
-     \[ \rho(x) = \sup_{i \in X_L \cup X_R} \big[ \rho(i) + 1 \big] \]
+     \[ g(x) = \sup_{y \in X_L \cup X_R} \big[ g(y) + 1 \big] \]
 
 Implicitly, generation is the tree *depth*, if viewed as the recursive
 tree shown above. 
@@ -698,10 +699,10 @@ And of how conversion is automatically applied by promotion rules
 
 ## Final notes
 
-The total implementation here is less than 1,000 lines of code. No doubt
-an expert in Julia could make it a good deal tighter -- I have
-concentrated on making the code easy (for me) to understand rather
-than super concise. 
+The total implementation here is a little more than 1,000 lines of
+code. No doubt an expert in Julia could make it a good deal tighter --
+I have concentrated on making the code easy (for me) to understand
+rather than super concise.
 
 This little project would have been a lot easier if I knew more Julia,
 or more about the surreals. Trying to build something to learn about
@@ -712,6 +713,6 @@ been almost impossible to build in Matlab. And at the least, it would
 have required a good deal more work without all the automagical pieces
 of Julia helping.
 
-
+ 
 
 
