@@ -184,9 +184,9 @@ just
     struct SurrealShort <: Surreal
         shorthand::String
         L::Array{SurrealShort,1} 
-        R::Array{SurrealShort,1} 
-    	h::UInt64 
-   end 
+        R::Array{SurrealShort,1}  
+        h::UInt64 
+    end 
 
 Note the addition of a `shorthand` string, which isn't necessary, but
 carries a little bit of extra information to make pretty printing and
