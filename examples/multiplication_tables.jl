@@ -1,4 +1,8 @@
-# using IndexedTables
+@static if VERSION < v"0.7.0"
+    using IndexedTables # currently not working for 1.0
+else
+    using Printf # @sprintf moved here from 0.6 -> 1.0
+end
 using FileIO
 using LatexPrint
 using SurrealNumbers 
@@ -31,7 +35,7 @@ ns2 = convert.(SurrealFinite, [2; 2*ones(n2); -2; 3*ones(n3); 4*ones(n4); 1//2*o
 # ns2 = [1/2; 1/4] 
 n = length(ns1) 
 # m = [10; 10; 10; 10; 10; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1]
-m = ones(Integer, n)
+m = ones(Integer, n) 
 
 @static if VERSION < v"0.7.0"
     x = Array{SurrealFinite,1}(n) 
@@ -81,7 +85,11 @@ for i=1:n
 end
 println("calculating stats")
 # s = dag_stats.( x )
-s = Array{SurrealDAGstats}(n)
+@static if VERSION < v"0.7.0"
+    s = Array{SurrealDAGstats}(n)
+else
+    s = Array{SurrealDAGstats}(undef, n)
+end
 for i=1:n
     println("   ", ns1[i], " x ", ns2[i])
     s[i] = dag_stats( x[i]; V=false ) 
@@ -89,7 +97,7 @@ end
 no = [s[i].nodes for i=1:length(s)]
 ed = [s[i].edges for i=1:length(s)]
 p = [s[i].paths for i=1:length(s)]
-d = (ed+1) ./ no 
+d = (ed.+1) ./ no 
 g = [s[i].generation for i=1:length(s)]
 b = [s[i].maxval - s[i].minval for i=1:length(s)]
 t = t./m[1:n]
@@ -118,7 +126,11 @@ bytes = bytes
 end
 
 
-A = Array{Any}(n+1,9);
+@static if VERSION < v"0.7.0"
+    A = Array{Any}(n+1,9);
+else
+    A = Array{Any}(undef, n+1,9);
+end
 A[1,:] = ["\$x \\times y\$" "g(xy)" "s(xy)" "e(xy)" "p(xy)" "time (s)"  "+" "*" "created"]
 for j=2:n+1
     if isinteger(ns1[j-1])
@@ -174,7 +186,7 @@ A[2:n+1,9] = c_created
 set_align("r")
 # tabular(STDOUT, A,"rr|rr")
 
-file = "$(out_dir)multiplication_table.tex"
+file = "$(out_dir)multiplication_table_$(VERSION).tex"
 FID = open(file, "w")
 L = latex_form(A) 
 println(FID, L)

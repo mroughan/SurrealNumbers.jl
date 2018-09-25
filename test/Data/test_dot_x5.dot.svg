@@ -5,10 +5,10 @@
  -->
 <!-- Title: 0.5 Pages: 1 -->
 <svg width="363pt" height="314pt"
- viewBox="0.00 0.00 362.50 314.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ viewBox="0.00 0.00 363.00 314.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 310)">
 <title>0.5</title>
-<polygon fill="white" stroke="none" points="-4,4 -4,-310 358.5,-310 358.5,4 -4,4"/>
+<polygon fill="white" stroke="none" points="-4,4 -4,-310 359,-310 359,4 -4,4"/>
 <!-- node_1 -->
 <g id="node1" class="node"><title>node_1</title>
 <polygon fill="none" stroke="black" points="151,-281 151,-306 262,-306 262,-281 151,-281"/>
@@ -22,10 +22,10 @@
 </g>
 <!-- node_2 -->
 <g id="node2" class="node"><title>node_2</title>
-<polygon fill="none" stroke="black" points="19,-191 19,-216 74,-216 74,-191 19,-191"/>
-<text text-anchor="start" x="40.5" y="-199.8" font-family="Times,serif" font-size="14.00">&#45;1</text>
-<polygon fill="none" stroke="black" points="19,-162 19,-191 45,-191 45,-162 19,-162"/>
-<text text-anchor="start" x="24" y="-172.8" font-family="Times,serif" font-size="14.00"> ϕ </text>
+<polygon fill="none" stroke="black" points="18,-191 18,-216 74,-216 74,-191 18,-191"/>
+<text text-anchor="start" x="40" y="-199.8" font-family="Times,serif" font-size="14.00">&#45;1</text>
+<polygon fill="none" stroke="black" points="18,-162 18,-191 45,-191 45,-162 18,-162"/>
+<text text-anchor="start" x="23" y="-172.8" font-family="Times,serif" font-size="14.00"> ∅ </text>
 <polygon fill="none" stroke="black" points="45,-162 45,-191 74,-191 74,-162 45,-162"/>
 <text text-anchor="start" x="52" y="-172.8" font-family="Times,serif" font-size="14.00"> 0 </text>
 </g>
@@ -60,12 +60,12 @@
 </g>
 <!-- node_11 -->
 <g id="node11" class="node"><title>node_11</title>
-<polygon fill="none" stroke="black" points="300,-191 300,-216 355,-216 355,-191 300,-191"/>
-<text text-anchor="start" x="324" y="-199.8" font-family="Times,serif" font-size="14.00">1</text>
-<polygon fill="none" stroke="black" points="300,-162 300,-191 329,-191 329,-162 300,-162"/>
-<text text-anchor="start" x="307" y="-172.8" font-family="Times,serif" font-size="14.00"> 0 </text>
-<polygon fill="none" stroke="black" points="329,-162 329,-191 355,-191 355,-162 329,-162"/>
-<text text-anchor="start" x="334" y="-172.8" font-family="Times,serif" font-size="14.00"> ϕ </text>
+<polygon fill="none" stroke="black" points="299,-191 299,-216 355,-216 355,-191 299,-191"/>
+<text text-anchor="start" x="323.5" y="-199.8" font-family="Times,serif" font-size="14.00">1</text>
+<polygon fill="none" stroke="black" points="299,-162 299,-191 328,-191 328,-162 299,-162"/>
+<text text-anchor="start" x="306" y="-172.8" font-family="Times,serif" font-size="14.00"> 0 </text>
+<polygon fill="none" stroke="black" points="328,-162 328,-191 355,-191 355,-162 328,-162"/>
+<text text-anchor="start" x="333" y="-172.8" font-family="Times,serif" font-size="14.00"> ∅ </text>
 </g>
 <!-- node_1&#45;&gt;node_11 -->
 <g id="edge10" class="edge"><title>node_1:1,1&#45;&gt;node_11</title>
@@ -83,10 +83,10 @@
 </g>
 <!-- node_5 -->
 <g id="node5" class="node"><title>node_5</title>
-<polygon fill="none" stroke="black" points="73,-101 73,-126 128,-126 128,-101 73,-101"/>
-<text text-anchor="start" x="94.5" y="-109.8" font-family="Times,serif" font-size="14.00">&#45;1</text>
-<polygon fill="none" stroke="black" points="73,-72 73,-101 99,-101 99,-72 73,-72"/>
-<text text-anchor="start" x="78" y="-82.8" font-family="Times,serif" font-size="14.00"> ϕ </text>
+<polygon fill="none" stroke="black" points="72,-101 72,-126 128,-126 128,-101 72,-101"/>
+<text text-anchor="start" x="94" y="-109.8" font-family="Times,serif" font-size="14.00">&#45;1</text>
+<polygon fill="none" stroke="black" points="72,-72 72,-101 99,-101 99,-72 72,-72"/>
+<text text-anchor="start" x="77" y="-82.8" font-family="Times,serif" font-size="14.00"> ∅ </text>
 <polygon fill="none" stroke="black" points="99,-72 99,-101 128,-101 128,-72 99,-72"/>
 <text text-anchor="start" x="106" y="-82.8" font-family="Times,serif" font-size="14.00"> 0 </text>
 </g>
@@ -106,17 +106,17 @@
 </g>
 <!-- node_8 -->
 <g id="node8" class="node"><title>node_8</title>
-<polygon fill="none" stroke="black" points="219,-101 219,-126 274,-126 274,-101 219,-101"/>
-<text text-anchor="start" x="243" y="-109.8" font-family="Times,serif" font-size="14.00">1</text>
-<polygon fill="none" stroke="black" points="219,-72 219,-101 248,-101 248,-72 219,-72"/>
-<text text-anchor="start" x="226" y="-82.8" font-family="Times,serif" font-size="14.00"> 0 </text>
-<polygon fill="none" stroke="black" points="248,-72 248,-101 274,-101 274,-72 248,-72"/>
-<text text-anchor="start" x="253" y="-82.8" font-family="Times,serif" font-size="14.00"> ϕ </text>
+<polygon fill="none" stroke="black" points="218,-101 218,-126 274,-126 274,-101 218,-101"/>
+<text text-anchor="start" x="242.5" y="-109.8" font-family="Times,serif" font-size="14.00">1</text>
+<polygon fill="none" stroke="black" points="218,-72 218,-101 247,-101 247,-72 218,-72"/>
+<text text-anchor="start" x="225" y="-82.8" font-family="Times,serif" font-size="14.00"> 0 </text>
+<polygon fill="none" stroke="black" points="247,-72 247,-101 274,-101 274,-72 247,-72"/>
+<text text-anchor="start" x="252" y="-82.8" font-family="Times,serif" font-size="14.00"> ∅ </text>
 </g>
 <!-- node_4&#45;&gt;node_8 -->
 <g id="edge7" class="edge"><title>node_4:1,2&#45;&gt;node_8</title>
-<path fill="none" stroke="black" d="M190,-168C190,-151.816 199.569,-137.393 210.795,-126.04"/>
-<polygon fill="black" stroke="black" points="213.388,-128.408 218.328,-119.035 208.622,-123.282 213.388,-128.408"/>
+<path fill="none" stroke="black" d="M190,-168C190,-151.942 199.421,-137.617 210.534,-126.305"/>
+<polygon fill="black" stroke="black" points="213.09,-128.707 218,-119.318 208.307,-123.596 213.09,-128.707"/>
 </g>
 <!-- node_6 -->
 <g id="node6" class="node"><title>node_6</title>
@@ -129,12 +129,12 @@
 </g>
 <!-- node_9 -->
 <g id="node9" class="node"><title>node_9</title>
-<text text-anchor="start" x="229.5" y="-15.3" font-family="Times,serif" font-weight="bold" font-size="14.00">0</text>
+<text text-anchor="start" x="228.5" y="-15.3" font-family="Times,serif" font-weight="bold" font-size="14.00">0</text>
 </g>
 <!-- node_8&#45;&gt;node_9 -->
 <g id="edge8" class="edge"><title>node_8:0,1&#45;&gt;node_9</title>
-<path fill="none" stroke="black" d="M233,-78C233,-67.6193 233,-56.2112 233,-46.2161"/>
-<polygon fill="black" stroke="black" points="236.5,-46.0402 233,-36.0402 229.5,-46.0403 236.5,-46.0402"/>
+<path fill="none" stroke="black" d="M232,-78C232,-67.6193 232,-56.2112 232,-46.2161"/>
+<polygon fill="black" stroke="black" points="235.5,-46.0402 232,-36.0402 228.5,-46.0403 235.5,-46.0402"/>
 </g>
 <!-- node_12 -->
 <g id="node12" class="node"><title>node_12</title>
@@ -142,8 +142,8 @@
 </g>
 <!-- node_11&#45;&gt;node_12 -->
 <g id="edge11" class="edge"><title>node_11:0,1&#45;&gt;node_12</title>
-<path fill="none" stroke="black" d="M314,-168C314,-154.541 314.986,-139.625 316.083,-127.2"/>
-<polygon fill="black" stroke="black" points="319.588,-127.308 317.053,-117.021 312.62,-126.644 319.588,-127.308"/>
+<path fill="none" stroke="black" d="M313,-168C313,-154.525 314.183,-139.607 315.499,-127.185"/>
+<polygon fill="black" stroke="black" points="319.004,-127.343 316.663,-117.01 312.049,-126.548 319.004,-127.343"/>
 </g>
 </g>
 </svg>

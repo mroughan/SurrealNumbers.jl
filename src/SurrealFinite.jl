@@ -4,7 +4,7 @@ mutable struct SurrealFinite <: Surreal
     #   (ii) calculating it for even temporary surreals
     shorthand::String 
     L::Array{SurrealFinite,1}  
-    R::Array{SurrealFinite,1} 
+    R::Array{SurrealFinite,1}
     h::UInt64 # this is only set the first time the hash function is called
     # constructor should check that L < R
     function SurrealFinite(shorthand::String, L::Array{SurrealFinite}, R::Array{SurrealFinite}, h::UInt64)
@@ -567,9 +567,9 @@ pf(x::SurrealFinite) = pf(stdout, x)
 julia> expand( convert(SurrealFinite, 2))
 "2"
 julia> expand( convert(SurrealFinite, 2); level=1)
-"{ 1 | ϕ }"
+"{ 1 | ∅ }"
 julia> expand( convert(SurrealFinite, 2); level=2)
-"{ { { ϕ | ϕ } | ϕ } | ϕ }"
+"{ { { ∅ | ∅ } | ∅ } | ∅ }"
 ```
 """
 function expand(x::SurrealFinite; level=0)
@@ -584,7 +584,7 @@ function expand(x::SurrealFinite; level=0)
         return "{ " * expand(x.L;level=level) * " | " * expand(x.R;level=level) * " }"
     end
 end
-expand(X::Array{SurrealFinite}; level=0) = isempty(X) ? "ϕ" : join(expand.(X; level=level), ',') 
+expand(X::Array{SurrealFinite}; level=0) = isempty(X) ? "∅" : join(expand.(X; level=level), ',') 
  
 # isnumeric(s::AbstractString) = ismatch(r"^-?\d*.\d*$", s) || ismatch(r"^-?\d*//-?\d*$", s)
 
@@ -714,9 +714,9 @@ digraph "0.0" {
    node_1 [shape=none,margin=0,label=
          <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
          <TR><TD COLSPAN="2">0</TD></TR>
-         <TR><TD PORT="L"> ϕ </TD><TD PORT="R"> ϕ </TD></TR>
+         <TR><TD PORT="L"> ∅ </TD><TD PORT="R"> ∅ </TD></TR>
          </TABLE>>,
-         ];
+         ]; 
 }
 1
 ```
@@ -830,10 +830,8 @@ function surreal2dot_f(io::IO, x::SurrealFinite, k::Integer)
 end
 function surreal2node(io::IO, x::SurrealFinite, k::Integer; extra_args::String="")
     S = convert(String, x)
-    # L = isempty(x.L) ? "ϕ" : "" * join( convert.(String, x.L), ",</TD><TD> ") *"</TD>
-    # R = isempty(x.R) ? "ϕ" : join( convert.(String, x.R), ", ")
     if isempty(x.L)
-        L = "ϕ" 
+        L = "∅" 
     else
         L = "<TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLPADDING=\"0\"><TR>"
         c = 1
@@ -843,9 +841,9 @@ function surreal2node(io::IO, x::SurrealFinite, k::Integer; extra_args::String="
             c += 1
         end
         L *= "</TR></TABLE>" 
-    end
+    end 
     if isempty(x.R)
-        R = "ϕ" 
+        R = "∅" 
     else
         R = "<TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLPADDING=\"0\"><TR>"
         c = 1

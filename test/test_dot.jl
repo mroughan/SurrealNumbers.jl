@@ -41,7 +41,7 @@ x03 = convert(SurrealFinite, 3) - convert(SurrealFinite, 3)
 x00 = SurrealFinite("0", [-x1],   [x1])  
 x000 = x00 + x00
 
-surreal2dot(STDOUT, x1)
+surreal2dot(stdout, x1)
 
 file = "$(out_dir)test_dot_x41.dot"
 FID = open(file, "w")

@@ -18,7 +18,7 @@ digraph "0.75" {
    node_4 [shape=none,margin=0,label=
          <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
          <TR><TD COLSPAN="2">1</TD></TR>
-         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="0,1"> 0 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> ϕ </TD></TR>
+         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="0,1"> 0 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> ∅ </TD></TR>
          </TABLE>>,
          ];
    node_4:"0,1" -> node_5;
@@ -27,7 +27,7 @@ digraph "0.75" {
    node_6 [shape=none,margin=0,label=
          <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
          <TR><TD COLSPAN="2">1</TD></TR>
-         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="0,1"> 0 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> ϕ </TD></TR>
+         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="0,1"> 0 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> ∅ </TD></TR>
          </TABLE>>,
          ];
    node_6:"0,1" -> node_7;

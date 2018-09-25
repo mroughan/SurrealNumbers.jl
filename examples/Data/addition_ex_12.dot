@@ -30,14 +30,14 @@ digraph "1.5" {
    node_5 [shape=none,margin=0,label=
          <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
          <TR><TD COLSPAN="2">0</TD></TR>
-         <TR><TD PORT="L"> ϕ </TD><TD PORT="R"> ϕ </TD></TR>
+         <TR><TD PORT="L"> ∅ </TD><TD PORT="R"> ∅ </TD></TR>
          </TABLE>>,
          ];
    node_4:"1,1" -> node_6 [color="blue3"];
    node_6 [shape=none,margin=0,label=
          <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
          <TR><TD COLSPAN="2">1</TD></TR>
-         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="0,1"> 0 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> ϕ </TD></TR>
+         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="0,1"> 0 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> ∅ </TD></TR>
          </TABLE>>,
          ];
    node_6:"0,1" -> node_5 [color="red3"];
@@ -63,7 +63,7 @@ digraph "1.5" {
    node_9 [shape=none,margin=0,label=
          <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
          <TR><TD COLSPAN="2">2</TD></TR>
-         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="1,1"> 1 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> ϕ </TD></TR>
+         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="1,1"> 1 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> ∅ </TD></TR>
          </TABLE>>,
          ];
    node_9:"1,1" -> node_6 [color="red3"];
