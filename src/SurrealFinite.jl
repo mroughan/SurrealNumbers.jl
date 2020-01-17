@@ -774,7 +774,8 @@ surreal2dag(x::SurrealFinite) = surreal2dag(stdout, x)
 ## Arguments
 * `io::IO`: output stream, default is stdout
 * `x::SurrealFinite`: the number to write out
-    
+* `direction::String="forward"`: by default arrows point towards parents ("forward"), to go other way  use "back"
+
 ## Examples
 ```jldoctest
 julia> surreal2dot(convert(SurrealFinite, 1))
@@ -791,14 +792,17 @@ digraph "1.0" {
 2
 ```
 """
-function surreal2dot(io::IO, x::SurrealFinite)
+function surreal2dot(io::IO, x::SurrealFinite; direction::String="forward")
+    if !(direction=="forward" || direction=="back")
+        error("direction should be \"forward\" or \"back\".")
+    end
     println(io, "digraph \"", float(x), "\" {")
     k = 1
-    m = surreal2dot_f(io, x, k)
+    m = surreal2dot_f(io, x, k; direction=direction)
     println(io, "}")
     return m
 end
-function surreal2dot_f(io::IO, x::SurrealFinite, k::Integer)
+function surreal2dot_f(io::IO, x::SurrealFinite, k::Integer; direction::String="forward")
     m = k
     if x == zero(x)
         println(io, "   node_$k [shape=none,margin=0,label=<<B>0</B>>]")
@@ -813,16 +817,16 @@ function surreal2dot_f(io::IO, x::SurrealFinite, k::Integer)
         for s in x.L
             m += 1
             # println(io, "   node_$k:L -> node_$m;")
-            println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c) * "\" -> node_$m;")
-            m = surreal2dot_f(io, s, m)
+            println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c) * "\" -> node_$m [color=\"red3\", dir=$direction];")
+            m = surreal2dot_f(io, s, m; direction=direction)
             c += 1 
         end
         c = 1
         for s in x.R
             m += 1
             # println(io, "   node_$k:R -> node_$m;")
-            println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c)  * "\" -> node_$m;")
-            m = surreal2dot_f(io, s, m)
+            println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c)  * "\" -> node_$m [color=\"blue3\", dir=$direction];")
+            m = surreal2dot_f(io, s, m; direction=direction)
            c += 1 
          end
     end 
@@ -868,7 +872,7 @@ function surreal2node(io::IO, x::SurrealFinite, k::Integer; extra_args::String="
                          </TABLE>>,$extra_args
                          ];""")
 end
-surreal2dot(x::SurrealFinite) = surreal2dot(stdout, x)
+surreal2dot(x::SurrealFinite; direction::String="forward") = surreal2dot(stdout, x; direction=direction)
 
 #######################################################
 

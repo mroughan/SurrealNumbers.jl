@@ -1,6 +1,6 @@
 module SurrealNumbers
 
-import Base: convert, promote, promote_rule, hash, show, read, expand, delete!, empty!, 
+import Base: convert, promote, promote_rule, hash, show, read, delete!, empty!, 
     size, sign, round, floor, ceil, mod, trunc, 
     isinteger, isinf, isnan, isfinite, isodd, iseven, iszero, 
     <, <=, zero, one, ==, <, -, +, *, /,

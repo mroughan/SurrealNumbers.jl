@@ -5,31 +5,31 @@ digraph "0.75" {
          <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="1/2,1"> 1/2 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="1,1"> 1 </TD> &nbsp; </TR></TABLE> </TD></TR>
          </TABLE>>,
          ];
-   node_1:"1/2,1" -> node_2;
+   node_1:"1/2,1" -> node_2 [color="red3", dir=back];
    node_2 [shape=none,margin=0,label=
          <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
          <TR><TD COLSPAN="2">1/2</TD></TR>
          <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="0,1"> 0 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="1,1"> 1 </TD> &nbsp; </TR></TABLE> </TD></TR>
          </TABLE>>,
          ];
-   node_2:"0,1" -> node_3;
+   node_2:"0,1" -> node_3 [color="red3", dir=back];
    node_3 [shape=none,margin=0,label=<<B>0</B>>]
-   node_2:"1,1" -> node_4;
+   node_2:"1,1" -> node_4 [color="blue3", dir=back];
    node_4 [shape=none,margin=0,label=
          <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
          <TR><TD COLSPAN="2">1</TD></TR>
          <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="0,1"> 0 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> ∅ </TD></TR>
          </TABLE>>,
          ];
-   node_4:"0,1" -> node_5;
+   node_4:"0,1" -> node_5 [color="red3", dir=back];
    node_5 [shape=none,margin=0,label=<<B>0</B>>]
-   node_1:"1,1" -> node_6;
+   node_1:"1,1" -> node_6 [color="blue3", dir=back];
    node_6 [shape=none,margin=0,label=
          <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
          <TR><TD COLSPAN="2">1</TD></TR>
          <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="0,1"> 0 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> ∅ </TD></TR>
          </TABLE>>,
          ];
-   node_6:"0,1" -> node_7;
+   node_6:"0,1" -> node_7 [color="red3", dir=back];
    node_7 [shape=none,margin=0,label=<<B>0</B>>]
 }
