@@ -30,7 +30,7 @@ run(`dot -Tpdf -O $file`)
 
 file = "$(out_dir)addition_ex_11.dot"
 FID = open(file, "w")
-surreal2dag(FID, a11)
+surreal2dag(FID, a11; direction="back")
 close(FID)
 run(`dot -Tpdf -O $file`)
 
@@ -39,4 +39,5 @@ FID = open(file, "w")
 surreal2dag(FID, a12)
 close(FID)
 run(`dot -Tpdf -O $file`)
+
 

@@ -245,6 +245,14 @@ function convert(::Type{String}, s::SurrealFinite )
         return string(r.num) * "/" * string(r.den)
     end
 end
+function overbarString( s::SurrealFinite )
+    # use this sparingly
+    if iscanonical(s)
+        return convert(String, s) * "\u0305"
+    else
+        return convert(String, s)
+    end
+end
 
 # promote all numbers to surreals for calculations
 promote_rule(::Type{T}, ::Type{SurrealFinite}) where {T<:Real} = SurrealFinite
@@ -697,8 +705,8 @@ end
 spf(x::SurrealFinite) = print("{ ", canonicalise.(x.L), " | ", canonicalise.(x.R), " }")
 
 """ 
-    surreal2dag(x::SurrealFinite)
-    surreal2dag(io::IO, x::SurrealFinite)
+    surreal2dag(x::SurrealFinite; direction::String="forward")
+    surreal2dag(io::IO, x::SurrealFinite; direction::String="forward")
 
  Writes a surreal representation as a DAG out in DOT format for drawing using GraphVis,
  and returns the number of nodes in the graph. Returns the number of nodes in the graph. 
@@ -706,7 +714,8 @@ spf(x::SurrealFinite) = print("{ ", canonicalise.(x.L), " | ", canonicalise.(x.R
 ## Arguments
 * `io::IO`: output stream, default is stdout
 * `x::SurrealFinite`: the number to write out
-    
+* `direction::String="forward"`: by default arrows point towards parents ("forward"), to go other way  use "back"
+
 ## Examples
 ```jldoctest
 julia> surreal2dag(convert(SurrealFinite, 0))
@@ -721,15 +730,18 @@ digraph "0.0" {
 1
 ```
 """
-function surreal2dag(io::IO, x::SurrealFinite)
+function surreal2dag(io::IO, x::SurrealFinite; direction::String="forward")
+    if !(direction=="forward" || direction=="back")
+        error("direction should be \"forward\" or \"back\".")
+    end
     println(io, "digraph \"", float(x), "\" {")
     k = 1
     SurrealsinDAG = Dict{SurrealFinite,Int}()
-    m = surreal2dag_f(io, x, k, SurrealsinDAG)
+    m = surreal2dag_f(io, x, k, SurrealsinDAG; direction=direction)
     println(io, "}")
     return m
 end
-function surreal2dag_f(io::IO, x::SurrealFinite, k::Integer, SurrealsinDAG)
+function surreal2dag_f(io::IO, x::SurrealFinite, k::Integer, SurrealsinDAG; direction::String="forward")
     m = k 
     if !haskey(SurrealsinDAG, x)
         SurrealsinDAG[x] = m 
@@ -739,10 +751,10 @@ function surreal2dag_f(io::IO, x::SurrealFinite, k::Integer, SurrealsinDAG)
             if !haskey(SurrealsinDAG, s)
                 m += 1
                 # println(io, "   node_$k:L -> node_$m;")
-                println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c) * "\" -> node_$m [color=\"red3\"];")
-                m = surreal2dag_f(io, s, m, SurrealsinDAG)
+                println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c) * "\" -> node_$m [color=\"red3\", dir=$direction];")
+                m = surreal2dag_f(io, s, m, SurrealsinDAG; direction=direction)
             else
-                println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c)  * "\" -> node_$(SurrealsinDAG[s]) [color=\"red3\"];") 
+                println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c)  * "\" -> node_$(SurrealsinDAG[s]) [color=\"red3\", dir=$direction];") 
             end
             c += 1 
         end
@@ -751,17 +763,17 @@ function surreal2dag_f(io::IO, x::SurrealFinite, k::Integer, SurrealsinDAG)
             if !haskey(SurrealsinDAG, s)
                 m += 1
                 # println(io, "   node_$k:R -> node_$m;")
-                println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c) * "\" -> node_$m [color=\"blue3\"];")
-                m = surreal2dag_f(io, s, m, SurrealsinDAG)
+                println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c) * "\" -> node_$m [color=\"blue3\", dir=$direction];")
+                m = surreal2dag_f(io, s, m, SurrealsinDAG; direction=direction)
             else
-                println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c) * "\" -> node_$(SurrealsinDAG[s]) [color=\"blue3\"];")
+                println(io, "   node_$k:\"" *  convert(String, s) * "," * string(c) * "\" -> node_$(SurrealsinDAG[s]) [color=\"blue3\", dir=$direction];")
             end
             c += 1 
         end
     end 
     return m 
 end
-surreal2dag(x::SurrealFinite) = surreal2dag(stdout, x)
+surreal2dag(x::SurrealFinite; direction::String="forward") = surreal2dag(stdout, x; direction=direction)
 
 
 """ 
@@ -834,26 +846,33 @@ function surreal2dot_f(io::IO, x::SurrealFinite, k::Integer; direction::String="
 end
 function surreal2node(io::IO, x::SurrealFinite, k::Integer; extra_args::String="")
     S = convert(String, x)
+    S2 = overbarString(x)
     if isempty(x.L)
-        L = "∅" 
+        # L = "<FONT POINT-SIZE=\"20\">∅</FONT>" 
+        L = "Ø" 
     else
         L = "<TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLPADDING=\"0\"><TR>"
         c = 1
         for s in x.L
             tmp = convert(String, s)
-            L *= "<TD PORT=\"$tmp," * string(c) * "\"> " * tmp  * " </TD> &nbsp; "
+            tmp2 = overbarString(s)
+            L *= "<TD PORT=\"$tmp," * string(c) * "\"> " * tmp2  * " </TD> &nbsp; "
             c += 1
         end
         L *= "</TR></TABLE>" 
     end 
     if isempty(x.R)
-        R = "∅" 
+        R = "Ø" 
+        # R = "∅" 
+        # R = "&#8709;" 
+        # R = "&#x2205;" 
     else
         R = "<TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLPADDING=\"0\"><TR>"
         c = 1
         for s in x.R
             tmp = convert(String, s)
-            R *= "<TD PORT=\"$tmp," * string(c) * "\"> " * tmp * " </TD> &nbsp; "
+            tmp2 = overbarString(s)
+            R *= "<TD PORT=\"$tmp," * string(c) * "\"> " * tmp2 * " </TD> &nbsp; "
             c += 1 
         end
         R *= "</TR></TABLE>" 
@@ -867,7 +886,7 @@ function surreal2node(io::IO, x::SurrealFinite, k::Integer; extra_args::String="
     println(io, """
                 node_$label [shape=none,margin=0,label=
                          <<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"4\">
-                         <TR><TD COLSPAN=\"2\">$S</TD></TR>
+                         <TR><TD COLSPAN=\"2\">$S2</TD></TR>
                          <TR><TD PORT=\"L\"> $L </TD><TD PORT=\"R\"> $R </TD></TR>
                          </TABLE>>,$extra_args
                          ];""")

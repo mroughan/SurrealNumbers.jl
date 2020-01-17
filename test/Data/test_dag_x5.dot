@@ -2,40 +2,40 @@ digraph "0.5" {
    node_1 [shape=none,margin=0,label=
          <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
          <TR><TD COLSPAN="2">1/2</TD></TR>
-         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="-1,1"> -1 </TD> &nbsp; <TD PORT="-1/2,2"> -1/2 </TD> &nbsp; <TD PORT="0,3"> 0 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="1,1"> 1 </TD> &nbsp; </TR></TABLE> </TD></TR>
+         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="-1,1"> -1̅ </TD> &nbsp; <TD PORT="-1/2,2"> -1/2 </TD> &nbsp; <TD PORT="0,3"> 0̅ </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="1,1"> 1̅ </TD> &nbsp; </TR></TABLE> </TD></TR>
          </TABLE>>,
          ];
-   node_1:"-1,1" -> node_2 [color="red3"];
+   node_1:"-1,1" -> node_2 [color="red3", dir=forward];
    node_2 [shape=none,margin=0,label=
          <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
-         <TR><TD COLSPAN="2">-1</TD></TR>
-         <TR><TD PORT="L"> ∅ </TD><TD PORT="R"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="0,1"> 0 </TD> &nbsp; </TR></TABLE> </TD></TR>
+         <TR><TD COLSPAN="2">-1̅</TD></TR>
+         <TR><TD PORT="L"> Ø </TD><TD PORT="R"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="0,1"> 0̅ </TD> &nbsp; </TR></TABLE> </TD></TR>
          </TABLE>>,
          ];
-   node_2:"0,1" -> node_3 [color="blue3"];
+   node_2:"0,1" -> node_3 [color="blue3", dir=forward];
    node_3 [shape=none,margin=0,label=
          <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
-         <TR><TD COLSPAN="2">0</TD></TR>
-         <TR><TD PORT="L"> ∅ </TD><TD PORT="R"> ∅ </TD></TR>
+         <TR><TD COLSPAN="2">0̅</TD></TR>
+         <TR><TD PORT="L"> Ø </TD><TD PORT="R"> Ø </TD></TR>
          </TABLE>>,
          ];
-   node_1:"-1/2,2" -> node_4 [color="red3"];
+   node_1:"-1/2,2" -> node_4 [color="red3", dir=forward];
    node_4 [shape=none,margin=0,label=
          <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
          <TR><TD COLSPAN="2">-1/2</TD></TR>
-         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="-1,1"> -1 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="0,1"> 0 </TD> &nbsp; <TD PORT="1,2"> 1 </TD> &nbsp; </TR></TABLE> </TD></TR>
+         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="-1,1"> -1̅ </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="0,1"> 0̅ </TD> &nbsp; <TD PORT="1,2"> 1̅ </TD> &nbsp; </TR></TABLE> </TD></TR>
          </TABLE>>,
          ];
-   node_4:"-1,1" -> node_2 [color="red3"];
-   node_4:"0,1" -> node_3 [color="blue3"];
-   node_4:"1,2" -> node_5 [color="blue3"];
+   node_4:"-1,1" -> node_2 [color="red3", dir=forward];
+   node_4:"0,1" -> node_3 [color="blue3", dir=forward];
+   node_4:"1,2" -> node_5 [color="blue3", dir=forward];
    node_5 [shape=none,margin=0,label=
          <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
-         <TR><TD COLSPAN="2">1</TD></TR>
-         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="0,1"> 0 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> ∅ </TD></TR>
+         <TR><TD COLSPAN="2">1̅</TD></TR>
+         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="0,1"> 0̅ </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> Ø </TD></TR>
          </TABLE>>,
          ];
-   node_5:"0,1" -> node_3 [color="red3"];
-   node_1:"0,3" -> node_3 [color="red3"];
-   node_1:"1,1" -> node_5 [color="blue3"];
+   node_5:"0,1" -> node_3 [color="red3", dir=forward];
+   node_1:"0,3" -> node_3 [color="red3", dir=forward];
+   node_1:"1,1" -> node_5 [color="blue3", dir=forward];
 }

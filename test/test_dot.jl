@@ -167,7 +167,7 @@ run(`dot -Tsvg -O $file`)
 
 file = "$(out_dir)test_dag_x00.dot"
 FID = open(file, "w")
-surreal2dag(FID,  x00)
+surreal2dag(FID,  x00; direction="back")
 close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
