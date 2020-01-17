@@ -17,7 +17,7 @@ export clearcache
 # export ExistingSurrealsAlt2, ExistingProductsAlt2, ExistingSumsAlt2
 
 export ∅, ϕ, <=, zero, one, ==, ≅, ≇, <, -, +, *, ≀, ↑, ↓, dag_add,
-    dali, convert, promote, hash, 
+    dali, convert, overbarString, promote, hash, 
     pf, pff, spf, show, surreal2node, surreal2dot, surreal2dag, surreal2tex, read, expand,
     generation, canonicalise, iscanonical, parents, isancestor, ≺, ≻, ⪯, ⪰, 
     unique2!, 

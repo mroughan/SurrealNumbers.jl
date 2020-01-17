@@ -199,7 +199,7 @@ for i=1:4
     file = "$(out_dir)multiplication_ex_$i.dot"
     println("outputting $file")
     FID = open(file, "w")
-    surreal2dag(FID, x[i])
+    surreal2dag(FID, x[i]; direction="back")
     close(FID)
     run(`dot -Tpdf -O $file`)
 end

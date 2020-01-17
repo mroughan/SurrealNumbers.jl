@@ -248,7 +248,9 @@ end
 function overbarString( s::SurrealFinite )
     # use this sparingly
     if iscanonical(s)
-        return convert(String, s) * "\u0305"
+        #return "<SPAN STYLE=\"text-decoration:overline\">" * convert(String, s) * "</SPAN>"
+        # return convert(String, s) * "\u0305"
+        return "<o>" * convert(String, s) * "</o>"
     else
         return convert(String, s)
     end
@@ -856,7 +858,7 @@ function surreal2node(io::IO, x::SurrealFinite, k::Integer; extra_args::String="
         for s in x.L
             tmp = convert(String, s)
             tmp2 = overbarString(s)
-            L *= "<TD PORT=\"$tmp," * string(c) * "\"> " * tmp2  * " </TD> &nbsp; "
+            L *= "<TD CELLPADDING=\"1pt\" PORT=\"$tmp," * string(c) * "\"> " * tmp2  * " </TD> &nbsp; "
             c += 1
         end
         L *= "</TR></TABLE>" 
@@ -872,7 +874,7 @@ function surreal2node(io::IO, x::SurrealFinite, k::Integer; extra_args::String="
         for s in x.R
             tmp = convert(String, s)
             tmp2 = overbarString(s)
-            R *= "<TD PORT=\"$tmp," * string(c) * "\"> " * tmp2 * " </TD> &nbsp; "
+            R *= "<TD CELLPADDING=\"1pt\"  PORT=\"$tmp," * string(c) * "\"> " * tmp2 * " </TD> &nbsp; "
             c += 1 
         end
         R *= "</TR></TABLE>" 
@@ -886,7 +888,7 @@ function surreal2node(io::IO, x::SurrealFinite, k::Integer; extra_args::String="
     println(io, """
                 node_$label [shape=none,margin=0,label=
                          <<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"4\">
-                         <TR><TD COLSPAN=\"2\">$S2</TD></TR>
+                         <TR><TD  CELLPADDING=\"5pt\" COLSPAN=\"2\">$S2</TD></TR>
                          <TR><TD PORT=\"L\"> $L </TD><TD PORT=\"R\"> $R </TD></TR>
                          </TABLE>>,$extra_args
                          ];""")

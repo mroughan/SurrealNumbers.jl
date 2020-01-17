@@ -24,7 +24,7 @@ a12 = convert(SurrealFinite, 3/4) + convert(SurrealFinite, 3/4)
 
 file = "$(out_dir)addition_ex_10.dot"
 FID = open(file, "w")
-surreal2dag(FID, a10)
+surreal2dag(FID, a10; direction="back")
 close(FID)
 run(`dot -Tpdf -O $file`)
 
@@ -36,7 +36,7 @@ run(`dot -Tpdf -O $file`)
 
 file = "$(out_dir)addition_ex_12.dot"
 FID = open(file, "w")
-surreal2dag(FID, a12)
+surreal2dag(FID, a12; direction="back")
 close(FID)
 run(`dot -Tpdf -O $file`)
 
