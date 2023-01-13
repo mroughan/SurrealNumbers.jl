@@ -134,14 +134,18 @@ end
 A[1,:] = ["\$x \\times y\$" "g(xy)" "s(xy)" "e(xy)" "p(xy)" "time (s)"  "+" "*" "created"]
 for j=2:n+1
     if isinteger(ns1[j-1])
-        tmp1 = Int(ns1[j-1])
+        # tmp1 = Int(ns1[j-1])
+        tmp1 = convert(Int, ns1[j-1])
     else
-        tmp1 = Rational(ns1[j-1])
+        # tmp1 = Rational(ns1[j-1])
+        tmp1 = convert(Rational, ns1[j-1])
     end
     if isinteger(ns2[j-1])
-        tmp2 = Int(ns2[j-1])
+        # tmp2 = Int(ns2[j-1])
+        tmp2 = convert(Int, ns2[j-1])
     else
-        tmp2 = Rational(ns2[j-1])
+        # tmp2 = Rational(ns2[j-1])
+        tmp2 = convert(Rational, ns2[j-1])
     end
     A[j,1] = "\$\\overline{$(tmp1)} \\times \\overline{$(tmp2)}\$"
 end   
@@ -170,11 +174,14 @@ end
 # end
 for j=2:n+1 
     if t[j-1]<100
-        A[j,6] = round(t[j-1],2)
+        # A[j,6] = round(t[j-1],2)
+        A[j,6] = round(t[j-1]; digits=2)
     elseif t[j-1]<1000
-        A[j,6] = round(t[j-1],1)
+        # A[j,6] = round(t[j-1],1)
+        A[j,6] = round(t[j-1]; digits=1)
     else
-        A[j,6] = round(t[j-1],0)
+        # A[j,6] = round(t[j-1],0)
+        A[j,6] = round(t[j-1]; digits=0)
     end
 end
 A[2:n+1,7] = c_plus

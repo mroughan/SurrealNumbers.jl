@@ -209,7 +209,7 @@ It turns out that every dyadic has a finite representation as a
 surreal, and every finite surreal represents a dyadic. The easiest way
 to represent this is as a DAG (Directed Acyclic Graph) of the constructions as shown below:
 
-![dyadics](/examples/Data/dyadic_tree_3.dot.svg)
+![dyadics](/examples/dyadic_tree_3_manual.svg)
  
 It might seem a little limiting to be restricted to this set, but
 remember that floating point numbers are dyadics. They are a (binary)
