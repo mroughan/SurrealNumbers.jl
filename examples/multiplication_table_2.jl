@@ -8,9 +8,9 @@ using IndexedTables
 using FileIO
 # using LatexPrint
 # using SurrealNumbers 
-out_dir = "Data/"
+out_dir = "Data"
 
-filename = "$(out_dir)multiplication_tables.csv"
+filename = joinpath(@__DIR__, out_dir, "multiplication_tables.csv")
 t1 = load(filename)
 t2 = table(t1)
 

@@ -5,10 +5,11 @@ out_dir = "Data/"
 
 # subtraction table
 x = convert.(SurrealFinite, [0, 1/2, 1, 2])
-A = zeros(SurrealFinite, length(x), length(x))    
-B = zeros(Int, length(x), length(x))    
-for i=1:length(x)
-    for j=1:length(x)
+m = length(x)
+A = zeros(SurrealFinite, m, m)    
+B = zeros(Int, m, m)    
+for i=1:m
+    for j=1:m
         A[i,j] = x[i] - x[j]
         B[i,j] = generation(x[i]) + generation(x[j])
      end
@@ -27,15 +28,15 @@ ns1 = [4; 4; 4; 4; 4; 4; 1; 2; 3]
 ns2 = [0; 1; 2; 3; 4; 5; 1; 2; 3]
 n = length(ns1)
 m = [10; 10; 10; 10; 10; 10; 10; 10; 10]
-x = Array{SurrealFinite,1}(n) 
-t = Array{Float64,1}(n) 
-bytes = Array{Float64,1}(n) 
-gctime = Array{Float64,1}(n)
-c_plus = Array{Integer,1}(n) 
-c_times = Array{Integer,1}(n) 
-c_created = Array{Integer,1}(n) 
-c_equals = Array{Integer,1}(n) 
-c_leq = Array{Integer,1}(n) 
+x = Array{SurrealFinite,1}(undef, n) 
+t = Array{Float64,1}(undef, ) 
+bytes = Array{Float64,1}(undef, n) 
+gctime = Array{Float64,1}(undef, n)
+c_plus = Array{Integer,1}(undef, n) 
+c_times = Array{Integer,1}(undef, n) 
+c_created = Array{Integer,1}(undef, n) 
+c_equals = Array{Integer,1}(undef, n) 
+c_leq = Array{Integer,1}(undef, n) 
 i = 0
 for i=1:n 
     println(ns1[i], " - ", ns2[i])

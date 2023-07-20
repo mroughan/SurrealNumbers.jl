@@ -40,4 +40,6 @@ surreal2dag(FID, a12; direction="back")
 close(FID)
 run(`dot -Tpdf -O $file`)
 
+[A B]
+
 

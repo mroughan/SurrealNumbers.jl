@@ -5,7 +5,7 @@ else
     using Test
 end
 
-out_dir = "Data/"
+out_dir = "Figs"
 
 #### PRESUMES THAT DOT (from GraphVis) is installed
 
@@ -43,70 +43,70 @@ x000 = x00 + x00
 
 surreal2dot(stdout, x1)
 
-file = "$(out_dir)test_dot_x41.dot"
+file = joinpath(@__DIR__, out_dir, "test_dot_x41.dot")
 FID = open(file, "w")
 surreal2dot(FID, x41)
 close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
-file = "$(out_dir)test_dag_x41.dot"
+file = joinpath(@__DIR__, out_dir, "test_dag_x41.dot")
 FID = open(file, "w")
 surreal2dag(FID, x41)
 close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
-file = "$(out_dir)test_dot_s2.dot"
+file = joinpath(@__DIR__, out_dir, "test_dot_s2.dot")
 FID = open(file, "w")
 surreal2dot(FID, s2; direction="back")
 close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
-file = "$(out_dir)test_dag_s2.dot"
+file = joinpath(@__DIR__, out_dir, "test_dag_s2.dot")
 FID = open(file, "w")
 surreal2dag(FID, s2)
 close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
-file = "$(out_dir)test_dot_s3.dot"
+file = joinpath(@__DIR__, out_dir, "test_dot_s3.dot")
 FID = open(file, "w")
 surreal2dot(FID, s3)
 close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
-file = "$(out_dir)test_dag_s3.dot"
+file = joinpath(@__DIR__, out_dir, "test_dag_s3.dot")
 FID = open(file, "w")
 surreal2dag(FID, s3)
 close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
-file = "$(out_dir)test_dot_x43.dot"
+file = joinpath(@__DIR__, out_dir, "test_dot_x43.dot")
 FID = open(file, "w")
 surreal2dot(FID, x43)
 close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
-file = "$(out_dir)test_dag_x43.dot"
+file = joinpath(@__DIR__, out_dir, "test_dag_x43.dot")
 FID = open(file, "w")
 surreal2dag(FID, x43)
 close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
-file = "$(out_dir)test_dot_x1.dot"
+file = joinpath(@__DIR__, out_dir, "test_dot_x1.dot")
 FID = open(file, "w")
 surreal2dot(FID,  convert(SurrealFinite, 1))
 close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
-file = "$(out_dir)test_dot_x00.dot"
+file = joinpath(@__DIR__, out_dir, "test_dot_x00.dot")
 FID = open(file, "w")
 surreal2dot(FID,  x00; direction="back")
 close(FID)
@@ -116,63 +116,62 @@ run(`dot -Tsvg -O $file`)
 # temp1 = values(ExistingSurreals)
 # temp1 = sort(collect(temp1))
 
-file = "$(out_dir)test_dot_x5.dot"
+file = joinpath(@__DIR__, out_dir, "test_dot_x5.dot")
 FID = open(file, "w")
 surreal2dot(FID, x5)
 close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
-file = "$(out_dir)test_dag_x5.dot"
+file = joinpath(@__DIR__, out_dir, "test_dag_x5.dot")
 FID = open(file, "w")
 surreal2dag(FID, x5) 
 close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
  
-# file = "$(out_dir)test_dot_x6.dot"
-# FID = open(file, "w")
-# surreal2dot(FID, x6)
-# close(FID)
-# run(`dot -Tpdf -O $file`) 
-# run(`dot -Tsvg -O $file`) 
+file = joinpath(@__DIR__, out_dir, "test_dot_x6.dot")
+FID = open(file, "w")
+surreal2dot(FID, x6)
+close(FID)
+run(`dot -Tpdf -O $file`) 
+run(`dot -Tsvg -O $file`) 
  
-file = "$(out_dir)test_dag_x6.dot"
+file = joinpath(@__DIR__, out_dir, "test_dag_x6.dot")
 FID = open(file, "w")
 surreal2dag(FID, x6)
 close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
-file = "$(out_dir)test_dag_x8.dot"
-FID = open(file, "w")
+file = joinpath(@__DIR__, out_dir, "test_dag_x8.dot")
 surreal2dag(FID, x8) 
 close(FID) 
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
-file = "$(out_dir)test_dag_x9.dot"
+file = joinpath(@__DIR__, out_dir, "test_dag_x9.dot")
 FID = open(file, "w")
 surreal2dag(FID, x9) 
 close(FID) 
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
-file = "$(out_dir)test_dag_x1.dot"
+file = joinpath(@__DIR__, out_dir, "test_dag_x1.dot")
 FID = open(file, "w")
 surreal2dag(FID,  convert(SurrealFinite, 1))
 close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
-file = "$(out_dir)test_dag_x00.dot"
+file = joinpath(@__DIR__, out_dir, "test_dag_x00.dot")
 FID = open(file, "w")
 surreal2dag(FID,  x00; direction="back")
 close(FID)
 run(`dot -Tpdf -O $file`) 
 run(`dot -Tsvg -O $file`) 
 
-file = "$(out_dir)test_dag_x000.dot"
+file = joinpath(@__DIR__, out_dir, "test_dag_x000.dot")
 FID = open(file, "w")
 surreal2dag(FID,  x000)
 close(FID)

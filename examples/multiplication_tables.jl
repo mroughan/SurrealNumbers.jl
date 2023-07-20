@@ -6,7 +6,7 @@ end
 using FileIO
 using LatexPrint
 using SurrealNumbers 
-out_dir = "Data/"
+out_dir = "Data"
 
 convert.(SurrealFinite, 1:12)
 convert(SurrealFinite, 1) * convert(SurrealFinite, 2) 
@@ -193,7 +193,8 @@ A[2:n+1,9] = c_created
 set_align("r")
 # tabular(STDOUT, A,"rr|rr")
 
-file = "$(out_dir)multiplication_table_$(VERSION).tex"
+file = joinpath(@__DIR__, out_dir, "multiplication_table_$(VERSION).tex")
+
 FID = open(file, "w")
 L = latex_form(A) 
 println(FID, L)

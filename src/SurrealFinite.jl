@@ -1,5 +1,5 @@
 mutable struct SurrealFinite <: Surreal
-    # mutable means I can set the has value when I need it, instead of
+    # mutable means I can set the hash value when I need it, instead of
     #   (i) always having to calculate it recursively
     #   (ii) calculating it for even temporary surreals
     shorthand::String 
@@ -176,7 +176,7 @@ function convert(::Type{SurrealFinite}, f::Float64 )
         @static if VERSION < v"0.7.0"
             throw(DomainError())
         else
-            throw(DomainError(f))
+            throw(DomainError(f,"the value must be finite"))
         end
     end 
 end 
@@ -1091,15 +1091,16 @@ isancestor(s::SurrealFinite, t::SurrealFinite) = s ⪯ t && s!=t
 
 # structure to hold stats on a surreal form
 struct SurrealDAGstats
-    nodes::Integer # nodes in its DAG
-    tree_nodes::Integer # nodes in a tree-based representation of the graph
-    edges::Integer # edges in its DAG
-    generation::Integer # generation/birthday of the surreal
+    nodes::Int64 # nodes in its DAG
+    tree_nodes::Int64 # nodes in a tree-based representation of the graph
+    edges::Int64 # edges in its DAG
+    generation::Int32 # generation/birthday of the surreal
     longest_path::Array{SurrealFinite,1} 
     paths::Int128 # number of paths from source to sink
     value::Rational
     minval::Rational 
     maxval::Rational
+    n_zeros::Int64 # number of nodes with value zero: only calculate if V switch is true
 end
  
 #    LP=true means keep track of a longest path
@@ -1116,6 +1117,7 @@ function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealD
         value = 0 
         minval = 0  
         maxval = 0 
+        n_zeros = V ? 1 : 0
     else
         P = parents(s) 
         nodes = 1
@@ -1127,6 +1129,7 @@ function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealD
         value = V ? convert(Rational, s) : 0
         minval = value 
         maxval = value
+        n_zeros = V ? Int64(value == 0) : 0
         for p in P 
             if !haskey(processed_list, p)
                 (stats,l) = dag_stats(p, processed_list; LP=LP, V=V) 
@@ -1134,6 +1137,7 @@ function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealD
                 edges += stats.edges 
                 minval = min(minval, stats.minval)
                 maxval = max(maxval, stats.maxval)
+                n_zeros += stats.n_zeros
             else
                 stats = processed_list[p]
             end 
@@ -1147,7 +1151,7 @@ function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealD
         generation += 1 
         longest_path = LP ? [longest_path; s] : ϕ
     end  
-    stats = SurrealDAGstats(nodes, tree_nodes, edges, generation, longest_path, paths, value, minval, maxval) 
+    stats = SurrealDAGstats(nodes, tree_nodes, edges, generation, longest_path, paths, value, minval, maxval, n_zeros) 
     processed_list[s] = stats # could make this a reverse list, ...
     return ( stats, processed_list )  
 end 
@@ -1170,20 +1174,31 @@ end
 #    check whether an entry in processed list is unique according to hash tables
 #    the values in U should all be 1, but if we do say 2*4, without the caching in +,
 #       we'll get a '2' because identical forms are being allocated multiple times in memory
-function increment( U::Dict{UInt64, Int64}, h::UInt64 )
-    if haskey(U, h)
-        U[h] += 1
+function increment!( d::Dict{S, T}, k::S, i::T) where {T<:Real, S<:Any}
+    if haskey(d, k)
+        d[k] += i
     else
-        U[h] = 1
+        d[k] = i
     end
 end
+increment!(d::Dict{S, T}, k::S ) where {T<:Real, S<:Any} = increment!( d, k, one(T))
+
+function decrement!( d::Dict{S, T}, k::S, i::T) where {T<:Real, S<:Any}
+    if haskey(d, k)
+        d[k] -= i
+    else
+        d[k] = -i
+    end
+end
+decrement!(d::Dict{S, T}, k::S ) where {T<:Real, S<:Any} = increment!( d, k, one(T))
+
 function uniqueness(s::SurrealFinite,
                     P::Dict{UInt64, UInt64},
                     Q::Dict{UInt64, SurrealFinite},
                     U::Dict{UInt64, Int64},
                     V::Dict{UInt64, SurrealFinite} )
     h = hash(s)
-    increment(U, h)
+    increment!(U, h)
     @static if VERSION < v"0.7.0"
         os = object_id(s)
     else
@@ -1211,7 +1226,12 @@ uniqueness(s::SurrealFinite) = uniqueness(s,
                                           Dict{UInt64, SurrealFinite}() )
 uniqueness_max( U::Dict{UInt64, Int64} ) = maximum( values(U) )
 function uniqueness_failure(  U::Dict{UInt64, Int64}, V::Dict{UInt64, SurrealFinite} )
-    U2 = filter( (k,v) -> v>1 , U) # not Julia 1.0 compliant
+    
+    @static if VERSION < v"1.0.0"
+        U2 = filter( (k,v) -> v>1 , U) # not Julia 1.0 compliant
+    else
+        U2 = filter( ((k,v),) -> v>1 , U) 
+    end 
     V2 = [V[i] for i in keys(U2) ]
     return V2
 end

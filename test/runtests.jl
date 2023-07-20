@@ -183,7 +183,7 @@ unique2!(Y)
     @test all( x1*A .≅ A )
     @test all( x23*A .≅ A*x23 )
 
-    @test hash(A) == 0x54b75ebf9d6abfa4
+    # @test hash(A) == 0x54b75ebf9d6abfa4 # this is a bad test because the hash values are version dependent (and many OS dep as well)
 end
  
 V = [-6.25, -4.0, -3.25, -2.5, -2.0, -1.625, -1.0, -0.25, 0.0, 1.0, 7.0, 0.5, 1.625, 2.25, 4.5, 6.75, 8.0, 12.125]
@@ -323,7 +323,7 @@ end
     @test 1//2 + x1 ≇ 2.5
 end
 
-out_dir = "Data/"
+out_dir = "Data"
 a4 = convert(SurrealFinite, 13//16)
 a5 = convert(SurrealFinite, -2//16)
 s = "{ {{{{{|0}|{0|}}|{{0|}|}}|{{{0|}|}|}}|{{{{0|}|}|}|}} | }"    # from http://goodmath.scientopia.org/2006/08/21/arithmetic-with-surreal-numbers/
@@ -333,11 +333,13 @@ ss = convert(SurrealFinite, s)
     @test convert(SurrealFinite, "{1//2 | 2,  1}") == SurrealFinite( [1//2], [2,1] )
     @test convert(SurrealFinite, raw"{-1//2 | {|\phi}}") ==  SurrealFinite( [-1//2], [zero(SurrealFinite)] )
     @test convert(SurrealFinite, "{-1//2 | 2.0, 3}") ==  SurrealFinite( [-1//2], [2,3] )
-    R = read("$(out_dir)test_surreals.dat", SurrealFinite, 4)
+    
+    io_test_file_str = joinpath(@__DIR__, out_dir, "test_surreals.dat")
+    R = read(io_test_file_str, SurrealFinite, 4)
     @test all( float(R[1:3]) .== [0.0, -1.0, 0.0] )
     @test_throws UndefRefError R[4]
 
-    io_test_file = "$(out_dir)test_surreals_io.dat"
+    io_test_file = joinpath(@__DIR__, out_dir, "test_surreals_io.dat")
     io = open(io_test_file, "w")
     pf(io, a4)
     pf(io, a5)
@@ -348,8 +350,8 @@ ss = convert(SurrealFinite, s)
     @test YY[1] == a4
     @test YY[2] == a5
 
-    io_test_file = "$(out_dir)test_surreals_io.tex"
-    io = open(io_test_file, "w")
+    io_test_file_tex = joinpath(@__DIR__, out_dir, "test_surreals_io.tex")
+    io = open(io_test_file_tex, "w")
     surreal2tex(io, a4; level = 0)
     surreal2tex(io, a4; level = 1)
     surreal2tex(io, a4; level = 2)
@@ -378,8 +380,8 @@ end
 a24 = dali(2) * dali(4);
 (P,Q,U,V) = uniqueness(a24);   
 V2 = uniqueness_failure( U, V)
-U2 = filter( (k,v) -> v>1 , U) 
-P2 = filter( (k,v) -> v==0xa09c3927cec6b030, P )
+U2 = filter( ((k,v),) -> v>1 , U) 
+P2 = filter( ((k,v),) -> v==0xa09c3927cec6b030, P )
  
 x32 = convert(SurrealFinite, 3/4) + convert(SurrealFinite, 3/4)
 @testset "DAG statistics" begin
@@ -443,7 +445,7 @@ d33 = dali(33//2)
     
     # depends on previous results -- could be changed by earlier operations
     @test SurrealNumbers.ExistingSurreals[ SurrealNumbers.ExistingCanonicals[-1//2] ] == -1//2
-    @test SurrealNumbers.ExistingSurreals[ SurrealNumbers.ExistingProducts[0x013b60c22ac142fa][0x84037d1bb0afff04] ] == -1
+    # don't use hardcoded hash values: @test SurrealNumbers.ExistingSurreals[ SurrealNumbers.ExistingProducts[0x013b60c22ac142fa][0x84037d1bb0afff04] ] == -1
     clearcache()
     @test isempty(SurrealNumbers.ExistingSurreals)
     @test isempty(SurrealNumbers.ExistingCanonicals)
