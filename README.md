@@ -300,8 +300,8 @@ counter-intuitive.
 
 For instance, naively, you might expect that the form $\{ 3 |
 17 \}$ could be mapped to the mean of the two sets, i.e., 10.
-However, $x = \{ X_L | X_R \}$ is the simplest number such that $X_L < x
-< X_R$, so, in fact, this form is equivalent to 4.
+However, $x = \{ X_L | X_R \}$ is the simplest number such that
+$X_L < x < X_R$, so, in fact, this form is equivalent to 4.
 
 Note, often in texts it is written $X \not \leq Y$ whereas I am
 writing $X > Y$. The original definition is intended (I think) to take
@@ -403,7 +403,7 @@ are not  equal, but they are equivalent. Thus the parent "4" is
 defined in terms of simpler forms (even though one of these is
 equivalent). 
 
-![2x2 = 4](/test/Figs/test_dot_x43.svg)
+![2x2 = 4](examples/Figs_edited/test_dot_x43.svg)
 
 The other pieces of the toolkit are the standard things you expect to
 be able to do with numbers, e.g. round, sign, isinteger, ...  I
