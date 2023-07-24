@@ -141,7 +141,7 @@ corresponding boxes below, with links shown in red for left, and blue
 for right. The recursion for each is show below, down to the point
 where each recursion stops at zero.
   
-![3/2](/test/Data/test_dot.svg)
+![3/2](/examples/Figs_edited/test_dot.svg)
 
 That seems like enough to get you started, so now a little about the
 implementation. 
