@@ -1,0 +1,6 @@
+[deps]
+FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
+IndexedTables = "6deec6e2-d858-57c5-ab9b-e6ca5bd20e43"
+LatexPrint = "d2208f48-c256-5759-9089-c25ed2a93924"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

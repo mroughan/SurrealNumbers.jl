@@ -209,7 +209,7 @@ It turns out that every dyadic has a finite representation as a
 surreal, and every finite surreal represents a dyadic. The easiest way
 to represent this is as a DAG (Directed Acyclic Graph) of the constructions as shown below:
 
-![dyadics](/examples/dyadic_tree_3_manual.svg)
+![dyadics](/examples/Figs_edited/dyadic_tree_3_manual.svg)
  
 It might seem a little limiting to be restricted to this set, but
 remember that floating point numbers are dyadics. They are a (binary)
@@ -403,7 +403,7 @@ are not  equal, but they are equivalent. Thus the parent "4" is
 defined in terms of simpler forms (even though one of these is
 equivalent). 
 
-![2x2 = 4](/test/Data/test_dot_x43.svg)
+![2x2 = 4](/test/Figs/test_dot_x43.svg)
 
 The other pieces of the toolkit are the standard things you expect to
 be able to do with numbers, e.g. round, sign, isinteger, ...  I
@@ -474,16 +474,16 @@ parsed (assuming you have GraphVis installed) by commands such as
 Which produces the figures like those below, illustrating the
 recursive definition of the two surreal numbers given. 
 
-![s2](/test/Data/test_dot_s2.dot.svg) <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-![x5](/test/Data/test_dot_x5.dot.svg). 
+![s2](/test/Figs/test_dot_s2.dot.svg) <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+![x5](/test/Figs/test_dot_x5.dot.svg). 
 
 The thing to note about these tree representations is that they are inefficient,
 the same surreal forms are repeated. The code includes a function `surreal2dag`
 that you use in exactly the same way to generate a DAG (Directed Acyclic Graph)
 representation of the surreal as you see below.
 
-![s2](/test/Data/test_dag_s2.dot.svg) <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-![x5](/test/Data/test_dag_x5.dot.svg). 
+![s2](/test/Figs/test_dag_s2.dot.svg) <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+![x5](/test/Figs/test_dag_x5.dot.svg). 
 
 
 See the code `test/test_dot.jl` for other examples. 

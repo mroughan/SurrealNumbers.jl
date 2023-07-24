@@ -5,7 +5,7 @@ mutable struct SurrealFinite <: Surreal
     shorthand::String 
     L::Array{SurrealFinite,1}  
     R::Array{SurrealFinite,1}
-    h::UInt64 # this is only set the first time the hash function is called
+    h::UInt64 # hash value, this is only set the first time the hash function is called
     # constructor should check that L < R
     function SurrealFinite(shorthand::String, L::Array{SurrealFinite}, R::Array{SurrealFinite}, h::UInt64)
         global Count
@@ -1096,7 +1096,7 @@ struct SurrealDAGstats
     edges::Int64 # edges in its DAG
     generation::Int32 # generation/birthday of the surreal
     longest_path::Array{SurrealFinite,1} 
-    paths::Int128 # number of paths from source to sink
+    paths::BigInt # number of paths from source to sink
     value::Rational
     minval::Rational 
     maxval::Rational

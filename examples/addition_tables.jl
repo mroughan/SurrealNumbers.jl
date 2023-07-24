@@ -1,45 +1,52 @@
 using SurrealNumbers 
-out_dir = "Data/"
+fig_dir = "Figs"
 
 # addition table
 x = convert.(SurrealFinite, [0, 1/2, 1, 2])
-A = zeros(SurrealFinite, length(x), length(x))    
-B = zeros(Int, length(x), length(x))    
-for i=1:length(x)
-    for j=1:length(x)
+n = length(x)
+A = zeros(SurrealFinite, n, n)    
+B = zeros(Int, n, n)    
+for i=1:n
+    for j=1:n
         A[i,j] = x[i] + x[j]
         B[i,j] = generation(x[i]) + generation(x[j])
     end
 end
-float.(A)
-A
-generation.(A)
+S = dag_stats.(A)
+B = [ S[i,j].generation for i=1:n, j=1:n] 
 # A .== canonicalise.(A)
-iscanonical.(A)
-B
+C = iscanonical.(A)
+A = float.(A)
+print("additions = "); display(A)
+println()
+print("generation = "); display(B)
+println()
+print("iscanonical = "); display(C)
+println()
 
+
+### some specific examples
 a10 = convert(SurrealFinite, 3/2)
 a11 = convert(SurrealFinite, 1/2) + convert(SurrealFinite, 1)
 a12 = convert(SurrealFinite, 3/4) + convert(SurrealFinite, 3/4)
 
-file = "$(out_dir)addition_ex_10.dot"
+file = joinpath(@__DIR__, fig_dir, "addition_ex_10.dot")
 FID = open(file, "w")
 surreal2dag(FID, a10; direction="back")
 close(FID)
 run(`dot -Tpdf -O $file`)
 
-file = "$(out_dir)addition_ex_11.dot"
+file = joinpath(@__DIR__, fig_dir, "addition_ex_11.dot")
 FID = open(file, "w")
 surreal2dag(FID, a11; direction="back")
 close(FID)
 run(`dot -Tpdf -O $file`)
 
-file = "$(out_dir)addition_ex_12.dot"
+file = joinpath(@__DIR__, fig_dir, "addition_ex_12.dot")
 FID = open(file, "w")
 surreal2dag(FID, a12; direction="back")
 close(FID)
 run(`dot -Tpdf -O $file`)
 
-[A B]
 
-
+0

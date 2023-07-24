@@ -1,5 +1,5 @@
-@static if VERSION < v"0.7.0"
-    using IndexedTables # currently not working for 1.0
+using IndexedTables 
+@static if VERSION < v"0.7.0"   
 else
     using Printf # @sprintf moved here from 0.6 -> 1.0
 end
@@ -7,6 +7,7 @@ using FileIO
 using LatexPrint
 using SurrealNumbers 
 out_dir = "Data"
+fig_dir = "Figs"
 
 convert.(SurrealFinite, 1:12)
 convert(SurrealFinite, 1) * convert(SurrealFinite, 2) 
@@ -25,6 +26,7 @@ n_14 = 3
 # n_12 = 4
 # n_14 = 2
 
+clearcache()
 ns1 = convert.(SurrealFinite, [0; 1:n2;        2;      1:n3;       1:n4;          1:n_12;          1:n_14; 1//2; 1//2; 1//4; a; b])
 ns2 = convert.(SurrealFinite, [2; 2*ones(n2); -2; 3*ones(n3); 4*ones(n4); 1//2*ones(n_12); 1//4*ones(n_14); 1//2; 1//4; 1//4; 2; 2]) 
 # ns1 = convert.(SurrealFinite, [0:n2-1;           1:n3;       1:n4;         1:n_12;           1:n_14; 1//2; 1//2])
@@ -34,6 +36,7 @@ ns2 = convert.(SurrealFinite, [2; 2*ones(n2); -2; 3*ones(n3); 4*ones(n4); 1//2*o
 # ns1 = [2; 4]
 # ns2 = [1/2; 1/4] 
 n = length(ns1) 
+
 # m = [10; 10; 10; 10; 10; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1]
 m = ones(Integer, n) 
 
@@ -64,8 +67,8 @@ println("calculating products")
 for i=1:n 
     println("   ", ns1[i], " x ", ns2[i])
     t[i] = 0 
-    b = 0 
-    g = 0
+    local b = 0 
+    local g = 0
     mem = 0
     val = 0 
     for j=1:m[i]
@@ -101,7 +104,6 @@ d = (ed.+1) ./ no
 g = [s[i].generation for i=1:length(s)]
 b = [s[i].maxval - s[i].minval for i=1:length(s)]
 t = t./m[1:n]
-bytes = bytes
 
 
 @static if VERSION < v"0.7.0"
@@ -121,9 +123,25 @@ bytes = bytes
                    equals=c_equals,
                    leq=c_leq);
                pkey = [:i])
-    
-    save("$(out_dir)multiplication_tables.csv", t1)
+else    
+    t1 = table((i=0:n-1,
+                   n1= convert.(Rational, ns1), 
+                   n2= convert.(Rational, ns2), 
+                   generation=g,
+                   nodes=no,
+                   edges=ed,
+                   paths=float.(p),
+                   density=d,
+                   time=t,
+                   bytes=bytes,
+                   adds=c_plus,
+                   prods=c_times,
+                   created=c_created,
+                   equals=c_equals,
+                   leq=c_leq);
+               pkey = [:i])
 end
+save(joinpath(@__DIR__, out_dir, "multiplication_table_$(VERSION).csv"), t1)
 
 
 @static if VERSION < v"0.7.0"
@@ -194,22 +212,22 @@ set_align("r")
 # tabular(STDOUT, A,"rr|rr")
 
 file = joinpath(@__DIR__, out_dir, "multiplication_table_$(VERSION).tex")
-
 FID = open(file, "w")
 L = latex_form(A) 
 println(FID, L)
 close(FID)
 
-
+print("one example value = ")
 surreal2tex(x[3], level=2)
 
+
 for i=1:4
-    file = "$(out_dir)multiplication_ex_$i.dot"
-    println("outputting $file")
-    FID = open(file, "w")
-    surreal2dag(FID, x[i]; direction="back")
-    close(FID)
-    run(`dot -Tpdf -O $file`)
+    file1 = joinpath(@__DIR__, fig_dir, "multiplication_ex_$i.dot")
+    println("outputting $file1")
+    FID1 = open(file1, "w")
+    surreal2dag(FID1, x[i]; direction="back")
+    close(FID1)
+    run(`dot -Tpdf -O $file1`)
 end
 
 

@@ -1,0 +1,75 @@
+digraph "3.0" {
+   node_1 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD  CELLPADDING="5pt" COLSPAN="2">3</TD></TR>
+         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD CELLPADDING="1pt" PORT="2,1"> 2 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD CELLPADDING="1pt"  PORT="4,1"> <o>4</o> </TD> &nbsp; </TR></TABLE> </TD></TR>
+         </TABLE>>,
+         ];
+   node_1:"2,1" -> node_2 [color="red3", dir=forward];
+   node_2 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD  CELLPADDING="5pt" COLSPAN="2">2</TD></TR>
+         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD CELLPADDING="1pt" PORT="1,1"> 1 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD CELLPADDING="1pt"  PORT="3,1"> <o>3</o> </TD> &nbsp; </TR></TABLE> </TD></TR>
+         </TABLE>>,
+         ];
+   node_2:"1,1" -> node_3 [color="red3", dir=forward];
+   node_3 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD  CELLPADDING="5pt" COLSPAN="2">1</TD></TR>
+         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD CELLPADDING="1pt" PORT="0,1"> 0 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD CELLPADDING="1pt"  PORT="2,1"> <o>2</o> </TD> &nbsp; </TR></TABLE> </TD></TR>
+         </TABLE>>,
+         ];
+   node_3:"0,1" -> node_4 [color="red3", dir=forward];
+   node_4 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD  CELLPADDING="5pt" COLSPAN="2">0</TD></TR>
+         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD CELLPADDING="1pt" PORT="-1,1"> <o>-1</o> </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD CELLPADDING="1pt"  PORT="1,1"> <o>1</o> </TD> &nbsp; </TR></TABLE> </TD></TR>
+         </TABLE>>,
+         ];
+   node_4:"-1,1" -> node_5 [color="red3", dir=forward];
+   node_5 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD  CELLPADDING="5pt" COLSPAN="2"><o>-1</o></TD></TR>
+         <TR><TD PORT="L"> Ø </TD><TD PORT="R"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD CELLPADDING="1pt"  PORT="0,1"> <o>0</o> </TD> &nbsp; </TR></TABLE> </TD></TR>
+         </TABLE>>,
+         ];
+   node_5:"0,1" -> node_6 [color="blue3", dir=forward];
+   node_6 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD  CELLPADDING="5pt" COLSPAN="2"><o>0</o></TD></TR>
+         <TR><TD PORT="L"> Ø </TD><TD PORT="R"> Ø </TD></TR>
+         </TABLE>>,
+         ];
+   node_4:"1,1" -> node_7 [color="blue3", dir=forward];
+   node_7 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD  CELLPADDING="5pt" COLSPAN="2"><o>1</o></TD></TR>
+         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD CELLPADDING="1pt" PORT="0,1"> <o>0</o> </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> Ø </TD></TR>
+         </TABLE>>,
+         ];
+   node_7:"0,1" -> node_6 [color="red3", dir=forward];
+   node_3:"2,1" -> node_8 [color="blue3", dir=forward];
+   node_8 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD  CELLPADDING="5pt" COLSPAN="2"><o>2</o></TD></TR>
+         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD CELLPADDING="1pt" PORT="1,1"> <o>1</o> </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> Ø </TD></TR>
+         </TABLE>>,
+         ];
+   node_8:"1,1" -> node_7 [color="red3", dir=forward];
+   node_2:"3,1" -> node_9 [color="blue3", dir=forward];
+   node_9 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD  CELLPADDING="5pt" COLSPAN="2"><o>3</o></TD></TR>
+         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD CELLPADDING="1pt" PORT="2,1"> <o>2</o> </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> Ø </TD></TR>
+         </TABLE>>,
+         ];
+   node_9:"2,1" -> node_8 [color="red3", dir=forward];
+   node_1:"4,1" -> node_10 [color="blue3", dir=forward];
+   node_10 [shape=none,margin=0,label=
+         <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+         <TR><TD  CELLPADDING="5pt" COLSPAN="2"><o>4</o></TD></TR>
+         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD CELLPADDING="1pt" PORT="3,1"> <o>3</o> </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> Ø </TD></TR>
+         </TABLE>>,
+         ];
+   node_10:"3,1" -> node_9 [color="red3", dir=forward];
+}
