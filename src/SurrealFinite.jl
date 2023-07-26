@@ -3,11 +3,11 @@ mutable struct SurrealFinite <: Surreal
     #   (i) always having to calculate it recursively
     #   (ii) calculating it for even temporary surreals
     shorthand::String 
-    L::Array{SurrealFinite,1}  
-    R::Array{SurrealFinite,1}
+    L::Vector{SurrealFinite}  
+    R::Vector{SurrealFinite}
     h::UInt64 # hash value, this is only set the first time the hash function is called
     # constructor should check that L < R
-    function SurrealFinite(shorthand::String, L::Array{SurrealFinite}, R::Array{SurrealFinite}, h::UInt64)
+    function SurrealFinite(shorthand::String, L::Vector{SurrealFinite}, R::Vector{SurrealFinite}, h::UInt64)
         global Count
         Count['c'] += 1 
         if length(L) > 1
@@ -25,12 +25,12 @@ mutable struct SurrealFinite <: Surreal
             error("Surreal number must have L < R (currently they are $(L) and $(R) )") 
         end  
     end 
-end 
-SurrealFinite(shorthand::String, L::Array, R::Array ) =
-    SurrealFinite( shorthand, convert(Array{SurrealFinite},L), convert(Array{SurrealFinite},R), zero(UInt64))
-SurrealFinite(L::Array, R::Array ) =
-    SurrealFinite( "", convert(Array{SurrealFinite},L), convert(Array{SurrealFinite},R), zero(UInt64))
-≀(L::Array, R::Array) = SurrealFinite(L::Array, R::Array )
+end
+SurrealFinite(shorthand::String, L::AbstractArray, R::AbstractArray ) =
+    SurrealFinite( shorthand, convert(Vector{SurrealFinite},L), convert(Vector{SurrealFinite},R), zero(UInt64))
+SurrealFinite(L::AbstractArray, R::AbstractArray ) =
+    SurrealFinite( "", convert(Vector{SurrealFinite},L), convert(Vector{SurrealFinite},R), zero(UInt64))
+≀(L::AbstractArray, R::AbstractArray) = SurrealFinite(L::AbstractArray, R::AbstractArray )
  
 const SurrealShort  = SurrealFinite 
 const SurrealDyadic = SurrealFinite 
@@ -41,7 +41,7 @@ function hash(x::SurrealFinite, h::UInt)
     end
     return hash(x.h, h)   
 end
-function hash(X::Array{SurrealFinite}, h::UInt)
+function hash(X::Vector{SurrealFinite}, h::UInt)
     if isempty(X)
         hash(0, h) 
     elseif length(X) == 1
@@ -53,8 +53,7 @@ end
 # really slow version: hash(X::Array{SurrealFinite}, h::UInt) = isempty(X) ? hash(0,h) : hash( prod(hash.(X, h )), h)
 hash(x::SurrealFinite) = hash(x, zero(UInt64) )
 hash(x::SurrealFinite, h::Integer) = hash(x, convert(UInt64, h) )
-hash(X::Array{SurrealFinite}) = hash(X, zero(UInt64) )
- 
+
 # global dictionaries to avoid repeated calculations of the same things
 #   in particular to speed up calculations, but also to ensure that resulting
 #   structures are actually DAGs, i.e., pointers to the same "number" point at the same bit of memory
@@ -258,15 +257,11 @@ end
 
 # promote all numbers to surreals for calculations
 promote_rule(::Type{T}, ::Type{SurrealFinite}) where {T<:Real} = SurrealFinite
- 
 
-@static if VERSION < v"0.7.0"
-    const ϕ = Array{SurrealFinite,1}(0) # empty array of SurrealFinites
-    const ∅ = ϕ 
-else
-    const ϕ = Array{SurrealFinite,1}(undef,0) # empty array of SurrealFinites
-    const ∅ = ϕ
-end 
+# const ϕ = SVector{0,SurrealFinite}()
+const ϕ = Array{SurrealFinite,1}(undef,0) # empty array of SurrealFinites
+const ∅ = ϕ
+
 const SurrealZero = SurrealFinite("0", ϕ, ϕ ) 
 const SurrealOne  = SurrealFinite("1", [ zero(SurrealFinite) ], ϕ ) 
 const SurrealMinusOne  = SurrealFinite("-1", ϕ, [ zero(SurrealFinite) ] ) 
@@ -485,7 +480,7 @@ end
 #+(x::SurrealFinite, y::SurrealFinite) = SurrealFinite([x.L + y.L],
 #                                                      [x.R + y.R] )
 +(X::Array{SurrealFinite}, Y::Array{SurrealFinite}) = vec([s+t for s in X, t in Y])
- 
+
 -(x::SurrealFinite, y::SurrealFinite) = x + -y
 -(X::Array{SurrealFinite}, Y::Array{SurrealFinite}) = X + -Y
 
@@ -1101,8 +1096,18 @@ struct SurrealDAGstats
     minval::Rational 
     maxval::Rational
     n_zeros::Int64 # number of nodes with value zero: only calculate if V switch is true
+    max_width::Int64
 end
- 
+function ==(a::T, b::T) where T <: SurrealDAGstats
+    for name in fieldnames(T)
+        if getfield(a,name) != getfield(b,name)
+            return false
+        end
+    end 
+    return true
+end 
+
+
 #    LP=true means keep track of a longest path
 #    V =true means keep track of values
 # have these as switches, because they are expensive to calculate on large DAGs 
@@ -1118,6 +1123,7 @@ function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealD
         minval = 0  
         maxval = 0 
         n_zeros = V ? 1 : 0
+        max_width = 0
     else
         P = parents(s) 
         nodes = 1
@@ -1130,6 +1136,7 @@ function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealD
         minval = value 
         maxval = value
         n_zeros = V ? Int64(value == 0) : 0
+        max_width = length(P)
         for p in P 
             if !haskey(processed_list, p)
                 (stats,l) = dag_stats(p, processed_list; LP=LP, V=V) 
@@ -1138,6 +1145,7 @@ function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealD
                 minval = min(minval, stats.minval)
                 maxval = max(maxval, stats.maxval)
                 n_zeros += stats.n_zeros
+                max_width = max(max_width, stats.max_width)
             else
                 stats = processed_list[p]
             end 
@@ -1151,7 +1159,7 @@ function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealD
         generation += 1 
         longest_path = LP ? [longest_path; s] : ϕ
     end  
-    stats = SurrealDAGstats(nodes, tree_nodes, edges, generation, longest_path, paths, value, minval, maxval, n_zeros) 
+    stats = SurrealDAGstats(nodes, tree_nodes, edges, generation, longest_path, paths, value, minval, maxval, n_zeros, max_width) 
     processed_list[s] = stats # could make this a reverse list, ...
     return ( stats, processed_list )  
 end 

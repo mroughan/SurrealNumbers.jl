@@ -1,6 +1,7 @@
 using IndexedTables
 using FileIO
 using SurrealNumbers 
+using CSVFiles # needed in julia v1.1.0
 out_dir = "Data" 
 fig_dir = "Figs" 
 
@@ -70,6 +71,7 @@ s = dag_stats.( x )
 no = [s[i].nodes for i=1:length(s)]
 ed = [s[i].edges for i=1:length(s)]
 p = [s[i].paths for i=1:length(s)]
+mw = [s[i].max_width for i=1:length(s)]
 d = (ed .+ 1) ./ no
 g = [s[i].generation for i=1:length(s)]
 t = t./m[1:n]
@@ -80,6 +82,7 @@ t1 = table((i=0:n-1,
                n2=ns2,
                nodes=no,
                edges=ed,
+               max_width=mw,
                paths=p,
                density=d,
                generation=g,
