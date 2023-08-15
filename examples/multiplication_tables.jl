@@ -21,6 +21,10 @@ n4 = 2
 n_12 = 12
 n_14 = 3
 
+# n2 = 11
+# n3 = 3
+# n12 = 11
+
 # # short time version
 # n2 = 10
 # n3 = 3
@@ -86,10 +90,10 @@ else
 end
 for i=1:n
     println("   ", ns1[i], " x ", ns2[i])
-    s[i] = dag_stats( x[i]; V=true )
+    s[i] = dag_stats( x[i]; V=false )
 end
 no = [s[i].nodes for i=1:length(s)]
-ed = [s[i].edges for i=1:length(s)]
+ed = [s[i].edges for i=1:length(s)] 
 mw = [s[i].max_width for i=1:length(s)]
 nz = [s[i].n_zeros for i=1:length(s)]
 p = [s[i].paths for i=1:length(s)]

@@ -35,21 +35,28 @@ SurrealFinite(L::AbstractArray, R::AbstractArray ) =
 const SurrealShort  = SurrealFinite 
 const SurrealDyadic = SurrealFinite 
 
-function hash(x::SurrealFinite, h::UInt)
+function hash(x::SurrealFinite, h::UInt64)
     if x.h == 0
-        x.h = hash(x.L, convert(UInt64, 0) ) * hash(x.R, convert(UInt64, 1))
+        x.h = hash(x.L, zero(UInt64) ) * hash(x.R, one(UInt64) ) 
     end
-    return hash(x.h, h)   
+    return hash(x.h, h)
 end
-function hash(X::Vector{SurrealFinite}, h::UInt)
-    if isempty(X)
-        hash(0, h) 
-    elseif length(X) == 1
-        hash(X[1], h) 
-    else
-        hash(X[1], h) * hash( X[2:end], h) # note, order is technically not important
+function hash(X::Vector{SurrealFinite}, h::UInt64) # effectively depth first???
+    H = hash(zero(UInt64), h)
+    for x in X
+        H ⊻= hash(x, h) # order is technically not important, so resuse little h
     end
+    return H
 end
+# function hash_old(X::Vector{SurrealFinite}, h::UInt64) # effectively breadth first???
+#     if isempty(X)
+#         hash(zero(UInt64), h) 
+#     elseif length(X) == 1
+#         hash(X[1], h) 
+#     else
+#         hash(X[1], h) * hash( X[2:end], h) # note, order is technically not important
+#     end
+# end
 # really slow version: hash(X::Array{SurrealFinite}, h::UInt) = isempty(X) ? hash(0,h) : hash( prod(hash.(X, h )), h)
 hash(x::SurrealFinite) = hash(x, zero(UInt64) )
 hash(x::SurrealFinite, h::Integer) = hash(x, convert(UInt64, h) )
@@ -61,7 +68,10 @@ hash(x::SurrealFinite, h::Integer) = hash(x, convert(UInt64, h) )
 const ExistingSurreals = Dict{UInt64, SurrealFinite}()
 const ExistingConversions = Dict{UInt64,Rational}()
 const ExistingCanonicals = Dict{Rational,UInt64}()
-# ExistingProducts = Dict{SurrealFinite, Dict{SurrealFinite,SurrealFinite}}()
+# ExistingProducts = Dict{SurrealFinite, Dict{SurrealFinite,SurrealFinite}}() # prefer using hash, as fixed size
+const ExistingLEQ       = Dict{UInt64, Dict{UInt64,UInt64}}() 
+const ExistingGEQ       = Dict{UInt64, Dict{UInt64,UInt64}}() 
+const ExistingEQ       = Dict{UInt64, Dict{UInt64,UInt64}}() 
 const ExistingProducts   = Dict{UInt64, Dict{UInt64,UInt64}}()
 const ExistingSums       = Dict{UInt64, Dict{UInt64,UInt64}}() 
 const ExistingNegations  = Dict{UInt64, UInt64}() 
@@ -80,6 +90,9 @@ function clearcache()
     global ExistingSurreals 
     global ExistingConversions 
     global ExistingCanonicals
+    global ExistingLEQ
+    global ExistingGEQ
+    global ExistingEQ
     global ExistingProducts
     global ExistingSums
     global ExistingNegations 
@@ -87,6 +100,9 @@ function clearcache()
     empty!(ExistingSurreals)
     empty!(ExistingConversions)
     empty!(ExistingCanonicals)
+    empty!(ExistingLEQ)
+    empty!(ExistingGEQ)
+    empty!(ExistingEQ)
     empty!(ExistingProducts)
     empty!(ExistingSums)
     empty!(ExistingNegations)
@@ -343,13 +359,14 @@ function equals(x::SurrealFinite, y::SurrealFinite, processed_list::Dict{UInt64,
                 return processed_list[k]
             end 
         end 
-        processed_list[k] = true
-    end
-    return processed_list[k]
+        processed_list[k] = true 
+    end 
+    return processed_list[k] 
 end
 ==(x::SurrealFinite, y::SurrealFinite) = x===y || equals(x, y, Dict{UInt64,Bool}())
-iszero(x::SurrealFinite) = isempty(x.L) && isempty(x.R)
- 
+iszero(x::SurrealFinite) = isempty(x.L) && isempty(x.R) # tests for canonical zero 
+equalszero(x::SurrealFinite) = x ≅ zero(x)              # tests equiv to zero 
+
 # comparisons between sets (i.e., arrays) are all-to-all, so
 #   (1) don't have to be the same size
 #   (2) the < is not exactly the same as the < defined above

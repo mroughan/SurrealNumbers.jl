@@ -25,10 +25,11 @@ x24  = SurrealFinite( [x11,x0,x1],  ϕ)
 x25 = [x11,x0,x1] ≀ ϕ
 z = zero(x1)
 z0 = zero(SurrealFinite)
-o = one(x1) 
+o = one(x1)
 o1 = one(SurrealFinite)
 x00 = SurrealFinite([x11],[x1])
-    
+z11 = x1 - x1
+   
 x3 = convert(SurrealFinite, 3)
 x41 = convert(SurrealFinite, 4)
 x42 = SurrealFinite( [x3],  ϕ)
@@ -240,6 +241,11 @@ V = [-6.25, -4.0, -3.25, -2.5, -2.0, -1.625, -1.0, -0.25, 0.0, 1.0, 7.0, 0.5, 1.
     @test mod(-x43, x3) ≅ 2
     @test mod(s1 + 2, x21) ≅ s1
     @test_throws ErrorException mod( x3, s2 )
+
+    @test iszero( z )
+    @test !iszero( z11 )
+    @test equalszero( z )
+    @test !equalszero( x11 )
 
     @test isinteger(x0) == true
     @test isinteger(x22) == true
