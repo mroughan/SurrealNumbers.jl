@@ -85,6 +85,7 @@ println()
     @test dali(1) === SurrealOne
     @test dali(-1) == SurrealMinusOne
     @test dali(2) == SurrealTwo
+    @test dali(-2) == SurrealMinusTwo
 end
 
 @testset "comparisons" begin
@@ -210,7 +211,7 @@ V = [-6.25, -4.0, -3.25, -2.5, -2.0, -1.625, -1.0, -0.25, 0.0, 1.0, 7.0, 0.5, 1.
     @test floor(-x4) ≇ -x4
     @test floor(-x4) == zero(x4)
     for v in V
-        println("v = $v")
+        println("    testing value v = $v")
         @test floor( convert(SurrealFinite, v) ) ≅ floor( v )
         @test floor( Int, convert(SurrealFinite, v) ) == floor( v )
         @test ceil( convert(SurrealFinite, v) ) ≅ ceil( v )
@@ -244,8 +245,8 @@ V = [-6.25, -4.0, -3.25, -2.5, -2.0, -1.625, -1.0, -0.25, 0.0, 1.0, 7.0, 0.5, 1.
 
     @test iszero( z )
     @test !iszero( z11 )
-    @test equalszero( z )
-    @test !equalszero( x11 )
+    @test equivtozero( z )
+    @test !equivtozero( x11 )
 
     @test isinteger(x0) == true
     @test isinteger(x22) == true
@@ -476,5 +477,6 @@ end
     c2 = dali(2) + dali(2)
     @test c1 == c2
     @test c1 === c2
+
 end
 

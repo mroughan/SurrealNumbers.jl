@@ -31,7 +31,7 @@ SurrealFinite(shorthand::String, L::AbstractArray, R::AbstractArray ) =
 SurrealFinite(L::AbstractArray, R::AbstractArray ) =
     SurrealFinite( "", convert(Vector{SurrealFinite},L), convert(Vector{SurrealFinite},R), zero(UInt64))
 ≀(L::AbstractArray, R::AbstractArray) = SurrealFinite(L::AbstractArray, R::AbstractArray )
- 
+
 const SurrealShort  = SurrealFinite 
 const SurrealDyadic = SurrealFinite 
 
@@ -69,13 +69,14 @@ const ExistingSurreals = Dict{UInt64, SurrealFinite}()
 const ExistingConversions = Dict{UInt64,Rational}()
 const ExistingCanonicals = Dict{Rational,UInt64}()
 # ExistingProducts = Dict{SurrealFinite, Dict{SurrealFinite,SurrealFinite}}() # prefer using hash, as fixed size
-const ExistingLEQ       = Dict{UInt64, Dict{UInt64,UInt64}}() 
-const ExistingGEQ       = Dict{UInt64, Dict{UInt64,UInt64}}() 
-const ExistingEQ       = Dict{UInt64, Dict{UInt64,UInt64}}() 
+const ExistingLEQ       = Dict{UInt64, Dict{UInt64,Bool}}() 
+const ExistingGEQ       = Dict{UInt64, Dict{UInt64,Bool}}() 
+const ExistingEQ       = Dict{UInt64, Dict{UInt64,Bool}}() 
 const ExistingProducts   = Dict{UInt64, Dict{UInt64,UInt64}}()
 const ExistingSums       = Dict{UInt64, Dict{UInt64,UInt64}}() 
 const ExistingNegations  = Dict{UInt64, UInt64}() 
-const Count = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≦'=>0)
+const Count         = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
+const CountUncached = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
 
 # function size(d::Dict)
 #     [length(d[k]) for k in sort(collect(keys(d)))]        
@@ -97,6 +98,7 @@ function clearcache()
     global ExistingSums
     global ExistingNegations 
     global Count
+    global CountUncached
     empty!(ExistingSurreals)
     empty!(ExistingConversions)
     empty!(ExistingCanonicals)
@@ -107,8 +109,28 @@ function clearcache()
     empty!(ExistingSums)
     empty!(ExistingNegations)
     reset!(Count)
+    reset!(CountUncached)
     return 1
 end
+
+function cache_stats_summary( )
+    # this function is really just a reminder of how to do this
+    df = Main.varinfo( SurrealNumbers, r"Existing*" )
+    return df
+end 
+
+function cache_stats( C::Dict{S, T} ) where {T <: Any, S <: Number}
+# function cache_stats( C::Dict{S, T} ) where T <: Any where S <: Number # also works
+    total_bytes1 = summarysize(C)
+    total_entries1 = length(C)
+    total_bytes2 = 0
+    total_entries2 = 0
+    for k in keys(C)
+        total_bytes2 += summarysize( C[k] )
+        total_entries2 += length( C[k] )     
+    end 
+    return total_bytes1, total_bytes2, total_entries1, total_entries2
+end 
 
 function convert(::Type{SurrealFinite}, n::Int )  
     global ExistingSurreals 
@@ -283,45 +305,36 @@ const SurrealOne  = SurrealFinite("1", [ zero(SurrealFinite) ], ϕ )
 const SurrealMinusOne  = SurrealFinite("-1", ϕ, [ zero(SurrealFinite) ] ) 
 const SurrealTwo  = SurrealFinite("2", [SurrealOne], ϕ ) 
 const SurrealThree  = SurrealFinite("3", [SurrealTwo], ϕ )  
-const SurrealMinusTwo  = SurrealFinite("-2", ϕ, [SurrealOne] ) 
+const SurrealMinusTwo  = SurrealFinite("-2", ϕ, [SurrealMinusOne] ) 
 zero(::SurrealFinite) = SurrealZero # always use the same zero
 one(::SurrealFinite)  = SurrealOne  # always use the same one
 # ↑ = one(SurrealFinite)  # this causes an error???
 # ↓ = -one(SurrealFinite)  
 
-# relations
-#   these are written in terms of the definition, but could
-#   rewrite in terms of max/min to make marginally faster
-#   or in terms of set operations to make more succinct
-function leq(x::SurrealFinite, y::SurrealFinite, processed_list::Dict{UInt64,Bool})
-#    for t in x.L
-#        if y <= t
-#            return false
-#        end
-#    end
-#    for t in y.R
-#        if t <= x
-#            return false 
-#        end 
-#    end
-    # global Count
-    # Count['≦'] += 1
-
-    k = hash(x,0) * hash(y,1)
-    if !haskey(processed_list,k)
-        # if !isempty(x.L) && y <= x.L[end] 
-        if !isempty(x.L) && leq(y, x.L[end],  processed_list)
-            processed_list[k] = false
-        # elseif !isempty(y.R) && x >= y.R[1] 
-        elseif !isempty(y.R) && leq(y.R[1], x,  processed_list)
-            processed_list[k] = false 
+# relations: the latest version uses the fact that letf and right sets are sorted
+function leq(x::SurrealFinite, y::SurrealFinite)
+    global Count
+    global CountUncached
+    Count['≤'] += 1
+    global ExistingLEQ
+    hx = hash(x)
+    hy = hash(y)
+    if !haskey(ExistingLEQ, hx)
+        ExistingLEQ[hx] = Dict{UInt64,Bool}()
+    end         
+    if !haskey(ExistingLEQ[hx], hy)
+        CountUncached['≤'] += 1
+        if !isempty(x.L) && leq(y, x.L[end])
+            ExistingLEQ[hx][hy] = false
+        elseif !isempty(y.R) && leq(y.R[1], x)
+            ExistingLEQ[hx][hy] = false 
         else
-            processed_list[k] = true
-        end 
+             ExistingLEQ[hx][hy] = true
+        end
     end 
-    return processed_list[k]
+    return ExistingLEQ[hx][hy]
 end 
-<=(x::SurrealFinite, y::SurrealFinite) = leq(x, y, Dict{UInt64,Bool}())
+<=(x::SurrealFinite, y::SurrealFinite) = leq(x, y)
 <(x::SurrealFinite, y::SurrealFinite) = x<=y && !(y<=x)
 # ===(x::SurrealFinite, y::SurrealFinite) = x<=y && y<x # causes an error
 #   === is 'egal', and hardcoded for mutables to test they are same object in memory
@@ -334,54 +347,73 @@ end
 #                                         all(x.L .== y.L) &&
 #                                         all(x.R .== y.R)
 
-# much faster version because doesn't evaluate the whole array every time
-#   potential bug because sort order of equivalent values is not defined
-function equals(x::SurrealFinite, y::SurrealFinite, processed_list::Dict{UInt64,Bool})
-    # global Count
-    # Count['='] += 1
-    k = hash(x,0) * hash(y,1)
-    if !haskey(processed_list,k)
-        if length(x.L) != length(y.L) || length(x.R) != length(y.R)
-            processed_list[k] = false
-            return processed_list[k]
-        end
-        for i=1:length(x.L)
-#             if x.L[i] != y.L[i]
-            if !equals(x.L[i], y.L[i], processed_list)
-                processed_list[k] = false
-                return processed_list[k]
-            end  
-        end
-        for i=1:length(x.R)
-#            if x.R[i] != y.R[i]
-            if !equals(x.R[i], y.R[i], processed_list)
-                processed_list[k] = false
-                return processed_list[k]
+function equals(x::SurrealFinite, y::SurrealFinite)
+    global Count
+    global CountUncached
+    Count['='] += 1
+    global ExistingEQ
+    hx = hash(x)
+    hy = hash(y)
+    # if hx == hy
+    #     return true # trust that hashes don't collide
+    # else    
+    #    return false
+    # end 
+    if !haskey(ExistingEQ, hx)
+        ExistingEQ[hx] = Dict{UInt64,Bool}()
+    end         
+    # if !haskey(ExistingEQ, hy)
+    #     ExistingEQ[hy] = Dict{UInt64,Bool}() # it may be commutative, but when =, it doesn't matter
+    # end
+    if !haskey(ExistingEQ[hx], hy)
+        CountUncached['='] += 1
+        if hx != hy
+            ExistingEQ[hx][hy] = false
+            # ExistingEQ[hy][hx] = false
+        elseif length(x.L) != length(y.L) || length(x.R) != length(y.R)
+            ExistingEQ[hx][hy] = false
+            # ExistingEQ[hy][hx] = false
+        else
+            for i=1:length(x.L)
+                if !equals(x.L[i], y.L[i])
+                    ExistingEQ[hx][hy] = false
+                    # ExistingEQ[hy][hx] = false
+                    return ExistingEQ[hx][hy]
+                end
+            end
+            for i=1:length(x.R)
+                if !equals(x.R[i], y.R[i])
+                    ExistingEQ[hx][hy] = false
+                    # ExistingEQ[hy][hx] = false
+                    return ExistingEQ[hx][hy]                    
+                end 
             end 
-        end 
-        processed_list[k] = true 
+            ExistingEQ[hx][hy] = true
+            # ExistingEQ[hy][hx] = true
+        end
     end 
-    return processed_list[k] 
+    return ExistingEQ[hx][hy]
 end
-==(x::SurrealFinite, y::SurrealFinite) = x===y || equals(x, y, Dict{UInt64,Bool}())
+==(x::SurrealFinite, y::SurrealFinite) = x===y || equals(x, y)
 iszero(x::SurrealFinite) = isempty(x.L) && isempty(x.R) # tests for canonical zero 
-equalszero(x::SurrealFinite) = x ≅ zero(x)              # tests equiv to zero 
+equivtozero(x::SurrealFinite) = x ≅ zero(x)             # tests equiv to zero 
 
 # comparisons between sets (i.e., arrays) are all-to-all, so
 #   (1) don't have to be the same size
 #   (2) the < is not exactly the same as the < defined above
+# but these shouldn't be used for left- and right set comparisons because these sets are sorted
 function <=(X::Array{SurrealFinite}, Y::Array{SurrealFinite} )
     if isempty(X) || isempty(Y)
         return true
     else
         for x in X
             for y in Y
-                if !(x <= y) 
+                if !(x <= y)
                     return false
                 end 
             end 
         end
-        return true
+        return true 
     end
 end
 function <(X::Array{SurrealFinite}, Y::Array{SurrealFinite} )
@@ -404,6 +436,8 @@ function -(x::SurrealFinite)
     global ExistingSurreals 
     global ExistingNegations
     global Count
+    global CountUncached
+    Count['-'] += 1
     hx = hash(x) # build the dictionary in terms of hashs, because it is used quite a bit
     if iszero(x) 
         result = x
@@ -427,7 +461,7 @@ function -(x::SurrealFinite)
     end 
     ExistingNegations[hx] = hr
     ExistingNegations[hr] = hx
-    Count['-'] += 1
+    CountUncached['-'] += 1
     return result
 end
 
@@ -453,6 +487,8 @@ function +(x::SurrealFinite, y::SurrealFinite)
     global ExistingSurreals 
     global ExistingSums
     global Count
+    global CountUncached
+    Count['+'] += 1
     hx = hash(x) # build the dictionary in terms of hashs, because it is used quite a bit
     hy = hash(y) #   and these amortise the cost of initial calculation of hashs 
     if haskey(ExistingSums, hx) && haskey(ExistingSums[hx], hy)
@@ -486,13 +522,9 @@ function +(x::SurrealFinite, y::SurrealFinite)
     end
     ExistingSums[hx][hy] = hr
     ExistingSums[hy][hx] = hr
-    Count['+'] += 1
+    CountUncached['+'] += 1
     return result
 end
- 
-# +(x::SurrealFinite, y::SurrealFinite) = SurrealFinite([x.L .+ y; x .+ y.L],
-#                                                       [x.R .+ y; x .+ y.R] )
-
 # can't do like this because of empty arrays I think
 #+(x::SurrealFinite, y::SurrealFinite) = SurrealFinite([x.L + y.L],
 #                                                      [x.R + y.R] )
@@ -505,6 +537,8 @@ function *(x::SurrealFinite, y::SurrealFinite)
     global ExistingSurreals 
     global ExistingProducts
     global Count
+    global CountUncached
+    Count['*'] += 1 
     hx = hash(x)
     hy = hash(y)
     if haskey(ExistingProducts, hx) && haskey(ExistingProducts[hx], hy)
@@ -545,7 +579,7 @@ function *(x::SurrealFinite, y::SurrealFinite)
     end
     ExistingProducts[hx][hy] = hr
     ExistingProducts[hy][hx] = hr
-    Count['*'] += 1 
+    CountUncached['*'] += 1 
     return result
 end
 #function subtimes( x, y, X::Array{SurrealFinite}, Y::Array{SurrealFinite} )
@@ -968,12 +1002,13 @@ sign(x::SurrealFinite) = x<zero(x) ? -one(x) : x>zero(x) ? one(x) : zero(x)
 
 # subtraction is much slower than comparison, so got rid of old versions
 # these aren't purely surreal arithmetic, but everything could be, just would be slower
+ # N.B. returns canonical form of floor
 function floor(T::Type, s::SurrealFinite)
     if s < zero(s)
         if s >= -one(s)
             return -one(T)
-        elseif s >= -2
-            return convert(T, -2)
+        elseif s >= SurrealMinusTwo
+            return convert(T, SurrealMinusTwo)
         else
             k = 1
             while s < -2^(k+1) && k < 12 # 12 is arbitrary, but it would be painful to go higher
@@ -992,16 +1027,16 @@ function floor(T::Type, s::SurrealFinite)
                     a = d
                 end
             end
-            return convert(T, a) # N.B. returns canonical form of floor 
+            return convert(T, a) 
         end
     elseif s < one(s) 
         return zero(T)
-    elseif s < 2
+    elseif s < SurrealTwo
         return one(T)
     else
         # start with geometric search to bound the number
         k = 1
-        while s >= 2^(k+1) && k < 12 # 12 is arbitrary, but it would be painful to go higher
+        while s >= 2^(k+1) && k < 12 # 12 is arbitrary, but it would be super painful to go higher
             k += 1
         end  
         if k==12
@@ -1018,7 +1053,7 @@ function floor(T::Type, s::SurrealFinite)
                 a = d
             end
          end
-        return convert(T, a) # N.B. returns canonical form of floor 
+        return convert(T, a)
     end
 end
 function ceil(T::Type, s::SurrealFinite)
@@ -1030,7 +1065,7 @@ function ceil(T::Type, s::SurrealFinite)
 end
 
 # implicit rounding mode is 'RoundNearestTiesUp'
-#   to bbe consistent, should do the other rounding modes, and a precision, but the latter is hard
+#   to be consistent, should do the other rounding modes, and a precision, but the latter is hard
 function round(T::Type, s::SurrealFinite)
     return floor(T, s + 1//2)
 end
@@ -1106,7 +1141,7 @@ struct SurrealDAGstats
     nodes::Int64 # nodes in its DAG
     tree_nodes::Int64 # nodes in a tree-based representation of the graph
     edges::Int64 # edges in its DAG
-    generation::Int32 # generation/birthday of the surreal
+    generation::Int32 # generation/birthday of the surreal, i.e., shortest path to root at zero
     longest_path::Array{SurrealFinite,1} 
     paths::BigInt # number of paths from source to sink
     value::Rational

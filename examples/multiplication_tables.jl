@@ -15,32 +15,23 @@ convert(SurrealFinite, 1) * convert(SurrealFinite, 2)
 a = convert(SurrealFinite, 2) * convert(SurrealFinite, 2)
 b = convert(SurrealFinite, 1) - convert(SurrealFinite, 1)
 
+# old bounds
 n2 = 12
 n3 = 5
 n4 = 2
 n_12 = 12
 n_14 = 3
 
+# # short time version
 # n2 = 11
 # n3 = 3
-# n12 = 11
-
-# # short time version
-# n2 = 10
-# n3 = 3
 # n4 = 2
-# n_12 = 8
+# n_12 = 11
 # n_14 = 3
 
 clearcache()
 ns1 = convert.(SurrealFinite, [0; 1:n2;        2;      1:n3;       1:n4;          1:n_12;          1:n_14; 1//2; 1//2; 1//4; a; b])
 ns2 = convert.(SurrealFinite, [2; 2*ones(n2); -2; 3*ones(n3); 4*ones(n4); 1//2*ones(n_12); 1//4*ones(n_14); 1//2; 1//4; 1//4; 2; 2])
-# ns1 = convert.(SurrealFinite, [0:n2-1;           1:n3;       1:n4;         1:n_12;           1:n_14; 1//2; 1//2])
-# ns2 = convert.(SurrealFinite, [2*ones(n2); 3*ones(n3); 4*ones(n4); 1//2*ones(n_12); 1//4*ones(n_14); 1//2; 1//4])
-# ns1 = convert.(SurrealFinite, [0; 1; 2; 3; 4; 5; 6; 7; 8; 3; a])
-# ns2 = convert.(SurrealFinite, [2; 2; 2; 2; 2; 2; 2; 2; 2; 3; 2])
-# ns1 = [2; 4]
-# ns2 = [1/2; 1/4]
 n = length(ns1)
 
 # m = [10; 10; 10; 10; 10; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1]
@@ -56,6 +47,11 @@ c_times = Array{Integer,1}(undef,n)
 c_created = Array{Integer,1}(undef,n)
 c_equals = Array{Integer,1}(undef,n)
 c_leq = Array{Integer,1}(undef,n)
+cu_plus = Array{Integer,1}(undef,n)
+cu_times = Array{Integer,1}(undef,n)
+cu_created = Array{Integer,1}(undef,n)
+cu_equals = Array{Integer,1}(undef,n)
+cu_leq = Array{Integer,1}(undef,n)
 
 i = 0
 println("calculating products")
@@ -79,7 +75,12 @@ for i=1:n
     c_times[i] = Count['*']
     c_created[i] = Count['c']
     c_equals[i] = Count['=']
-    c_leq[i] = Count['≦']
+    c_leq[i] = Count['≤']
+    cu_plus[i] = CountUncached['+']
+    cu_times[i] = CountUncached['*']
+    cu_created[i] = CountUncached['c'] # not used at the moment
+    cu_equals[i] = CountUncached['=']
+    cu_leq[i] = CountUncached['≤']
 end
 println("calculating stats")
 # s = dag_stats.( x )
@@ -119,11 +120,15 @@ t1 = table((i=0:n-1,
                    density=d,
                    time=t,
                    bytes=bytes,
-                   adds=c_plus,
-                   prods=c_times,
                    created=c_created,
+                   adds=c_plus,
+                   adds_new=cu_plus,
+                   prods=c_times,
+                   prods_new=cu_times,
                    equals=c_equals,
-                   leq=c_leq);
+                   equals_new=cu_equals,
+                   leq=c_leq,
+                   leq_new=cu_leq);
                pkey = [:i])
 
 save(joinpath(@__DIR__, out_dir, "multiplication_table_$(VERSION).csv"), t1)

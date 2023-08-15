@@ -1,4 +1,21 @@
 
+
+-- hash is in very rare cases potentially not unique
+   -- so sort order might be undefined in rare cases
+   -- if it is unique, then we can compare exact equality by directly
+      comparing hashes, instead of checking recursively
+
+
+
+
+
+
+
+
+
+
++++++++++++++++=
+
 - maybe need to
     calculate hash when constructing surreal
     put the surreal into the cache during construction

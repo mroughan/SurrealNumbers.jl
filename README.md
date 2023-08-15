@@ -714,5 +714,5 @@ have required a good deal more work without all the automagical pieces
 of Julia helping.
 
  
-
+Matt Roughan, [roughan.info](https://roughan.info)
 

@@ -10,8 +10,10 @@ export Surreal, SurrealFinite, SurrealShort, SurrealDyadic, SurrealDAGstats
 export SurrealZero, SurrealOne, SurrealMinusOne, SurrealTwo, SurrealMinusTwo, SurrealThree, ϕ  
 
 # eventually these will be removed, but they are convenient for testing
-export ExistingSurreals, ExistingConversions, ExistingCanonicals, ExistingProducts, ExistingSums, ExistingNegations, Count
-export clearcache
+export ExistingSurreals, ExistingConversions, ExistingCanonicals, ExistingProducts, ExistingSums, 
+        ExistingNegations, ExistingLEQ, ExistingGEQ, ExistingEQ, 
+        Count, CountUncached
+export clearcache, cache_stats, cache_stats_summary
 
 # export SurrealAlt2  
 # export ExistingSurrealsAlt2, ExistingProductsAlt2, ExistingSumsAlt2
@@ -24,7 +26,8 @@ export ∅, ϕ, <=, zero, one, ==, ≅, ≇, <, -, +, *, ≀, ↑, ↓, dag_add,
     sign, round, floor, ceil, trunc, mod, 
     isinteger, isinf, isnan, isfinite, isodd, iseven, isdivisible,
     dag_stats, nodes, edges, paths, tree_nodes, breadth, width, surrealDAG,
-    uniqueness, uniqueness_max, uniqueness_failure
+    uniqueness, uniqueness_max, uniqueness_failure,
+    equivtozero
   
 abstract type Surreal <: Real end 
  
