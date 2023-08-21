@@ -65,15 +65,20 @@ hash(x::SurrealFinite, h::Integer) = hash(x, convert(UInt64, h) )
 #   in particular to speed up calculations, but also to ensure that resulting
 #   structures are actually DAGs, i.e., pointers to the same "number" point at the same bit of memory
 # i guess eventually these should be replaced by let-closures: https://docs.julialang.org/en/v0.6.2/manual/variables-and-scoping/
+# originally had things like 
+#     ExistingProducts = Dict{SurrealFinite, Dict{SurrealFinite,SurrealFinite}}()
+# but seem simpler to have an extra level of redirect to ensure fixed size, but maybe that is misguided?
 const ExistingSurreals = Dict{UInt64, SurrealFinite}()
 const ExistingConversions = Dict{UInt64,Rational}()
 const ExistingCanonicals = Dict{Rational,UInt64}()
-# ExistingProducts = Dict{SurrealFinite, Dict{SurrealFinite,SurrealFinite}}() # prefer using hash, as fixed size
-const ExistingLEQ       = Dict{UInt64, Dict{UInt64,Bool}}() 
+# const ExistingLEQ       = Dict{UInt64, Dict{UInt64,Bool}}() 
+const ExistingLEQ       = SwissDict{UInt64, SwissDict{UInt64,Bool}}() # small improvement from SwissDict, particullary on mem use
+const ExistingLEQ2       = SortedSet{SurrealFinite}()
 const ExistingGEQ       = Dict{UInt64, Dict{UInt64,Bool}}() 
 const ExistingEQ       = Dict{UInt64, Dict{UInt64,Bool}}() 
 const ExistingProducts   = Dict{UInt64, Dict{UInt64,UInt64}}()
-const ExistingSums       = Dict{UInt64, Dict{UInt64,UInt64}}() 
+# const ExistingSums       = Dict{UInt64, Dict{UInt64,UInt64}}() 
+const ExistingSums   = SwissDict{UInt64, SwissDict{UInt64,UInt64}}() # small improvement from SwissDict
 const ExistingNegations  = Dict{UInt64, UInt64}() 
 const Count         = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
 const CountUncached = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
@@ -92,6 +97,7 @@ function clearcache()
     global ExistingConversions 
     global ExistingCanonicals
     global ExistingLEQ
+    global ExistingLEQ2
     global ExistingGEQ
     global ExistingEQ
     global ExistingProducts
@@ -103,6 +109,7 @@ function clearcache()
     empty!(ExistingConversions)
     empty!(ExistingCanonicals)
     empty!(ExistingLEQ)
+    empty!(ExistingLEQ2)
     empty!(ExistingGEQ)
     empty!(ExistingEQ)
     empty!(ExistingProducts)
@@ -329,10 +336,31 @@ function leq(x::SurrealFinite, y::SurrealFinite)
         elseif !isempty(y.R) && leq(y.R[1], x)
             ExistingLEQ[hx][hy] = false 
         else
-             ExistingLEQ[hx][hy] = true
+            ExistingLEQ[hx][hy] = true
         end
     end 
     return ExistingLEQ[hx][hy]
+end 
+function leq_old(x::SurrealFinite, y::SurrealFinite) # this is kind of circular, because sort order in LEQ2 will be determined by leq
+    global Count
+    global CountUncached
+    Count['≤'] += 1
+    global ExistingLEQ2
+    if haskey(ExistingLEQ2, x) && haskey(ExistingLEQ2, y)
+        result = compare( ExistingLEQ2, findkey(ExistingLEQ2, x), findkey(ExistingLEQ2, y) ) <= 0 ? true : false  
+    else
+        CountUncached['≤'] += 1
+        if !isempty(x.L) && leq(y, x.L[end])
+            result = false
+        elseif !isempty(y.R) && leq(y.R[1], x)
+            result = false 
+        else
+            result = true
+        end
+        # push!( ExistingLEQ2, x)
+        # push!( ExistingLEQ2, y)
+    end 
+    return result
 end 
 <=(x::SurrealFinite, y::SurrealFinite) = leq(x, y)
 <(x::SurrealFinite, y::SurrealFinite) = x<=y && !(y<=x)
@@ -383,12 +411,16 @@ function equals(x::SurrealFinite, y::SurrealFinite)
             end
             for i=1:length(x.R)
                 if !equals(x.R[i], y.R[i])
-                    ExistingEQ[hx][hy] = false
+                    ExistingEQ[hx][hy] = false 
                     # ExistingEQ[hy][hx] = false
                     return ExistingEQ[hx][hy]                    
                 end 
             end 
             ExistingEQ[hx][hy] = true
+            if !haskey(ExistingLEQ, hx)
+                ExistingLEQ[hx] = Dict{UInt64,Bool}()
+            end         
+            ExistingLEQ[hx][hy] = true # we get this for free, seems like lookup in LEQ would save memory, but doesn't save time :(
             # ExistingEQ[hy][hx] = true
         end
     end 

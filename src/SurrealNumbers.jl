@@ -1,5 +1,7 @@
 module SurrealNumbers
 
+using DataStructures
+
 import Base: convert, promote, promote_rule, hash, show, read, delete!, empty!, 
     size, sign, round, floor, ceil, mod, trunc, 
     isinteger, isinf, isnan, isfinite, isodd, iseven, iszero, 
@@ -11,7 +13,7 @@ export SurrealZero, SurrealOne, SurrealMinusOne, SurrealTwo, SurrealMinusTwo, Su
 
 # eventually these will be removed, but they are convenient for testing
 export ExistingSurreals, ExistingConversions, ExistingCanonicals, ExistingProducts, ExistingSums, 
-        ExistingNegations, ExistingLEQ, ExistingGEQ, ExistingEQ, 
+        ExistingNegations, ExistingLEQ, ExistingLEQ2, ExistingGEQ, ExistingEQ, 
         Count, CountUncached
 export clearcache, cache_stats, cache_stats_summary
 

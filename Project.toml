@@ -2,3 +2,6 @@ name = "SurrealNumbers"
 uuid = "fd883f9a-d946-4304-80b3-f288c1989028"
 authors = ["Matthew Roughan <matthew.roughan@adelaide.edu.au>"]
 version = "0.2.0"
+
+[deps]
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"

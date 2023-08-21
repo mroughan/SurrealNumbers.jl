@@ -17,8 +17,8 @@ b = convert(SurrealFinite, 1) - convert(SurrealFinite, 1)
 
 # old bounds
 n2 = 12
-n3 = 5
-n4 = 2
+n3 = 5 # 3x6 is kiling me on memory -- up to 27G and still growing
+n4 = 2 # 4x4 was killed by the box also, prolly too much memory
 n_12 = 12
 n_14 = 3
 
