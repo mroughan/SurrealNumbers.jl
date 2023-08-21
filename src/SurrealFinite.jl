@@ -567,8 +567,8 @@ function +(x::SurrealFinite, y::SurrealFinite)
     hy = hash(y) #   and these amortise the cost of initial calculation of hashs 
     if haskey(ExistingSums, hx) && haskey(ExistingSums[hx], hy)
         return ExistingSurreals[ ExistingSums[hx][hy] ]
-#    elseif haskey(ExistingSums, hy) && haskey(ExistingSums[hy], hx)
-#        return ExistingSurreals[ ExistingSums[hy][hx] ]
+    elseif haskey(ExistingSums, hy) && haskey(ExistingSums[hy], hx)
+        return ExistingSurreals[ ExistingSums[hy][hx] ]
     elseif iszero(x)
         result = y   
     elseif iszero(y)
@@ -595,16 +595,15 @@ function +(x::SurrealFinite, y::SurrealFinite)
     else
         ExistingSurreals[hr] = result
     end
-    # ExistingSurreals[hr] = result  # swap to just using this if we want to see all the ways an addition can given the same result
 
     if !haskey(ExistingSums, hx)
         ExistingSums[hx] = Dict{UInt64,UInt64}()
     end
-    if !haskey(ExistingSums, hy)
-         ExistingSums[hy] = Dict{UInt64,UInt64}() 
-    end
+#    if !haskey(ExistingSums, hy)
+#         ExistingSums[hy] = Dict{UInt64,UInt64}() 
+#    end
     ExistingSums[hx][hy] = hr
-    ExistingSums[hy][hx] = hr
+#    ExistingSums[hy][hx] = hr
     CountUncached['+'] += 1
     return result
 end
