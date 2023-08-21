@@ -77,8 +77,8 @@ const ExistingLEQ2       = SortedSet{SurrealFinite}()
 const ExistingGEQ       = Dict{UInt64, Dict{UInt64,Bool}}() 
 const ExistingEQ       = Dict{UInt64, Dict{UInt64,Bool}}() 
 const ExistingProducts   = Dict{UInt64, Dict{UInt64,UInt64}}()
-const ExistingSums       = Dict{UInt64, Dict{UInt64,UInt64}}() 
-# const ExistingSums   = SwissDict{UInt64, SwissDict{UInt64,UInt64}}() # small improvement obtained from SwissDict
+# const ExistingSums       = Dict{UInt64, Dict{UInt64,UInt64}}() 
+const ExistingSums   = SwissDict{UInt64, SwissDict{UInt64,UInt64}}() # small improvement obtained from SwissDict
 const ExistingSums2   = SwissDict{UInt64, UInt64}() 
 const ExistingNegations  = Dict{UInt64, UInt64}() 
 const Count         = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
@@ -518,7 +518,7 @@ function /(x::SurrealFinite, y::SurrealFinite)
 end
 
 # binary operators
-function new(x::SurrealFinite, y::SurrealFinite)
+function +(x::SurrealFinite, y::SurrealFinite)
     global ExistingSurreals 
     global ExistingSums2
     global Count
@@ -542,12 +542,17 @@ function new(x::SurrealFinite, y::SurrealFinite)
                                [[x + y for x in x.R]; [x + y for y in y.R]] )
     end
     hr = hash(result)
+    if haskey(ExistingSurreals, hr)
+       result = ExistingSurreals[hr] # don't double up on memory, make sure we always point at the existing surreal form
+    else
+       ExistingSurreals[hr] = result
+    end
     ExistingSums2[h] = hr
     CountUncached['+'] += 1
     return result
 end
 
-function +(x::SurrealFinite, y::SurrealFinite)
+function oldplus(x::SurrealFinite, y::SurrealFinite)
     global ExistingSurreals 
     global ExistingSums
     global Count
@@ -578,7 +583,7 @@ function +(x::SurrealFinite, y::SurrealFinite)
     else
        ExistingSurreals[hr] = result
     end
-###### could put a check in here for avoiding collisions???
+##### could put a check in here for avoiding collisions???
     # ExistingSurreals[hr] = result  # swap to just using this if we want to see all the ways an addition can given the same result
 
     if !haskey(ExistingSums, hx)
