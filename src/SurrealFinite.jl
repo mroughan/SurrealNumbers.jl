@@ -11,10 +11,10 @@ mutable struct SurrealFinite <: Surreal
         global Count
         Count['c'] += 1 
         if length(L) > 1
-            L = sort( unique(L) ) # use hash as tie break in sort so that order is deterministic -- see local sort of arrays of Surreals
+            L = sort( unique(L) )
         end 
         if length(R) > 1
-            R = sort( unique(R) ) # use hash as tie break in sort so that order is deterministic -- see local sort of arrays of Surreals
+            R = sort( unique(R) )
         end 
         # println("L = $L, R = $R") 
         # use the fact they are sorted to not do a complete comparison
@@ -634,10 +634,10 @@ function +(x::SurrealFinite, y::SurrealFinite)
     end
     ExistingSums[hx][hy] = hr
     if commutative
-        ExistingSums[hy][hx] = hr
         if !haskey(ExistingSums, hy)
             ExistingSums[hy] = Dict{UInt64,UInt64}() 
         end
+        ExistingSums[hy][hx] = hr
     end
     return result
 end
