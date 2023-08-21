@@ -3,7 +3,8 @@ module SurrealNumbers
 using DataStructures
 
 import Base: convert, promote, promote_rule, hash, show, read, delete!, empty!, 
-    size, sign, round, floor, ceil, mod, trunc, 
+    size, sign, round, floor, ceil, mod, trunc,
+    sort,
     isinteger, isinf, isnan, isfinite, isodd, iseven, iszero, 
     <, <=, zero, one, ==, <, -, +, *, /,
     summarysize

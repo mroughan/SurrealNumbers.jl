@@ -11,10 +11,10 @@ mutable struct SurrealFinite <: Surreal
         global Count
         Count['c'] += 1 
         if length(L) > 1
-            L = sort( unique(L), by=x->(x,hash(x)) ) # use hash as tie break in sort so that order is deterministic
+            L = sort( unique(L) ) # use hash as tie break in sort so that order is deterministic -- see local sort of arrays of Surreals
         end 
         if length(R) > 1
-            R = sort( unique(R), by=x->(x,hash(x)) ) # use hash as tie break in sort so that order is deterministic
+            R = sort( unique(R) ) # use hash as tie break in sort so that order is deterministic -- see local sort of arrays of Surreals
         end 
         # println("L = $L, R = $R") 
         # use the fact they are sorted to not do a complete comparison
@@ -378,6 +378,11 @@ end
 #                                         all(x.L .== y.L) &&
 #                                         all(x.R .== y.R)
 
+####    ≡, 
+
+sort( X::Array{SurrealFinite} ) = sort( X, lt = (x,y) -> x ≅ y ? hash(x)<hash(y) : x<y )
+# NB do it this way because using "by =" implies use of equals signs in sort, and we use equals for identity, not equal value
+
 function equals(x::SurrealFinite, y::SurrealFinite)
     global Count
     global CountUncached
@@ -585,7 +590,7 @@ function +(x::SurrealFinite, y::SurrealFinite)
            # note that different additions could result in the same surreal form, and we don't want to have a difference
            # version for each way of creating this
        else
-           error("HASH collision :( -- (hx,hy,hr)")
+           error("HASH collision :( -- ($hx,$hy,$hr,$hash(result)) $( (pf(ExistingSurreals[hx]), pf(ExistingSurreals[hy]), pf(ExistingSurreals[hr]), pf(result)) )")
        end
     else
         ExistingSurreals[hr] = result

@@ -64,6 +64,8 @@ println()
 spf(x43)
 println()
 
+pf( dali(3) * dali(3) ) # this caused hash violations at one point, because not all equal-valued surreals were being deterministically sorted
+
 @testset "constructor test" begin
     @test SurrealFinite("1/2", [0], [1]) ≅ 1/2
     @test_throws ErrorException SurrealFinite("1", [x1], [x0])
@@ -122,7 +124,7 @@ end
     @test -x1 == x11
     @test - -x0 == x0
     @test - -x4 == x4
-    # @test - -x4 === x4   # still flaky for version 0.7
+    @test - -x4 === x4   # still flaky for version 0.7, so expect this to break
     @test x1 + x11 ≅ x0 
     @test x1 - x1 ≅ x0 
     @test x1 + x0 == x1
