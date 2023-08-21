@@ -587,12 +587,13 @@ function +(x::SurrealFinite, y::SurrealFinite)
     global Count
     global CountUncached
     global check_collision_flag
+    commutative = false # set to true to store y+x, everytime we calculate x+y
     Count['+'] += 1
     hx = hash(x) # build the dictionary in terms of hashs, because it is used quite a bit
     hy = hash(y) #   and these amortise the cost of initial calculation of hashs 
     if haskey(ExistingSums, hx) && haskey(ExistingSums[hx], hy)
         return ExistingSurreals[ ExistingSums[hx][hy] ]
-    elseif haskey(ExistingSums, hy) && haskey(ExistingSums[hy], hx)
+    elseif !commutative && haskey(ExistingSums, hy) && haskey(ExistingSums[hy], hx)
        return ExistingSurreals[ ExistingSums[hy][hx] ]
     elseif iszero(x)
         result = y   
@@ -632,10 +633,12 @@ function +(x::SurrealFinite, y::SurrealFinite)
         ExistingSums[hx] = Dict{UInt64,UInt64}()
     end
     ExistingSums[hx][hy] = hr
-#     ExistingSums[hy][hx] = hr
-#     if !haskey(ExistingSums, hy)
-#          ExistingSums[hy] = Dict{UInt64,UInt64}() 
-#     end
+    if commutative
+        ExistingSums[hy][hx] = hr
+        if !haskey(ExistingSums, hy)
+            ExistingSums[hy] = Dict{UInt64,UInt64}() 
+        end
+    end
     return result
 end
 
