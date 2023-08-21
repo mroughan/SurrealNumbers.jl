@@ -74,7 +74,6 @@ const ExistingCanonicals = Dict{Rational,UInt64}()
 # const ExistingLEQ       = Dict{UInt64, Dict{UInt64,Bool}}() 
 const ExistingLEQ       = SwissDict{UInt64, SwissDict{UInt64,Bool}}() # small improvement from SwissDict, particullary on mem use
 const ExistingLEQ2       = SortedSet{SurrealFinite}()
-const ExistingGEQ       = Dict{UInt64, Dict{UInt64,Bool}}() 
 const ExistingEQ       = Dict{UInt64, Dict{UInt64,Bool}}() 
 const ExistingProducts   = Dict{UInt64, Dict{UInt64,UInt64}}()
 # const ExistingSums       = Dict{UInt64, Dict{UInt64,UInt64}}() 
@@ -84,7 +83,7 @@ const ExistingNegations  = Dict{UInt64, UInt64}()
 const Count         = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
 const CountUncached = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
 
-const check_collision_flag = false # set this to be true to do a (slow) diagnostic check of hash collisions
+const check_collision_flag = true # set this to be true to do a (slow) diagnostic check of hash collisions
 
 # function size(d::Dict)
 #     [length(d[k]) for k in sort(collect(keys(d)))]        
@@ -101,7 +100,6 @@ function clearcache()
     global ExistingCanonicals
     global ExistingLEQ
     global ExistingLEQ2
-    global ExistingGEQ
     global ExistingEQ
     global ExistingProducts
     global ExistingSums
@@ -114,7 +112,6 @@ function clearcache()
     empty!(ExistingCanonicals)
     empty!(ExistingLEQ)
     empty!(ExistingLEQ2)
-    empty!(ExistingGEQ)
     empty!(ExistingEQ)
     empty!(ExistingProducts)
     empty!(ExistingSums)
@@ -375,16 +372,19 @@ end
 ≅(x::Real, y::Real) = ≅(promote(x,y)...)
 ≇(x::SurrealFinite, y::SurrealFinite) = !( x ≅ y ) 
 ≇(x::Real, y::Real) = ≇(promote(x,y)...)
-# ==(x::SurrealFinite, y::SurrealFinite) = size(x.L) == size(y.L) &&
-#                                         size(x.R) == size(y.R) &&
-#                                         all(x.L .== y.L) &&
-#                                         all(x.R .== y.R)
 
-####    ≡, 
+#### prolly should have used ≡ not ≅, but hey
+
 
 sort( X::Array{SurrealFinite} ) = sort( X, lt = (x,y) -> x ≅ y ? hash(x)<hash(y) : x<y )
 # NB do it this way because using "by =" implies use of equals signs in sort, and we use equals for identity, not equal value
 
+# old, slow, direct version
+# ==(x::SurrealFinite, y::SurrealFinite) = size(x.L) == size(y.L) &&
+#                                         size(x.R) == size(y.R) &&
+#                                         all(x.L .== y.L) &&
+#                                         all(x.R .== y.R)
+# 
 function equals(x::SurrealFinite, y::SurrealFinite)
     global Count
     global CountUncached
@@ -524,40 +524,41 @@ function /(x::SurrealFinite, y::SurrealFinite)
     end
 end
 
-# binary operators
-function non_hierarchical_cache_sum(x::SurrealFinite, y::SurrealFinite)
-    global ExistingSurreals 
-    global ExistingSums2
-    global Count
-    global CountUncached
-    Count['+'] += 1
-    hx = hash(x) # build the dictionary in terms of hashs, because it is used quite a bit
-    hy = hash(y) #   and these amortise the cost of initial calculation of hashs
-    h = hx * hy
-    if haskey(ExistingSums2, h) 
-        return ExistingSurreals[ ExistingSums2[h] ]
-    elseif iszero(x)
-        result = y   
-    elseif iszero(y)
-        result = x 
-    else 
-#       result = SurrealFinite( [x.L .+ y; x .+ y.L],
-        #                               [x.R .+ y; x .+ y.R] )
-        shorthand = "($(x.shorthand) + $(y.shorthand))"
-        result = SurrealFinite(shorthand,
-                               [[x + y for x in x.L]; [x + y for y in y.L]],
-                               [[x + y for x in x.R]; [x + y for y in y.R]] )
-    end
-    hr = hash(result)
-    if haskey(ExistingSurreals, hr)
-       result = ExistingSurreals[hr] # don't double up on memory, make sure we always point at the existing surreal form
-    else
-       ExistingSurreals[hr] = result
-    end
-    ExistingSums2[h] = hr
-    CountUncached['+'] += 1
-    return result
-end
+# # binary operators
+# function non_hierarchical_cache_sum(x::SurrealFinite, y::SurrealFinite)
+#     # this is used only to test whether the hierarchical cache actually improved performance
+#     global ExistingSurreals 
+#     global ExistingSums2
+#     global Count
+#     global CountUncached
+#     Count['+'] += 1
+#     hx = hash(x) # build the dictionary in terms of hashs, because it is used quite a bit
+#     hy = hash(y) #   and these amortise the cost of initial calculation of hashs
+#     h = hx * hy
+#     if haskey(ExistingSums2, h) 
+#         return ExistingSurreals[ ExistingSums2[h] ]
+#     elseif iszero(x)
+#         result = y   
+#     elseif iszero(y)
+#         result = x 
+#     else 
+# #       result = SurrealFinite( [x.L .+ y; x .+ y.L],
+#         #                               [x.R .+ y; x .+ y.R] )
+#         shorthand = "($(x.shorthand) + $(y.shorthand))"
+#         result = SurrealFinite(shorthand,
+#                                [[x + y for x in x.L]; [x + y for y in y.L]],
+#                                [[x + y for x in x.R]; [x + y for y in y.R]] )
+#     end
+#     hr = hash(result)
+#     if haskey(ExistingSurreals, hr)
+#        result = ExistingSurreals[hr] # don't double up on memory, make sure we always point at the existing surreal form
+#     else
+#        ExistingSurreals[hr] = result
+#     end
+#     ExistingSums2[h] = hr
+#     CountUncached['+'] += 1
+#     return result
+# end
 
 function +(x::SurrealFinite, y::SurrealFinite)
     global ExistingSurreals 
@@ -587,13 +588,18 @@ function +(x::SurrealFinite, y::SurrealFinite)
     hr = hash(result)
     # println(" $x+$y:   $hr   $result")   
     if haskey(ExistingSurreals, hr)
-       existing = ExistingSurreals[hr]
-       if !check_collision_flag || existing == result
-           result = existing  # don't double up on memory, reuse existing surreal by changing reference here
-           # note that different additions could result in the same surreal form, and we don't want to have a difference
-           # version for each way of creating this
+       if check_collision_flag
+           if ExistingSurreals[hr] == result
+               # only do this check when debugging because the '==' takes a chunk of time to recursively evaluate
+               result = ExistingSurreals[hr]
+               # don't double up on memory, reuse existing surreal by changing reference here
+               # note that different additions could result in the same surreal form, and we don't want to have a difference
+               # version for each way of creating this
+           else
+               error("HASH collision :( -- ($hx,$hy,$hr,$hash(result)) $( (pf(ExistingSurreals[hx]), pf(ExistingSurreals[hy]), pf(ExistingSurreals[hr]), pf(result)) )")
+           end
        else
-           error("HASH collision :( -- ($hx,$hy,$hr,$hash(result)) $( (pf(ExistingSurreals[hx]), pf(ExistingSurreals[hy]), pf(ExistingSurreals[hr]), pf(result)) )")
+           result = ExistingSurreals[hr]
        end
     else
         ExistingSurreals[hr] = result
