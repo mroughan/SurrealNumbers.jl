@@ -83,7 +83,7 @@ const ExistingNegations  = Dict{UInt64, UInt64}()
 const Count         = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
 const CountUncached = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
 
-const check_collision_flag = false # set this to be true to do a (slow) diagnostic check of hash collisions
+const check_collision_flag = true # set this to be true to do a (slow) diagnostic check of hash collisions
 
 # function size(d::Dict)
 #     [length(d[k]) for k in sort(collect(keys(d)))]        
@@ -376,9 +376,26 @@ end
 #### prolly should have used ≡ not ≅, but hey
 
 
-sort( X::Array{SurrealFinite} ) = sort( X, lt = (x,y) -> x == y ? hash(x)<hash(y) : x<y )
+# sort( X::Array{SurrealFinite} ) = sort( X, lt = (x,y) -> x == y ? hash(x)<hash(y) : x<y )
 # sort( X::Array{SurrealFinite} ) = sort( X, lt = (x,y) -> x ≅ y ? hash(x)<hash(y) : x<y )
 # NB do it this way because using "by =" implies use of equals signs in sort, and we use equals for identity, not equal value
+#
+# old reasoning was that I needed a deterministic sorted list to be able to compare "equal" things
+# but sorting takes reassignments, which take time (lots it seems)
+# so rather, when we create a new surreal in (most, but check all) ways we can creaete it, we check its hash
+# and if we find it already has a form, then we use that, so the sorted order is based on the first created version
+# this makes the results of code non-isolated -- the output of a result can depend on what has gone before
+# but within one session everything will be consistent.
+# just be aware, data written by one sequence of calculations can then be different the next time
+# but to be fair, hashes are not stable between versions of Julia, so relying on the hash for a deterministic sort
+# was always a little troublesome
+#
+# anyway, upshot is that
+#   1. we use the default sort
+#   2. elements of left and right sets are sorted by value, and equal value items might appear in any order, but should be consistent in a session
+#       unless deliberately broken (CHECK)
+#   3. hash of a vector has to be order independent (because it is really a set)
+# 
 
 # old, slow, direct version
 # ==(x::SurrealFinite, y::SurrealFinite) = size(x.L) == size(y.L) &&
