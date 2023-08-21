@@ -126,7 +126,7 @@ function cache_stats_summary( )
     return df
 end 
 
-function cache_stats( C::Dict{S, T} ) where {T <: Any, S <: Number}
+function cache_stats( C::AbstractDict{S, T} ) where {T <: Any, S <: Number}
 # function cache_stats( C::Dict{S, T} ) where T <: Any where S <: Number # also works
     total_bytes1 = summarysize(C)
     total_entries1 = length(C)
