@@ -1,5 +1,6 @@
 [deps]
 CSVFiles = "5d742f6a-9f54-50ce-8119-2520741973ca"
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 IndexedTables = "6deec6e2-d858-57c5-ab9b-e6ca5bd20e43"
 LatexPrint = "d2208f48-c256-5759-9089-c25ed2a93924"

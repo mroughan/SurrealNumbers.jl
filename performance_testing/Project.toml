@@ -1,3 +1,4 @@
 [deps]
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 IndexedTables = "6deec6e2-d858-57c5-ab9b-e6ca5bd20e43"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
