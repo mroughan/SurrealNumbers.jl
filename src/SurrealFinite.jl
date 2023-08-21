@@ -518,7 +518,7 @@ function /(x::SurrealFinite, y::SurrealFinite)
 end
 
 # binary operators
-function +_new(x::SurrealFinite, y::SurrealFinite)
+function new(x::SurrealFinite, y::SurrealFinite)
     global ExistingSurreals 
     global ExistingSums2
     global Count
@@ -577,7 +577,8 @@ function +(x::SurrealFinite, y::SurrealFinite)
        result = ExistingSurreals[hr] # don't double up on memory
     else
        ExistingSurreals[hr] = result
-    end 
+    end
+###### could put a check in here for avoiding collisions???
     # ExistingSurreals[hr] = result  # swap to just using this if we want to see all the ways an addition can given the same result
 
     if !haskey(ExistingSums, hx)
