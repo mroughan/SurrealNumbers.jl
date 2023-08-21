@@ -376,7 +376,8 @@ end
 #### prolly should have used ≡ not ≅, but hey
 
 
-sort( X::Array{SurrealFinite} ) = sort( X, lt = (x,y) -> x ≅ y ? hash(x)<hash(y) : x<y )
+sort( X::Array{SurrealFinite} ) = sort( X, lt = (x,y) -> x == y ? hash(x)<hash(y) : x<y )
+# sort( X::Array{SurrealFinite} ) = sort( X, lt = (x,y) -> x ≅ y ? hash(x)<hash(y) : x<y )
 # NB do it this way because using "by =" implies use of equals signs in sort, and we use equals for identity, not equal value
 
 # old, slow, direct version
