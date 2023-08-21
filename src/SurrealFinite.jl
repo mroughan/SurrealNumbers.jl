@@ -84,6 +84,8 @@ const ExistingNegations  = Dict{UInt64, UInt64}()
 const Count         = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
 const CountUncached = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
 
+const check_collisions_flag = false # set this to be true to do a (slow) diagnostic check of hash collisions
+
 # function size(d::Dict)
 #     [length(d[k]) for k in sort(collect(keys(d)))]        
 # end 
@@ -562,6 +564,7 @@ function +(x::SurrealFinite, y::SurrealFinite)
     global ExistingSums
     global Count
     global CountUncached
+    global check_collision_flag
     Count['+'] += 1
     hx = hash(x) # build the dictionary in terms of hashs, because it is used quite a bit
     hy = hash(y) #   and these amortise the cost of initial calculation of hashs 
@@ -585,7 +588,7 @@ function +(x::SurrealFinite, y::SurrealFinite)
     # println(" $x+$y:   $hr   $result")   
     if haskey(ExistingSurreals, hr)
        existing = ExistingSurreals[hr]
-       if existing == result
+       if !check_collision_flag || existing == result
            result = existing  # don't double up on memory, reuse existing surreal by changing reference here
            # note that different additions could result in the same surreal form, and we don't want to have a difference
            # version for each way of creating this
