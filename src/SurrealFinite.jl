@@ -84,7 +84,7 @@ const ExistingNegations  = Dict{UInt64, UInt64}()
 const Count         = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
 const CountUncached = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
 
-const check_collisions_flag = false # set this to be true to do a (slow) diagnostic check of hash collisions
+const check_collision_flag = false # set this to be true to do a (slow) diagnostic check of hash collisions
 
 # function size(d::Dict)
 #     [length(d[k]) for k in sort(collect(keys(d)))]        
