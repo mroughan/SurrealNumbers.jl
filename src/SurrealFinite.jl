@@ -571,22 +571,24 @@ function +(x::SurrealFinite, y::SurrealFinite)
     hy = hash(y) #   and these amortise the cost of initial calculation of hashs 
     if haskey(ExistingSums, hx) && haskey(ExistingSums[hx], hy)
         return ExistingSurreals[ ExistingSums[hx][hy] ]
-    elseif haskey(ExistingSums, hy) && haskey(ExistingSums[hy], hx)
-        return ExistingSurreals[ ExistingSums[hy][hx] ]
+#    elseif haskey(ExistingSums, hy) && haskey(ExistingSums[hy], hx)
+#        return ExistingSurreals[ ExistingSums[hy][hx] ]
     elseif iszero(x)
         result = y   
     elseif iszero(y)
-        result = x 
+        result = x
     else 
-#       result = SurrealFinite( [x.L .+ y; x .+ y.L],
-        #                               [x.R .+ y; x .+ y.R] )
         shorthand = "($(x.shorthand) + $(y.shorthand))"
         result = SurrealFinite(shorthand,
                                [[x + y for x in x.L]; [x + y for y in y.L]],
                                [[x + y for x in x.R]; [x + y for y in y.R]] )
+        #       result = SurrealFinite( [x.L .+ y; x .+ y.L],   # dot syntax was a fair but slower than comprehensions
+        #                               [x.R .+ y; x .+ y.R] )
     end
+    CountUncached['+'] += 1
+
+    # redo caches CARERFULLY
     hr = hash(result)
-    # println(" $x+$y:   $hr   $result")   
     if haskey(ExistingSurreals, hr)
         if check_collision_flag
             if ExistingSurreals[hr] == result
@@ -608,17 +610,18 @@ function +(x::SurrealFinite, y::SurrealFinite)
     if !haskey(ExistingSums, hx)
         ExistingSums[hx] = Dict{UInt64,UInt64}()
     end
-#    if !haskey(ExistingSums, hy)
-#         ExistingSums[hy] = Dict{UInt64,UInt64}() 
-#    end
+    if !haskey(ExistingSums, hy)
+         ExistingSums[hy] = Dict{UInt64,UInt64}() 
+    end
     ExistingSums[hx][hy] = hr
-#    ExistingSums[hy][hx] = hr
-    CountUncached['+'] += 1
+    ExistingSums[hy][hx] = hr
     return result
 end
+
 # can't do like this because of empty arrays I think
-#+(x::SurrealFinite, y::SurrealFinite) = SurrealFinite([x.L + y.L],
-#                                                      [x.R + y.R] )
+#     +(x::SurrealFinite, y::SurrealFinite) = SurrealFinite([x.L + y.L],[x.R + y.R] )
+# but also would fail to do caching
+
 +(X::Array{SurrealFinite}, Y::Array{SurrealFinite}) = vec([s+t for s in X, t in Y])
 
 -(x::SurrealFinite, y::SurrealFinite) = x + -y
