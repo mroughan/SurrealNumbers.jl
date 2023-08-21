@@ -463,18 +463,35 @@ d33 = dali(33//2)
     @test isempty(SurrealNumbers.ExistingProducts)
     @test isempty(SurrealNumbers.ExistingSums)
     @test isempty(SurrealNumbers.ExistingNegations)
-    Count['+'] == 0
-    Count['*'] == 0 
+    @test Count['+'] == 0
+    @test Count['*'] == 0 
 
     m = dali(2) * dali(2)
-    Count['+'] == 4
-    Count['+'] == 13
-    Count['*'] == 6 
-    Count['c'] == 20 
+    @test Count['≤'] == 21
+    @test Count['='] == 0
+    @test Count['c'] == 12
+    @test Count['*'] == 10
+    @test Count['+'] == 20
+    @test Count['-'] == 4
+
+    @test CountUncached['≤'] == 15
+    @test CountUncached['='] == 0
+    @test CountUncached['c'] == 0
+    @test CountUncached['*'] == 6
+    @test CountUncached['+'] == 13
+    @test CountUncached['-'] == 4
+
+    hx = hash( dali(2) )
+    @test ExistingProducts[hx][hx] == hash(m)
+    @test ExistingSurreals[hx] == 2
+    @test ExistingSurreals[ hash(m) ] ≅ 4
+    @test ExistingSurreals[ hash(m) ] !== 4
 end
 
 
 @testset "new identity test" begin
+    # it shouldn't matter how a surreal was calculated, if it is the same, it should be the same OBJECT
+    # most obviously this happens with the additional of canonical, non-negative, integers, which is closed
     c1 = dali(1) + dali(3)
     c2 = dali(2) + dali(2)
     @test c1 == c2

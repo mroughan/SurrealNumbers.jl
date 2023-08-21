@@ -588,19 +588,19 @@ function +(x::SurrealFinite, y::SurrealFinite)
     hr = hash(result)
     # println(" $x+$y:   $hr   $result")   
     if haskey(ExistingSurreals, hr)
-       if check_collision_flag
-           if ExistingSurreals[hr] == result
-               # only do this check when debugging because the '==' takes a chunk of time to recursively evaluate
-               result = ExistingSurreals[hr]
-               # don't double up on memory, reuse existing surreal by changing reference here
-               # note that different additions could result in the same surreal form, and we don't want to have a difference
-               # version for each way of creating this
-           else
-               error("HASH collision :( -- ($hx,$hy,$hr,$hash(result)) $( (pf(ExistingSurreals[hx]), pf(ExistingSurreals[hy]), pf(ExistingSurreals[hr]), pf(result)) )")
-           end
-       else
-           result = ExistingSurreals[hr]
-       end
+        if check_collision_flag
+            if ExistingSurreals[hr] == result
+                # only do this check when debugging because the '==' takes a chunk of time to recursively evaluate
+                result = ExistingSurreals[hr]
+                # don't double up on memory, reuse existing surreal by changing reference here
+                # note that different additions could result in the same surreal form, and we don't want to have a difference
+                # version for each way of creating this
+            else
+                error("HASH collision :( -- ($hx,$hy,$hr,$hash(result)) $( (pf(ExistingSurreals[hx]), pf(ExistingSurreals[hy]), pf(ExistingSurreals[hr]), pf(result)) )")
+            end 
+        else
+            result = ExistingSurreals[hr]
+        end
     else
         ExistingSurreals[hr] = result
     end
