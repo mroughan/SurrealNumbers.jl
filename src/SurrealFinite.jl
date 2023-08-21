@@ -518,7 +518,7 @@ function /(x::SurrealFinite, y::SurrealFinite)
 end
 
 # binary operators
-function +(x::SurrealFinite, y::SurrealFinite)
+function non_hierarchical_cache_sum(x::SurrealFinite, y::SurrealFinite)
     global ExistingSurreals 
     global ExistingSums2
     global Count
@@ -552,7 +552,7 @@ function +(x::SurrealFinite, y::SurrealFinite)
     return result
 end
 
-function oldplus(x::SurrealFinite, y::SurrealFinite)
+function +(x::SurrealFinite, y::SurrealFinite)
     global ExistingSurreals 
     global ExistingSums
     global Count
@@ -579,11 +579,17 @@ function oldplus(x::SurrealFinite, y::SurrealFinite)
     hr = hash(result)
     # println(" $x+$y:   $hr   $result")   
     if haskey(ExistingSurreals, hr)
-       result = ExistingSurreals[hr] # don't double up on memory
+       existing = ExistingSurreals[hr]
+       if existing == result
+           result = existing  # don't double up on memory, reuse existing surreal by changing reference here
+           # note that different additions could result in the same surreal form, and we don't want to have a difference
+           # version for each way of creating this
+       else
+           error("HASH collision :( -- (hx,hy,hr)")
+       end
     else
-       ExistingSurreals[hr] = result
+        ExistingSurreals[hr] = result
     end
-##### could put a check in here for avoiding collisions???
     # ExistingSurreals[hr] = result  # swap to just using this if we want to see all the ways an addition can given the same result
 
     if !haskey(ExistingSums, hx)
