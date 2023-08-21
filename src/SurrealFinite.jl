@@ -83,7 +83,8 @@ const ExistingNegations  = Dict{UInt64, UInt64}()
 const Count         = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
 const CountUncached = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
 
-const check_collision_flag = true # set this to be true to do a (slow) diagnostic check of hash collisions
+const check_collision_flag = false # set this to be true to do a (slow) diagnostic check of hash collisions
+# need to do a better sort here when this is set to true
 
 # function size(d::Dict)
 #     [length(d[k]) for k in sort(collect(keys(d)))]        
@@ -388,7 +389,9 @@ end
 # but within one session everything will be consistent.
 # just be aware, data written by one sequence of calculations can then be different the next time
 # but to be fair, hashes are not stable between versions of Julia, so relying on the hash for a deterministic sort
-# was always a little troublesome
+# was always a little troublesome.
+#
+# But we do need the correct sorted versions when including a check for collisions, or we see artificial collisions
 #
 # anyway, upshot is that
 #   1. we use the default sort
@@ -610,7 +613,7 @@ function +(x::SurrealFinite, y::SurrealFinite)
     if haskey(ExistingSurreals, hr)
         if check_collision_flag
             if ExistingSurreals[hr] == result
-                # only do this check when debugging because the '==' takes a chunk of time to recursively evaluate
+                # only do this check when debugging because we also need to change the sort to a more expensive version 
                 result = ExistingSurreals[hr]
                 # don't double up on memory, reuse existing surreal by changing reference here
                 # note that different additions could result in the same surreal form, and we don't want to have a difference
