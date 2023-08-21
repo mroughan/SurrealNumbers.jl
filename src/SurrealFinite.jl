@@ -77,8 +77,9 @@ const ExistingLEQ2       = SortedSet{SurrealFinite}()
 const ExistingGEQ       = Dict{UInt64, Dict{UInt64,Bool}}() 
 const ExistingEQ       = Dict{UInt64, Dict{UInt64,Bool}}() 
 const ExistingProducts   = Dict{UInt64, Dict{UInt64,UInt64}}()
-# const ExistingSums       = Dict{UInt64, Dict{UInt64,UInt64}}() 
-const ExistingSums   = SwissDict{UInt64, SwissDict{UInt64,UInt64}}() # small improvement from SwissDict
+const ExistingSums       = Dict{UInt64, Dict{UInt64,UInt64}}() 
+# const ExistingSums   = SwissDict{UInt64, SwissDict{UInt64,UInt64}}() # small improvement obtained from SwissDict
+const ExistingSums2   = SwissDict{UInt64, UInt64}() 
 const ExistingNegations  = Dict{UInt64, UInt64}() 
 const Count         = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
 const CountUncached = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
@@ -102,6 +103,7 @@ function clearcache()
     global ExistingEQ
     global ExistingProducts
     global ExistingSums
+    global ExistingSums2
     global ExistingNegations 
     global Count
     global CountUncached
@@ -114,6 +116,7 @@ function clearcache()
     empty!(ExistingEQ)
     empty!(ExistingProducts)
     empty!(ExistingSums)
+    empty!(ExistingSums2)
     empty!(ExistingNegations)
     reset!(Count)
     reset!(CountUncached)
@@ -515,6 +518,35 @@ function /(x::SurrealFinite, y::SurrealFinite)
 end
 
 # binary operators
+function +_new(x::SurrealFinite, y::SurrealFinite)
+    global ExistingSurreals 
+    global ExistingSums2
+    global Count
+    global CountUncached
+    Count['+'] += 1
+    hx = hash(x) # build the dictionary in terms of hashs, because it is used quite a bit
+    hy = hash(y) #   and these amortise the cost of initial calculation of hashs
+    h = hx * hy
+    if haskey(ExistingSums2, h) 
+        return ExistingSurreals[ ExistingSums2[h] ]
+    elseif iszero(x)
+        result = y   
+    elseif iszero(y)
+        result = x 
+    else 
+#       result = SurrealFinite( [x.L .+ y; x .+ y.L],
+        #                               [x.R .+ y; x .+ y.R] )
+        shorthand = "($(x.shorthand) + $(y.shorthand))"
+        result = SurrealFinite(shorthand,
+                               [[x + y for x in x.L]; [x + y for y in y.L]],
+                               [[x + y for x in x.R]; [x + y for y in y.R]] )
+    end
+    hr = hash(result)
+    ExistingSums2[h] = hr
+    CountUncached['+'] += 1
+    return result
+end
+
 function +(x::SurrealFinite, y::SurrealFinite)
     global ExistingSurreals 
     global ExistingSums
