@@ -73,7 +73,6 @@ const ExistingConversions = Dict{UInt64,Rational}()
 const ExistingCanonicals = Dict{Rational,UInt64}()
 # const ExistingLEQ       = Dict{UInt64, Dict{UInt64,Bool}}() 
 const ExistingLEQ       = SwissDict{UInt64, SwissDict{UInt64,Bool}}() # small improvement from SwissDict, particullary on mem use
-const ExistingLEQ2       = SortedSet{SurrealFinite}()
 const ExistingEQ       = Dict{UInt64, Dict{UInt64,Bool}}() 
 const ExistingProducts   = Dict{UInt64, Dict{UInt64,UInt64}}()
 # const ExistingSums       = Dict{UInt64, Dict{UInt64,UInt64}}() 
@@ -82,6 +81,19 @@ const ExistingSums2   = SwissDict{UInt64, UInt64}()
 const ExistingNegations  = Dict{UInt64, UInt64}() 
 const Count         = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
 const CountUncached = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
+
+
+# indexing type to use as keys in special places
+struct SurrealIndex # use this as keys in LEQ cache
+    h::UInt64
+end
+SurrealIndex( s::SurrealFinite ) = SurrealIndex( hash(s) )
+# purely value based comparisons, never using a cache
+leq( h1::SurrealIndex, h2::SurrealIndex )      = leq_without_cache( ExistingSurreals(s1), ExistingSurreals(s2) )
+isless( h1::SurrealIndex, h2::SurrealIndex )   = leq_without_cache( ExistingSurreals(s1), ExistingSurreals(s2) ) && !leq_without_cache( ExistingSurreals(s2), ExistingSurreals(s1) )
+isequals( h1::SurrealIndex, h2::SurrealIndex ) = leq_without_cache( ExistingSurreals(s1), ExistingSurreals(s2) ) &&  leq_without_cache( ExistingSurreals(s2), ExistingSurreals(s1) )
+const ExistingLEQ2 = SortedSet{SurrealIndex}() # create a cache of these that will be ordered by surreal values
+
 
 const check_collision_flag = false # set this to be true to do a (slow) diagnostic check of hash collisions
 # need to do a better sort here when this is set to true
