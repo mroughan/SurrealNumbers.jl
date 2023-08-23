@@ -9,6 +9,7 @@ mutable struct SurrealFinite <: Surreal
     # constructor should check that L < R
     function SurrealFinite(shorthand::String, L::Vector{SurrealFinite}, R::Vector{SurrealFinite}, h::UInt64)
         global Count
+        global ExistingSurreals 
         Count['c'] += 1 
         if length(L) > 1
             L = sort( unique(L) )
@@ -17,12 +18,21 @@ mutable struct SurrealFinite <: Surreal
             R = sort( unique(R) )
         end 
         # println("L = $L, R = $R") 
-        # use the fact they are sorted to not do a complete comparison
+        # use the fact they are sorted to not do a complete comparison for <=
         # also means that == is much easier than if they were unsorted
         if isempty(L) || isempty(R) || L[end] < R[1]
-            return new(shorthand, L, R, h)
+            tmp = new(shorthand, L, R, h)
+            h_tmp = hash(tmp) # can't have hash value as an input, has to be calculated
+            if !haskey(ExistingSurreals, h_tmp)
+                # make sure every surreal we have calculated a hash for is registered
+                ExistingSurreals[h_tmp] = tmp
+            else
+                # if this version somehow got created separately, then reuse the existing version
+                tmp = ExistingSurreals[h_tmp] # noting this is changing the input ...
+            end
+            return tmp
         else 
-            error("Surreal number must have L < R (currently they are $(L) and $(R) )") 
+            error("Surreal number must have L < R (currently the extreme values are $(L[end]) and $(R[1]) )") 
         end  
     end 
 end
@@ -34,20 +44,25 @@ SurrealFinite(L::AbstractArray, R::AbstractArray ) =
 
 const SurrealShort  = SurrealFinite 
 const SurrealDyadic = SurrealFinite 
-
-function hash(x::SurrealFinite, h::UInt64)
+ 
+function hash(x::SurrealFinite)
     if x.h == 0
-        x.h = hash(x.L, zero(UInt64) ) * hash(x.R, one(UInt64) ) 
+        x.h = hash(x.L, zero(UInt64) ) * hash(x.R, one(UInt64) )
+        # this is only used on construction
+        # note we don't include shorthand or hash in calculation of hash
+        #    -- they former doesn't matter, the latter would be circular
     end
-    return hash(x.h, h)
+    return x.h
 end
-function hash(X::Vector{SurrealFinite}, h::UInt64) # effectively depth first???
-    H = hash(zero(UInt64), h)
+hash(x::SurrealFinite, h::Integer) = hash(x, convert(UInt64, h) )
+function hash(X::Vector{SurrealFinite}) # effectively depth first???
+    H = hash(zero(UInt64))
     for x in X
-        H ⊻= hash(x, h) # order is technically not important, so resuse little h
+        H ⊻= hash(x) # order should not be important, so don't do hash(x,H)
     end
     return H
 end
+hash(X::Vector{SurrealFinite}, h::UInt64) = hash( hash(X), h )
 # function hash_old(X::Vector{SurrealFinite}, h::UInt64) # effectively breadth first???
 #     if isempty(X)
 #         hash(zero(UInt64), h) 
@@ -58,8 +73,6 @@ end
 #     end
 # end
 # really slow version: hash(X::Array{SurrealFinite}, h::UInt) = isempty(X) ? hash(0,h) : hash( prod(hash.(X, h )), h)
-hash(x::SurrealFinite) = hash(x, zero(UInt64) )
-hash(x::SurrealFinite, h::Integer) = hash(x, convert(UInt64, h) )
 
 # global dictionaries to avoid repeated calculations of the same things
 #   in particular to speed up calculations, but also to ensure that resulting
@@ -83,17 +96,6 @@ const Count         = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0
 const CountUncached = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
 
 
-# indexing type to use as keys in special places
-struct SurrealIndex # use this as keys in LEQ cache
-    h::UInt64
-end
-SurrealIndex( s::SurrealFinite ) = SurrealIndex( hash(s) )
-# purely value based comparisons, never using a cache
-leq( h1::SurrealIndex, h2::SurrealIndex )      = leq_without_cache( ExistingSurreals(s1), ExistingSurreals(s2) )
-isless( h1::SurrealIndex, h2::SurrealIndex )   = leq_without_cache( ExistingSurreals(s1), ExistingSurreals(s2) ) && !leq_without_cache( ExistingSurreals(s2), ExistingSurreals(s1) )
-isequals( h1::SurrealIndex, h2::SurrealIndex ) = leq_without_cache( ExistingSurreals(s1), ExistingSurreals(s2) ) &&  leq_without_cache( ExistingSurreals(s2), ExistingSurreals(s1) )
-const ExistingLEQ2 = SortedSet{SurrealIndex}() # create a cache of these that will be ordered by surreal values
-
 
 const check_collision_flag = false # set this to be true to do a (slow) diagnostic check of hash collisions
 # need to do a better sort here when this is set to true
@@ -110,8 +112,9 @@ end
 function clearcache() 
     global ExistingSurreals 
     global ExistingConversions 
-    global ExistingCanonicals
+    global ExistingCanonicals 
     global ExistingLEQ
+    global ExistingLEQ1
     global ExistingLEQ2
     global ExistingEQ
     global ExistingProducts
@@ -121,9 +124,16 @@ function clearcache()
     global Count
     global CountUncached
     empty!(ExistingSurreals)
+    ExistingSurreals[ hash(SurrealZero) ] = SurrealZero
+    ExistingSurreals[ hash(SurrealOne) ] = SurrealOne
+    ExistingSurreals[ hash(SurrealMinusOne) ] = SurrealMinusOne
+    ExistingSurreals[ hash(SurrealTwo) ] = SurrealTwo
+    ExistingSurreals[ hash(SurrealThree) ] = SurrealThree
+    ExistingSurreals[ hash(SurrealMinusTwo) ] = SurrealMinusTwo
     empty!(ExistingConversions)
     empty!(ExistingCanonicals)
     empty!(ExistingLEQ)
+    empty!(ExistingLEQ1)
     empty!(ExistingLEQ2)
     empty!(ExistingEQ)
     empty!(ExistingProducts)
@@ -171,11 +181,6 @@ function convert(::Type{SurrealFinite}, n::Int )
         result = SurrealFinite(string(n), ϕ, [convert(SurrealFinite, n+1)] )
     end
     hr = hash(result)
-    if haskey(ExistingSurreals, hr)
-       result = ExistingSurreals[hr] # don't double up on memory
-    else
-       ExistingSurreals[hr] = result
-    end
     ExistingCanonicals[Rational(n)] = hr 
     return result 
     # should check to make sure abs(n) is not too big, i.e., causes too much recursion
@@ -191,7 +196,12 @@ function convert(::Type{SurrealFinite}, r::Rational )
         # Non-integer dyadic numbers
         n = convert(Int64, round( log2(r.den) ))
         if abs(r) + n < 60 # 60 is a bit arbitrary -- could experiment more on real limits
-            result = SurrealFinite("$r", [convert(SurrealFinite, r - 1//2^n)], [convert(SurrealFinite, r + 1//2^n)] )
+            r_l = r - 1//2^n
+            r_r = r + 1//2^n
+            if r_l >= r_r
+                error("   weirdness: $r -> ($r_l, $r_r)")
+            end
+            result = SurrealFinite("$r", [convert(SurrealFinite, r_l)], [convert(SurrealFinite, r_r)] )
         else 
             error("Generation too large")
         end 
@@ -200,11 +210,6 @@ function convert(::Type{SurrealFinite}, r::Rational )
         # return convert(SurrealFinite, r.num) // convert(SurrealFinite, r.den)
     end  
     hr = hash(result)
-    if haskey(ExistingSurreals, hr)
-       result = ExistingSurreals[hr] # don't double up on memory
-    else
-       ExistingSurreals[hr] = result
-    end
     ExistingCanonicals[r] = hr 
     return result
 end
@@ -333,10 +338,23 @@ one(::SurrealFinite)  = SurrealOne  # always use the same one
 # ↑ = one(SurrealFinite)  # this causes an error???
 # ↓ = -one(SurrealFinite)  
 
+const ExistingLEQ1 = SwissDict{UInt64, SwissDict{UInt64,Bool}}() 
+const ExistingLEQ2 = SwissDict{UInt64, SwissDict{UInt64,Bool}}()
+
 # relations: the latest version uses the fact that letf and right sets are sorted
+function leq_without_cache(x::SurrealFinite, y::SurrealFinite)
+    global CountUncached
+    CountUncached['≤'] += 1
+    if !isempty(x.L) && leq(y, x.L[end])
+        return false
+    elseif !isempty(y.R) && leq(y.R[1], x)
+        return false
+    else
+        return true
+    end
+end
 function leq(x::SurrealFinite, y::SurrealFinite)
     global Count
-    global CountUncached
     Count['≤'] += 1
     global ExistingLEQ
     hx = hash(x)
@@ -345,38 +363,11 @@ function leq(x::SurrealFinite, y::SurrealFinite)
         ExistingLEQ[hx] = Dict{UInt64,Bool}()
     end         
     if !haskey(ExistingLEQ[hx], hy)
-        CountUncached['≤'] += 1
-        if !isempty(x.L) && leq(y, x.L[end])
-            ExistingLEQ[hx][hy] = false
-        elseif !isempty(y.R) && leq(y.R[1], x)
-            ExistingLEQ[hx][hy] = false 
-        else
-            ExistingLEQ[hx][hy] = true
-        end
+        ExistingLEQ[hx][hy] = leq_without_cache(x, y)
     end 
     return ExistingLEQ[hx][hy]
-end 
-function leq_old(x::SurrealFinite, y::SurrealFinite) # this is kind of circular, because sort order in LEQ2 will be determined by leq
-    global Count
-    global CountUncached
-    Count['≤'] += 1
-    global ExistingLEQ2
-    if haskey(ExistingLEQ2, x) && haskey(ExistingLEQ2, y)
-        result = compare( ExistingLEQ2, findkey(ExistingLEQ2, x), findkey(ExistingLEQ2, y) ) <= 0 ? true : false  
-    else
-        CountUncached['≤'] += 1
-        if !isempty(x.L) && leq(y, x.L[end])
-            result = false
-        elseif !isempty(y.R) && leq(y.R[1], x)
-            result = false 
-        else
-            result = true
-        end
-        # push!( ExistingLEQ2, x)
-        # push!( ExistingLEQ2, y)
-    end 
-    return result
-end 
+end
+
 <=(x::SurrealFinite, y::SurrealFinite) = leq(x, y)
 <(x::SurrealFinite, y::SurrealFinite) = x<=y && !(y<=x)
 # ===(x::SurrealFinite, y::SurrealFinite) = x<=y && y<x # causes an error
@@ -526,14 +517,14 @@ function -(x::SurrealFinite)
         result = SurrealFinite("-"*x.shorthand, -x.R, -x.L )
     end  
     hr = hash(result)
-    if haskey(ExistingSurreals, hr)
-        result = ExistingSurreals[hr] # don't double up on memory
-    else
-        ExistingSurreals[hr] = result
-    end
-    if !haskey(ExistingSurreals, hx)
-        ExistingSurreals[hx] = x
-    end 
+    # if haskey(ExistingSurreals, hr)
+    #     result = ExistingSurreals[hr] # don't double up on memory
+    # else
+    #     ExistingSurreals[hr] = result
+    # end
+    # if !haskey(ExistingSurreals, hx)
+    #     ExistingSurreals[hx] = x
+    # end 
     ExistingNegations[hx] = hr
     ExistingNegations[hr] = hx
     CountUncached['-'] += 1
@@ -620,26 +611,24 @@ function +(x::SurrealFinite, y::SurrealFinite)
         #                               [x.R .+ y; x .+ y.R] )
     end
     CountUncached['+'] += 1
-
-    # redo caches CARERFULLY
     hr = hash(result)
-    if haskey(ExistingSurreals, hr)
-        if check_collision_flag
-            if ExistingSurreals[hr] == result
-                # only do this check when debugging because we also need to change the sort to a more expensive version 
-                result = ExistingSurreals[hr]
-                # don't double up on memory, reuse existing surreal by changing reference here
-                # note that different additions could result in the same surreal form, and we don't want to have a difference
-                # version for each way of creating this
-            else
-                error("HASH collision :( -- ($hx,$hy,$hr,$hash(result)) $( (pf(ExistingSurreals[hx]), pf(ExistingSurreals[hy]), pf(ExistingSurreals[hr]), pf(result)) )")
-            end 
-        else
-            result = ExistingSurreals[hr]
-        end
-    else
-        ExistingSurreals[hr] = result
-    end
+    # if haskey(ExistingSurreals, hr)
+    #     if check_collision_flag
+    #         if ExistingSurreals[hr] == result
+    #             # only do this check when debugging because we also need to change the sort to a more expensive version 
+    #             result = ExistingSurreals[hr]
+    #             # don't double up on memory, reuse existing surreal by changing reference here
+    #             # note that different additions could result in the same surreal form, and we don't want to have a difference
+    #             # version for each way of creating this
+    #         else
+    #             error("HASH collision :( -- ($hx,$hy,$hr,$hash(result)) $( (pf(ExistingSurreals[hx]), pf(ExistingSurreals[hy]), pf(ExistingSurreals[hr]), pf(result)) )")
+    #         end 
+    #     else
+    #         result = ExistingSurreals[hr]
+    #     end
+    # else
+    #     ExistingSurreals[hr] = result
+    # end
 
     if !haskey(ExistingSums, hx)
         ExistingSums[hx] = Dict{UInt64,UInt64}()
@@ -674,12 +663,12 @@ function *(x::SurrealFinite, y::SurrealFinite)
     if haskey(ExistingProducts, hx) && haskey(ExistingProducts[hx], hy)
         return ExistingSurreals[ ExistingProducts[hx][hy] ]
     elseif iszero(x) || iszero(y) 
-        result = zero(x)
-#     elseif x == 1 
-#        result = y 
-#    elseif y == 1 
-#        result = x
-    else  
+        result = SurrealZero
+    elseif x == SurrealOne 
+        result = y 
+    elseif y == SurrealOne
+        result = x
+    else
         # tmp1 = vec([s*y + x*t - s*t for s in x.L, t in y.L])
         # tmp2 = vec([s*y + x*t - s*t for s in x.R, t in y.R])
         # tmp3 = vec([s*y + x*t - s*t for s in x.L, t in y.R])
@@ -702,11 +691,11 @@ function *(x::SurrealFinite, y::SurrealFinite)
         ExistingProducts[hy] = Dict{UInt64,UInt64}()
     end 
     hr = hash(result)
-    if haskey(ExistingSurreals, hr)
-        result = ExistingSurreals[hr] # don't double up on memory
-    else 
-        ExistingSurreals[hr] = result
-    end
+    # if haskey(ExistingSurreals, hr)
+    #     result = ExistingSurreals[hr] # don't double up on memory
+    # else 
+    #     ExistingSurreals[hr] = result
+    # end
     ExistingProducts[hx][hy] = hr
     ExistingProducts[hy][hx] = hr
     CountUncached['*'] += 1 

@@ -12,7 +12,7 @@ end
 clearcache()
  
 # recursive construction and one and zero
-x0 = SurrealFinite("0", ϕ,   ϕ)  
+x0 = SurrealFinite("0", ϕ,  ϕ)  
 x1 = SurrealFinite("1", [x0], ϕ)
 x11 = SurrealFinite("-1", ϕ,  [x0])
 x111  = SurrealDyadic("-1", ϕ,  [x0])
@@ -458,8 +458,9 @@ d33 = dali(33//2)
     @test SurrealNumbers.ExistingSurreals[ SurrealNumbers.ExistingCanonicals[-1//2] ] == -1//2
     # don't use hardcoded hash values: @test SurrealNumbers.ExistingSurreals[ SurrealNumbers.ExistingProducts[0x013b60c22ac142fa][0x84037d1bb0afff04] ] == -1
     clearcache()
-    @test isempty(SurrealNumbers.ExistingSurreals)
+    # @test isempty(SurrealNumbers.ExistingSurreals) # this one is never completely emptied
     @test isempty(SurrealNumbers.ExistingCanonicals)
+    @test isempty(SurrealNumbers.ExistingConversions)
     @test isempty(SurrealNumbers.ExistingProducts)
     @test isempty(SurrealNumbers.ExistingSums)
     @test isempty(SurrealNumbers.ExistingNegations)
@@ -468,18 +469,18 @@ d33 = dali(33//2)
 
     m = dali(2) * dali(2)
     @test Count['≤'] == 21
-    @test Count['='] == 0
-    @test Count['c'] == 12
-    @test Count['*'] == 10
-    @test Count['+'] == 20
-    @test Count['-'] == 4
+    @test Count['='] == 2
+    @test Count['c'] == 10
+    @test Count['*'] == 4
+    @test Count['+'] == 16
+    @test Count['-'] == 2
 
     @test CountUncached['≤'] == 15
-    @test CountUncached['='] == 0
+    @test CountUncached['='] == 1
     @test CountUncached['c'] == 0
-    @test CountUncached['*'] == 6
-    @test CountUncached['+'] == 13
-    @test CountUncached['-'] == 4
+    @test CountUncached['*'] == 3
+    @test CountUncached['+'] == 12
+    @test CountUncached['-'] == 2
 
     hx = hash( dali(2) )
     @test ExistingProducts[hx][hx] == hash(m)
