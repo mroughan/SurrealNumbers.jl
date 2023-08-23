@@ -15,7 +15,7 @@ export SurrealZero, SurrealOne, SurrealMinusOne, SurrealTwo, SurrealMinusTwo, Su
 # eventually these will be removed, but they are convenient for testing
 export ExistingSurreals, ExistingConversions, ExistingCanonicals, ExistingProducts,
         ExistingSums, ExistingSums2, ExistingNegations, 
-        ExistingEQ, ExistingLEQ, ExistingLEQ1, ExistingLEQ2, 
+        ExistingEQ, ExistingLEQ, #ExistingLEQ1, ExistingLEQ2, ExistingGT,
         Count, CountUncached
 export clearcache, cache_stats, cache_stats_summary
 

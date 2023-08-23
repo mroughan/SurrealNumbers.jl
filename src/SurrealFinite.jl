@@ -114,8 +114,9 @@ function clearcache()
     global ExistingConversions 
     global ExistingCanonicals 
     global ExistingLEQ
-    global ExistingLEQ1
-    global ExistingLEQ2
+    # global ExistingLEQ1
+    # global ExistingLEQ2
+    # global ExistingGT
     global ExistingEQ
     global ExistingProducts
     global ExistingSums
@@ -133,8 +134,9 @@ function clearcache()
     empty!(ExistingConversions)
     empty!(ExistingCanonicals)
     empty!(ExistingLEQ)
-    empty!(ExistingLEQ1)
-    empty!(ExistingLEQ2)
+    # empty!(ExistingLEQ1)
+    # empty!(ExistingLEQ2)
+    # empty!(ExistingGT)
     empty!(ExistingEQ)
     empty!(ExistingProducts)
     empty!(ExistingSums)
@@ -338,9 +340,6 @@ one(::SurrealFinite)  = SurrealOne  # always use the same one
 # ↑ = one(SurrealFinite)  # this causes an error???
 # ↓ = -one(SurrealFinite)  
 
-const ExistingLEQ1 = SwissDict{UInt64, SwissDict{UInt64,Bool}}() 
-const ExistingLEQ2 = SwissDict{UInt64, SwissDict{UInt64,Bool}}()
-
 # relations: the latest version uses the fact that letf and right sets are sorted
 function leq_without_cache(x::SurrealFinite, y::SurrealFinite)
     global CountUncached
@@ -367,6 +366,41 @@ function leq(x::SurrealFinite, y::SurrealFinite)
     end 
     return ExistingLEQ[hx][hy]
 end
+
+# using SparseArrays
+# const ExistingLEQ1 = spzeros(Bool, 2^16, 2^16)
+# const ExistingGT1  = spzeros(Bool, 2^16, 2^16)
+
+# using sets is slower, and uses more memory ????
+# const ExistingLEQ2 = Dict{UInt64, Set{UInt64}}()
+# const ExistingGT = Dict{UInt64, Set{UInt64}}()
+# function leq2(x::SurrealFinite, y::SurrealFinite)
+#     global Count
+#     Count['≤'] += 1
+#     global ExistingLEQ2
+#     global ExistingGT
+#     hx = hash(x)
+#     hy = hash(y)
+#     if !haskey(ExistingLEQ2, hx)
+#         ExistingLEQ2[hx] = Set{UInt64}()
+#     end         
+#     if !haskey(ExistingGT, hx)
+#         ExistingGT[hx] = Set{UInt64}()
+#     end
+#     if in(hy, ExistingLEQ2[hx] )
+#         return true
+#     elseif in(hy, ExistingGT[hx] )
+#         return false
+#     else
+#         result = leq_without_cache(x, y)
+#     end 
+#     if result
+#         push!( ExistingLEQ2[hx], hy)
+#     else    
+#         push!( ExistingGT[hx], hy)
+#     end 
+#     return result
+# end
 
 <=(x::SurrealFinite, y::SurrealFinite) = leq(x, y)
 <(x::SurrealFinite, y::SurrealFinite) = x<=y && !(y<=x)
