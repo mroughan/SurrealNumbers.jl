@@ -403,7 +403,7 @@ end
 # end
 
 <=(x::SurrealFinite, y::SurrealFinite) = leq(x, y)
-<(x::SurrealFinite, y::SurrealFinite) = x<=y && !(y<=x)
+<(x::SurrealFinite, y::SurrealFinite) = !(y<=x)
 # ===(x::SurrealFinite, y::SurrealFinite) = x<=y && y<x # causes an error
 #   === is 'egal', and hardcoded for mutables to test they are same object in memory
 ≅(x::SurrealFinite, y::SurrealFinite) = x<=y && y<=x
