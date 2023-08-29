@@ -1313,26 +1313,25 @@ function ceil(T::Type, s::SurrealFinite)
     if isinteger(s)
         return floor(T,s)
     else
-        return floor(T,s) + 1
+        return floor(T,s+1) 
     end
 end
 ceil(s::SurrealFinite) = ceil(SurrealFinite, s)
 
-# implicit rounding mode is 'RoundNearestTiesUp'
-#   to be consistent, should do the other rounding modes, and a precision, but the latter is hard
-function round(s::SurrealFinite, r::RoundingMode )
-    if r==RoundNearest || r==RoundNearestTiesUp
-        return floor(s + 1//2)
-    elseif r==RoundUp
-        return ceil(s)
-    elseif r==RoundDown
-        return floor(s)
-    end
-end
-round(s::SurrealFinite) = round(s, RoundNearest)
-
 trunc(T::Type, s::SurrealFinite) = s>=0 ? floor(T,s) : -floor(T,-s)
 trunc(s::SurrealFinite) = trunc(SurrealFinite, s)
+
+# implicit rounding mode is 'RoundNearestTiesUp'
+#   to be consistent, should do a precision, but is hard, and probably should just throw an error
+round(s::SurrealFinite, r::RoundingMode{:ToZero})  = trunc(s)
+round(s::SurrealFinite, r::RoundingMode{:Down})    = floor(s)
+round(s::SurrealFinite, r::RoundingMode{:Up})      = ceil(s)
+round(s::SurrealFinite, r::RoundingMode{:Nearest}) = floor(s + 1//2)
+
+# fallbacks
+# floor(::Type{T}, x::AbstractFloat) where {T<:Integer} = trunc(T,round(x, RoundDown))
+# ceil(::Type{T}, x::AbstractFloat) where {T<:Integer} = trunc(T,round(x, RoundUp))
+# round(::Type{T}, x::AbstractFloat) where {T<:Integer} = trunc(T,round(x, RoundNearest))
 
 
 # this should still be rewritten in terms of searches

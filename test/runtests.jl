@@ -214,12 +214,19 @@ V = [-6.25, -4.0, -3.25, -2.5, -2.0, -1.625, -1.0, -0.25, 0.0, 1.0, 7.0, 0.5, 1.
     @test floor(-x4) == zero(x4)
     for v in V
         println("    testing value v = $v")
-        @test floor( convert(SurrealFinite, v) ) ≅ floor( v )
-        @test floor( Int, convert(SurrealFinite, v) ) == floor( v )
-        @test ceil( convert(SurrealFinite, v) ) ≅ ceil( v )
-        @test round( convert(SurrealFinite, v) ) ≅ round( v, RoundNearestTiesUp )
-        @test trunc( convert(SurrealFinite, v) ) ≅ trunc( v )
-        @test isinteger( convert(SurrealFinite, v) ) == isinteger( v )
+        sv = convert(SurrealFinite, v)
+        @test floor( sv ) ≅ floor( v )
+        @test floor( Int, sv ) == floor( v )
+        @test ceil( sv ) ≅ ceil( v )
+        @test round( sv ) ≅ round( v, RoundNearestTiesUp )
+
+        @test round(sv, RoundToZero)  == convert(SurrealFinite, trunc(v))
+        @test round(sv, RoundDown)    == convert(SurrealFinite, floor(v))
+        @test round(sv, RoundUp)      == convert(SurrealFinite, ceil(v))
+        @test round(sv, RoundNearest) == convert(SurrealFinite, floor(v + 1//2))
+
+        @test trunc( sv ) ≅ trunc( v )
+        @test isinteger( sv ) == isinteger( v )
     end
     @test_throws ErrorException floor( convert(SurrealFinite, 10000) )
     @test_throws ErrorException floor( convert(SurrealFinite, -10000) )
