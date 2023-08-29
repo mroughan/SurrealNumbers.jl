@@ -81,17 +81,19 @@ hash(X::Vector{SurrealFinite}, h::UInt64) = hash( hash(X), h )
 # originally had things like 
 #     ExistingProducts = Dict{SurrealFinite, Dict{SurrealFinite,SurrealFinite}}()
 # but seem simpler to have an extra level of redirect to ensure fixed size, but maybe that is misguided?
-const ExistingSurreals = Dict{UInt64, SurrealFinite}()
+const ExistingSurreals  = Dict{UInt64, SurrealFinite}()
 const ExistingConversions = Dict{UInt64,Rational}()
 const ExistingCanonicals = Dict{Rational,UInt64}()
 # const ExistingLEQ       = Dict{UInt64, Dict{UInt64,Bool}}() 
 const ExistingLEQ       = SwissDict{UInt64, SwissDict{UInt64,Bool}}() # small improvement from SwissDict, particullary on mem use
-const ExistingEQ       = Dict{UInt64, Dict{UInt64,Bool}}() 
-const ExistingProducts   = Dict{UInt64, Dict{UInt64,UInt64}}()
-# const ExistingSums       = Dict{UInt64, Dict{UInt64,UInt64}}() 
-const ExistingSums   = SwissDict{UInt64, SwissDict{UInt64,UInt64}}() # small improvement obtained from SwissDict
-const ExistingSums2   = SwissDict{UInt64, UInt64}() 
-const ExistingNegations  = Dict{UInt64, UInt64}() 
+const ExistingLEQ1      = SwissDict{UInt64, SwissDict{UInt64,Bool}}() # small improvement from SwissDict, particullary on mem use
+const ExistingLEQ2      = SwissDict{UInt64, SwissDict{UInt64,Int64}}() # small improvement from SwissDict, particullary on mem use
+const ExistingEQ        = Dict{UInt64, Dict{UInt64,Bool}}() 
+const ExistingProducts  = Dict{UInt64, Dict{UInt64,UInt64}}()
+# const ExistingSums      = Dict{UInt64, Dict{UInt64,UInt64}}() 
+const ExistingSums      = SwissDict{UInt64, SwissDict{UInt64,UInt64}}() # small improvement obtained from SwissDict
+const ExistingSums2     = SwissDict{UInt64, UInt64}() # flat version, not used at the moment
+const ExistingNegations = Dict{UInt64, UInt64}() 
 const Count         = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
 const CountUncached = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
 
@@ -114,8 +116,8 @@ function clearcache()
     global ExistingConversions 
     global ExistingCanonicals 
     global ExistingLEQ
-    # global ExistingLEQ1
-    # global ExistingLEQ2
+    global ExistingLEQ1
+    global ExistingLEQ2
     # global ExistingGT
     global ExistingEQ
     global ExistingProducts
@@ -134,8 +136,8 @@ function clearcache()
     empty!(ExistingConversions)
     empty!(ExistingCanonicals)
     empty!(ExistingLEQ)
-    # empty!(ExistingLEQ1)
-    # empty!(ExistingLEQ2)
+    empty!(ExistingLEQ1)
+    empty!(ExistingLEQ2)
     # empty!(ExistingGT)
     empty!(ExistingEQ)
     empty!(ExistingProducts)
@@ -165,6 +167,21 @@ function cache_stats( C::AbstractDict{S, T} ) where {T <: Any, S <: Number}
     end 
     return total_bytes1, total_bytes2, total_entries1, total_entries2
 end 
+
+function cache_stats_LEQcount( )
+    C = ExistingLEQ2
+    m = 1000
+    x = collect( -m: 1 : m )
+    y = zeros(Int, size(x) )
+    for k1 in keys(C)
+        for k2 in keys( C[k1] )
+            y[ C[k1][k2] + m + 1 ] += 1
+        end
+    end
+    k = findall(y .> 0)
+    return x[k], y[k]
+end 
+
 
 function convert(::Type{SurrealFinite}, n::Int )  
     global ExistingSurreals 
@@ -342,6 +359,7 @@ one(::SurrealFinite)  = SurrealOne  # always use the same one
 
 # relations: the latest version uses the fact that letf and right sets are sorted
 function leq_without_cache(x::SurrealFinite, y::SurrealFinite)
+    # slightly misnamed -- it can use the cache for recursed calculations, just not at the top level
     global CountUncached
     CountUncached['≤'] += 1
     if !isempty(x.L) && leq(y, x.L[end])
@@ -352,11 +370,12 @@ function leq_without_cache(x::SurrealFinite, y::SurrealFinite)
         return true
     end
 end
-function leq(x::SurrealFinite, y::SurrealFinite)
+function leq_0(x::SurrealFinite, y::SurrealFinite)
+    # simple direct cache
     global Count
     Count['≤'] += 1
     global ExistingLEQ
-    hx = hash(x)
+    hx = hash(x) 
     hy = hash(y)
     if !haskey(ExistingLEQ, hx)
         ExistingLEQ[hx] = Dict{UInt64,Bool}()
@@ -366,8 +385,69 @@ function leq(x::SurrealFinite, y::SurrealFinite)
     end 
     return ExistingLEQ[hx][hy]
 end
+function leq_1(x::SurrealFinite, y::SurrealFinite)
+    # this version uses a second, hopefully smaller cache that might speed things up (but doesn't)
+    #   but it really needs that the big cache be pruned at some point, because memory efficiency is the big deal here
+    global Count
+    Count['≤'] += 1
+    global ExistingLEQ
+    global ExistingLEQ1
+    hx = hash(x)
+    hy = hash(y)
+    if haskey(ExistingLEQ1, hx) && haskey(ExistingLEQ1[hx], hy)
+        return ExistingLEQ1[hx][hy]
+    end
+    if !haskey(ExistingLEQ, hx)
+        ExistingLEQ[hx] = Dict{UInt64,Bool}()
+    end
+    if !haskey(ExistingLEQ1, hx)
+        ExistingLEQ1[hx] = Dict{UInt64,Bool}()
+    end
+    if !haskey(ExistingLEQ[hx], hy)
+        ExistingLEQ[hx][hy] = leq_without_cache(x, y)
+    else
+        ExistingLEQ1[hx][hy] = ExistingLEQ[hx][hy]
+    end 
+    return ExistingLEQ[hx][hy]
+end
+function leq_2(x::SurrealFinite, y::SurrealFinite)
+    # this version counts repeated hits on the cache
+    global Count
+    Count['≤'] += 1
+    global ExistingLEQ
+    global ExistingLEQ2
+    hx = hash(x)
+    hy = hash(y)
+    if haskey(ExistingLEQ2, hx) && haskey(ExistingLEQ2[hx], hy)
+        ExistingLEQ2[hx][hy] += sign( ExistingLEQ2[hx][hy] )
+        if ExistingLEQ2[hx][hy] > 0
+            return true
+        elseif ExistingLEQ2[hx][hy] < 0
+            return false
+        else
+            error("The second level cache should never be zero")
+        end
+    end
+    if !haskey(ExistingLEQ, hx)
+        ExistingLEQ[hx] = Dict{UInt64,Bool}()
+    end         
+    if !haskey(ExistingLEQ2, hx)
+        ExistingLEQ1[hx] = Dict{UInt64,Int}()
+    end
+    if !haskey(ExistingLEQ[hx], hy)
+        ExistingLEQ[hx][hy] = leq_without_cache(x, y)
+    else
+        if ExistingLEQ[hx][hy]
+            ExistingLEQ2[hx][hy] = 1
+        else
+            ExistingLEQ2[hx][hy] = -1
+        end
+    end 
+    return ExistingLEQ[hx][hy]
+end
+leq(x::SurrealFinite, y::SurrealFinite) = leq_1(x,y)
 
-# using SparseArrays
+# using SparseArrays doesn't seem to work as there is a massive hit to create a big enough sparse array even though empty
 # const ExistingLEQ1 = spzeros(Bool, 2^16, 2^16)
 # const ExistingGT1  = spzeros(Bool, 2^16, 2^16)
 
@@ -1288,9 +1368,10 @@ isancestor(s::SurrealFinite, t::SurrealFinite) = s ⪯ t && s!=t
 ############################################
 
 # extra analysis functions
+abstract type SurrealStats end
 
 # structure to hold stats on a surreal form
-struct SurrealDAGstats
+struct SurrealDAGstats <: SurrealStats
     nodes::Int64 # nodes in its DAG
     tree_nodes::Int64 # nodes in a tree-based representation of the graph
     edges::Int64 # edges in its DAG
@@ -1303,7 +1384,20 @@ struct SurrealDAGstats
     n_zeros::Int64 # number of nodes with value zero: only calculate if V switch is true
     max_width::Int64
 end
-function ==(a::T, b::T) where T <: SurrealDAGstats
+
+mutable struct SurrealDegreeDist <: SurrealStats
+    s::SurrealFinite
+    nodes::Int64
+    in_degree::Dict{UInt64, Int64}
+    out_degree::Dict{UInt64, Int64}
+    left_in_degree::Dict{UInt64, Int64}
+    left_out_degree::Dict{UInt64, Int64}
+    right_in_degree::Dict{UInt64, Int64}
+    right_out_degree::Dict{UInt64, Int64}
+end
+SurrealDegreeDist(s::SurrealFinite) = SurrealDegreeDist( s, 0, Dict{UInt64, Int64}(), Dict{UInt64, Int64}(), Dict{UInt64, Int64}(), Dict{UInt64, Int64}(), Dict{UInt64, Int64}(), Dict{UInt64, Int64}() )
+
+function ==(a::T, b::T) where T <: SurrealStats
     for name in fieldnames(T)
         if getfield(a,name) != getfield(b,name)
             return false
@@ -1312,11 +1406,103 @@ function ==(a::T, b::T) where T <: SurrealDAGstats
     return true
 end 
 
+#   keep local cache for this calculation because some stats of each form in this DAG are different depending on context
+function degree_stats( s::SurrealFinite, stats::SurrealDegreeDist, processed_list::Dict{SurrealFinite,Bool}; ) 
+    h = hash(s)
+    P = parents(s)
+    stats.nodes += 1
+    stats.in_degree[h] = length(P) # in degree is the number of parents of a node
+    stats.left_in_degree[h] = length(s.L) # in degree is the number of parents of a node
+    stats.right_in_degree[h] = length(s.R) # in degree is the number of parents of a node
+    if !haskey(stats.out_degree, h)
+        stats.out_degree[h] = 0 # its not currently a parent of anything
+        stats.left_out_degree[h] = 0 # its not currently a parent of anything
+        stats.right_out_degree[h] = 0 # its not currently a parent of anything
+    end
+    for p in P
+        if !haskey(stats.out_degree, hash(p))
+            stats.out_degree[hash(p)] = 1
+            if p in s.L
+                stats.left_out_degree[hash(p)] = 1
+                stats.right_out_degree[hash(p)] = 0
+            elseif p in s.R
+                stats.left_out_degree[hash(p)] = 0
+                stats.right_out_degree[hash(p)] = 1
+            else
+                error("  parent is neighter left or right")
+            end
+        else
+            stats.out_degree[hash(p)] += 1
+            if p in s.L
+                stats.left_out_degree[hash(p)] += 1
+            elseif p in s.R
+                stats.right_out_degree[hash(p)] += 1
+            else
+                error("  parent is neighter left or right")
+            end
+        end
+        if !haskey(processed_list, p)
+            (stats, processed_list) = degree_stats( p, stats, processed_list )
+        end  
+    end
+    processed_list[s] = true
+    return ( stats, processed_list )  
+end
+function print_degree_stats( stats )
+    println("degree stats for $(stats.s) with $(stats.nodes) nodes")
+    for x in keys(stats.in_degree)
+        println("   \"$(ExistingSurreals[x])\", $(stats.in_degree[x]), $(stats.out_degree[x]), $(stats.left_in_degree[x]), $(stats.left_out_degree[x]), $(stats.right_in_degree[x]), $(stats.right_out_degree[x])") 
+    end
+#     println("  in degrees")
+#    for x in keys(stats.in_degree)
+#        println("   $(ExistingSurreals[x]): $(stats.in_degree[x])") 
+#   end
+#    println("  out degrees")
+#    for x in keys(stats.out_degree)
+#        println("   $(ExistingSurreals[x]): $(stats.out_degree[x])")         
+#    end
+end
+function degree_dist( stats )
+    in_degrees = [ stats.in_degree[x] for x in keys(stats.in_degree)]
+    out_degrees = [ stats.out_degree[x] for x in keys(stats.in_degree)]
+    left_in_degrees = [ stats.left_in_degree[x] for x in keys(stats.in_degree)]
+    left_out_degrees = [ stats.left_out_degree[x] for x in keys(stats.in_degree)]
+    right_in_degrees = [ stats.right_in_degree[x] for x in keys(stats.in_degree)]
+    right_out_degrees = [ stats.right_out_degree[x] for x in keys(stats.in_degree)]
+    
+    max_degree = max( maximum(in_degrees), maximum(out_degrees) )
+    in_deg_dist = zeros(Int64, max_degree+1)
+    out_deg_dist = zeros(Int64, max_degree+1)
+    left_in_deg_dist = zeros(Int64, max_degree+1)
+    left_out_deg_dist = zeros(Int64, max_degree+1)
+    right_in_deg_dist = zeros(Int64, max_degree+1)
+    right_out_deg_dist = zeros(Int64, max_degree+1)
+    
+    for n in in_degrees
+        in_deg_dist[n+1] += 1
+    end
+    for n in out_degrees
+        out_deg_dist[n+1] += 1
+    end 
+    for n in left_in_degrees
+        left_in_deg_dist[n+1] += 1
+    end
+    for n in left_out_degrees
+        left_out_deg_dist[n+1] += 1
+    end 
+    for n in right_in_degrees
+        right_in_deg_dist[n+1] += 1
+    end
+    for n in right_out_degrees
+        right_out_deg_dist[n+1] += 1
+    end 
+    return in_deg_dist, out_deg_dist, left_in_deg_dist, left_out_deg_dist, right_in_deg_dist, right_out_deg_dist
+end
 
 #    LP=true means keep track of a longest path
 #    V =true means keep track of values
-# have these as switches, because they are expensive to calculate on large DAGs 
-function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealDAGstats}; LP=false, V=true) 
+# have these as switches, because they are expensive to calculate on large DAGs
+function dag_stats( s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealDAGstats}; LP=false, V=true) 
     if s == zero(s)    
         nodes = 1  
         tree_nodes = 1
@@ -1343,7 +1529,7 @@ function dag_stats(s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealD
         n_zeros = V ? Int64(value == 0) : 0
         max_width = length(P)
         for p in P 
-            if !haskey(processed_list, p)
+             if !haskey(processed_list, p)
                 (stats,l) = dag_stats(p, processed_list; LP=LP, V=V) 
                 nodes += stats.nodes 
                 edges += stats.edges 
