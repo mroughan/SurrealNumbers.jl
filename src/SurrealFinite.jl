@@ -2,6 +2,7 @@ mutable struct SurrealFinite <: Surreal
     # mutable means I can set the hash value when I need it, instead of
     #   (i) always having to calculate it recursively
     #   (ii) calculating it for even temporary surreals
+    # but now version doesn't need it, its just faster for reasons???, and avoids some errors??? 
     shorthand::String 
     L::Vector{SurrealFinite}  
     R::Vector{SurrealFinite}
@@ -21,16 +22,17 @@ mutable struct SurrealFinite <: Surreal
         # use the fact they are sorted to not do a complete comparison for <=
         # also means that == is much easier than if they were unsorted
         if isempty(L) || isempty(R) || L[end] < R[1]
-            tmp = new(shorthand, L, R, h)
-            h_tmp = hash(tmp) # can't have hash value as an input, has to be calculated
-            if !haskey(ExistingSurreals, h_tmp)
+            h = hash(L, R)
+            # tmp = new(shorthand, L, R, 0)
+            # h_tmp = hash(tmp) # can't have hash value as an input, has to be calculated
+            if !haskey(ExistingSurreals, h)
                 # make sure every surreal we have calculated a hash for is registered
-                ExistingSurreals[h_tmp] = tmp
+                ExistingSurreals[h] = new(shorthand, L, R, h)
             else
                 # if this version somehow got created separately, then reuse the existing version
-                tmp = ExistingSurreals[h_tmp] # noting this is changing the input ...
+                #  but that is a no-op in the current version
             end
-            return tmp
+            return ExistingSurreals[h]
         else 
             error("Surreal number must have L < R (currently the extreme values are $(L[end]) and $(R[1]) )") 
         end  
@@ -48,11 +50,15 @@ const SurrealDyadic = SurrealFinite
 function hash(x::SurrealFinite)
     if x.h == 0
         x.h = hash(x.L, zero(UInt64) ) * hash(x.R, one(UInt64) )
-        # this is only used on construction
+        # this branch is only used on construction, in fact, not even there now
         # note we don't include shorthand or hash in calculation of hash
         #    -- they former doesn't matter, the latter would be circular
     end
     return x.h
+end
+
+function hash( L::Vector{SurrealFinite}, R::Vector{SurrealFinite})
+    return hash(L, zero(UInt64) ) * hash(R, one(UInt64) )
 end
 hash(x::SurrealFinite, h::Integer) = hash(x, convert(UInt64, h) )
 function hash(X::Vector{SurrealFinite}) # effectively depth first???
@@ -94,6 +100,7 @@ const ExistingProducts  = Dict{UInt64, Dict{UInt64,UInt64}}()
 const ExistingSums      = SwissDict{UInt64, SwissDict{UInt64,UInt64}}() # small improvement obtained from SwissDict
 const ExistingSums2     = SwissDict{UInt64, UInt64}() # flat version, not used at the moment
 const ExistingNegations = Dict{UInt64, UInt64}() 
+const ExistingFloors    = Dict{UInt64, Int64}() 
 const Count         = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
 const CountUncached = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
 
@@ -123,16 +130,20 @@ function clearcache()
     global ExistingProducts
     global ExistingSums
     global ExistingSums2
-    global ExistingNegations 
+    global ExistingNegations
+    global ExistingFloors    
     global Count
     global CountUncached
-    empty!(ExistingSurreals)
-    ExistingSurreals[ hash(SurrealZero) ] = SurrealZero
-    ExistingSurreals[ hash(SurrealOne) ] = SurrealOne
-    ExistingSurreals[ hash(SurrealMinusOne) ] = SurrealMinusOne
-    ExistingSurreals[ hash(SurrealTwo) ] = SurrealTwo
-    ExistingSurreals[ hash(SurrealThree) ] = SurrealThree
-    ExistingSurreals[ hash(SurrealMinusTwo) ] = SurrealMinusTwo
+
+    # can't really empty this cache, or it breaks things, and doesn't reduce costs much anyway
+    # empty!(ExistingSurreals)
+    # ExistingSurreals[ hash(SurrealZero) ] = SurrealZero
+    # ExistingSurreals[ hash(SurrealOne) ] = SurrealOne
+    # ExistingSurreals[ hash(SurrealMinusOne) ] = SurrealMinusOne
+    # ExistingSurreals[ hash(SurrealTwo) ] = SurrealTwo
+    # ExistingSurreals[ hash(SurrealThree) ] = SurrealThree
+    # ExistingSurreals[ hash(SurrealMinusTwo) ] = SurrealMinusTwo
+    
     empty!(ExistingConversions)
     empty!(ExistingCanonicals)
     empty!(ExistingLEQ)
@@ -144,6 +155,8 @@ function clearcache()
     empty!(ExistingSums)
     empty!(ExistingSums2)
     empty!(ExistingNegations)
+    empty!(ExistingFloors)
+    
     reset!(Count)
     reset!(CountUncached)
     return 1
@@ -1235,9 +1248,11 @@ sign(x::SurrealFinite) = x<zero(x) ? -one(x) : x>zero(x) ? one(x) : zero(x)
 
 # subtraction is much slower than comparison, so got rid of old versions
 # these aren't purely surreal arithmetic, but everything could be, just would be slower
- # N.B. returns canonical form of floor
+# N.B. returns canonical form of floor
 function floor(T::Type, s::SurrealFinite)
-    if s < zero(s)
+     if haskey(ExistingFloors, hash(s))
+         return convert(T, ExistingFloors[ hash(s) ])
+     elseif s < zero(s)
         if s >= -one(s)
             return -one(T)
         elseif s >= SurrealMinusTwo
@@ -1248,7 +1263,7 @@ function floor(T::Type, s::SurrealFinite)
                 k += 1
             end 
             if k==12
-                error("s is too large for the current floor function")
+                error("s is too large (and negative) for the current floor function")
             end
             a = -2^(k+1)
             b = -2^k
@@ -1260,11 +1275,14 @@ function floor(T::Type, s::SurrealFinite)
                     a = d
                 end
             end
+            ExistingFloors[ hash(s) ] = a
             return convert(T, a) 
         end
     elseif s < one(s) 
+        ExistingFloors[ hash(s) ] = 0
         return zero(T)
     elseif s < SurrealTwo
+        ExistingFloors[ hash(s) ] = 1
         return one(T)
     else
         # start with geometric search to bound the number
@@ -1285,10 +1303,12 @@ function floor(T::Type, s::SurrealFinite)
             else
                 a = d
             end
-         end
+        end
+        ExistingFloors[ hash(s) ] = a
         return convert(T, a)
     end
 end
+floor(s::SurrealFinite) = floor(SurrealFinite, s)
 function ceil(T::Type, s::SurrealFinite)
     if isinteger(s)
         return floor(T,s)
@@ -1296,20 +1316,24 @@ function ceil(T::Type, s::SurrealFinite)
         return floor(T,s) + 1
     end
 end
+ceil(s::SurrealFinite) = ceil(SurrealFinite, s)
 
 # implicit rounding mode is 'RoundNearestTiesUp'
 #   to be consistent, should do the other rounding modes, and a precision, but the latter is hard
-function round(T::Type, s::SurrealFinite)
-    return floor(T, s + 1//2)
+function round(s::SurrealFinite, r::RoundingMode )
+    if r==RoundNearest || r==RoundNearestTiesUp
+        return floor(s + 1//2)
+    elseif r==RoundUp
+        return ceil(s)
+    elseif r==RoundDown
+        return floor(s)
+    end
 end
+round(s::SurrealFinite) = round(s, RoundNearest)
 
 trunc(T::Type, s::SurrealFinite) = s>=0 ? floor(T,s) : -floor(T,-s)
-
-# simple versions 
-floor(s::SurrealFinite) = floor(SurrealFinite, s)
-ceil(s::SurrealFinite) = ceil(SurrealFinite, s)
-round(s::SurrealFinite) = round(SurrealFinite, s)
 trunc(s::SurrealFinite) = trunc(SurrealFinite, s)
+
 
 # this should still be rewritten in terms of searches
 function mod(s::SurrealFinite, n::SurrealFinite)

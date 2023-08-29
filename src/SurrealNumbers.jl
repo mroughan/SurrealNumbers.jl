@@ -16,6 +16,7 @@ export SurrealZero, SurrealOne, SurrealMinusOne, SurrealTwo, SurrealMinusTwo, Su
 export ExistingSurreals, ExistingConversions, ExistingCanonicals, ExistingProducts,
         ExistingSums, ExistingSums2, ExistingNegations, 
         ExistingEQ, ExistingLEQ, ExistingLEQ1, ExistingLEQ2, # ExistingGT,
+        ExistingFloors,
         Count, CountUncached
 export clearcache, cache_stats, cache_stats_summary, cache_stats_LEQcount
 
