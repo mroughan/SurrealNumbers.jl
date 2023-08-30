@@ -756,8 +756,8 @@ function +(x::SurrealFinite, y::SurrealFinite)
     global check_collision_flag
     commutative = false # set to true to store y+x, everytime we calculate x+y
     Count['+'] += 1
-    hx = hash(x) # build the dictionary in terms of hashs, because it is used quite a bit
-    hy = hash(y) #   and these amortise the cost of initial calculation of hashs 
+    hx = hash(x) # build the dictionary in terms of hashs, we retain some control over them
+    hy = hash(y) # which has been useful, but at some point, should probably drop the indirection
 
     if haskey(ExistingSums, hx) && haskey(ExistingSums[hx], hy)
         return ExistingSurreals[ ExistingSums[hx][hy] ]
@@ -769,9 +769,16 @@ function +(x::SurrealFinite, y::SurrealFinite)
         result = x
     else 
         shorthand = "($(x.shorthand) + $(y.shorthand))"
-        result = SurrealFinite(shorthand,
-                               [[x + y for x in x.L]; [x + y for y in y.L]],
-                               [[x + y for x in x.R]; [x + y for y in y.R]] )
+        # trying to create the sum in close to sorted order didn't help - just wasted an extra op.
+        #if x <= y
+            result = SurrealFinite(shorthand,
+                    [[x_l + y for x_l in x.L]; [x + y_l for y_l in y.L]],
+                    [[x_r + y for x_r in x.R]; [x + y_r for y_r in y.R]] )
+        #else
+        #    result = SurrealFinite(shorthand,
+        #            [[x + y_l for y_l in y.L]; [x_l + y for x_l in x.L]],
+        #            [[x + y_r for y_r in y.R]; [x_r + y for x_r in x.R]] )
+        #end
         #       result = SurrealFinite( [x.L .+ y; x .+ y.L],   # dot syntax was a fair but slower than comprehensions
         #                               [x.R .+ y; x .+ y.R] )
     end
