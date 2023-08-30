@@ -96,6 +96,7 @@ const ExistingCanonicalsC = Dict{UInt64,Bool}()
 const ExistingLEQ       = SwissDict{UInt64, SwissDict{UInt64,Bool}}() # small improvement from SwissDict, particullary on mem use
 const ExistingLEQ1      = SwissDict{UInt64, SwissDict{UInt64,Bool}}() # small improvement from SwissDict, particullary on mem use
 const ExistingLEQ2      = SwissDict{UInt64, SwissDict{UInt64,Int64}}() # small improvement from SwissDict, particullary on mem use
+const ExistingLEQ3      = SwissDict{Tuple{UInt64, UInt64},Bool}() # flat version is nearly twice as big???
 const ExistingEQ        = Dict{UInt64, Dict{UInt64,Bool}}() 
 const ExistingProducts  = Dict{UInt64, Dict{UInt64,UInt64}}()
 # const ExistingSums      = Dict{UInt64, Dict{UInt64,UInt64}}() 
@@ -408,6 +409,18 @@ function leq_0(x::SurrealFinite, y::SurrealFinite)
     end 
     return ExistingLEQ[hx][hy]
 end
+function leq_02(x::SurrealFinite, y::SurrealFinite)
+    # simple direct cache
+    global Count
+    Count['≤'] += 1
+    global ExistingLEQ3
+    hx = hash(x) 
+    hy = hash(y)        
+    if !haskey(ExistingLEQ3, (hx,hy))
+        ExistingLEQ3[(hx,hy)] = leq_without_cache(x, y)
+    end 
+    return ExistingLEQ3[(hx,hy)]
+end
 function leq_01(x::SurrealFinite, y::SurrealFinite)
     # simple direct cache
     global Count
@@ -497,7 +510,7 @@ function leq_2(x::SurrealFinite, y::SurrealFinite)
     end 
     return ExistingLEQ[hx][hy]
 end
-leq(x::SurrealFinite, y::SurrealFinite) = leq_01(x,y)
+leq(x::SurrealFinite, y::SurrealFinite) = leq_0(x,y)
 
 # using SparseArrays doesn't seem to work as there is a massive hit to create a big enough sparse array even though empty
 # const ExistingLEQ1 = spzeros(Bool, 2^16, 2^16)
@@ -734,6 +747,7 @@ end
 #     return result
 # end
 
+
 function +(x::SurrealFinite, y::SurrealFinite)
     global ExistingSurreals 
     global ExistingSums
@@ -744,6 +758,7 @@ function +(x::SurrealFinite, y::SurrealFinite)
     Count['+'] += 1
     hx = hash(x) # build the dictionary in terms of hashs, because it is used quite a bit
     hy = hash(y) #   and these amortise the cost of initial calculation of hashs 
+
     if haskey(ExistingSums, hx) && haskey(ExistingSums[hx], hy)
         return ExistingSurreals[ ExistingSums[hx][hy] ]
     elseif !commutative && haskey(ExistingSums, hy) && haskey(ExistingSums[hy], hx)
@@ -810,6 +825,7 @@ function *(x::SurrealFinite, y::SurrealFinite)
     Count['*'] += 1 
     hx = hash(x)
     hy = hash(y)
+
     if haskey(ExistingProducts, hx) && haskey(ExistingProducts[hx], hy)
         return ExistingSurreals[ ExistingProducts[hx][hy] ]
     elseif iszero(x) || iszero(y) 
