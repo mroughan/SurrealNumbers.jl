@@ -47,6 +47,7 @@ SurrealFinite(L::AbstractArray, R::AbstractArray ) =
 const SurrealShort  = SurrealFinite 
 const SurrealDyadic = SurrealFinite 
  
+
 function hash(x::SurrealFinite)
     if x.h == 0
         x.h = hash(x.L, zero(UInt64) ) * hash(x.R, one(UInt64) )
@@ -90,6 +91,7 @@ hash(X::Vector{SurrealFinite}, h::UInt64) = hash( hash(X), h )
 const ExistingSurreals  = Dict{UInt64, SurrealFinite}()
 const ExistingConversions = Dict{UInt64,Rational}()
 const ExistingCanonicals = Dict{Rational,UInt64}()
+const ExistingCanonicalsC = Dict{UInt64,Bool}()
 # const ExistingLEQ       = Dict{UInt64, Dict{UInt64,Bool}}() 
 const ExistingLEQ       = SwissDict{UInt64, SwissDict{UInt64,Bool}}() # small improvement from SwissDict, particullary on mem use
 const ExistingLEQ1      = SwissDict{UInt64, SwissDict{UInt64,Bool}}() # small improvement from SwissDict, particullary on mem use
@@ -101,9 +103,28 @@ const ExistingSums      = SwissDict{UInt64, SwissDict{UInt64,UInt64}}() # small 
 const ExistingSums2     = SwissDict{UInt64, UInt64}() # flat version, not used at the moment
 const ExistingNegations = Dict{UInt64, UInt64}() 
 const ExistingFloors    = Dict{UInt64, Int64}() 
+const ExistingIntegers    = Dict{UInt64, Bool}() 
+const ExistingCanonicalIntegers    = Dict{UInt64, Bool}() 
 const Count         = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
 const CountUncached = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
 
+
+# const ϕ = SVector{0,SurrealFinite}()
+const ϕ = Array{SurrealFinite,1}(undef,0) # empty array of SurrealFinites
+const ∅ = ϕ
+
+const SurrealZero = SurrealFinite("0", ϕ, ϕ )
+const SurrealOne  = SurrealFinite("1", [SurrealZero], ϕ ) 
+const SurrealTwo  = SurrealFinite("2", [SurrealOne], ϕ ) 
+const SurrealThree  = SurrealFinite("3", [SurrealTwo], ϕ )  
+const SurrealMinusOne  = SurrealFinite("-1", ϕ, [SurrealZero] ) 
+const SurrealMinusTwo  = SurrealFinite("-2", ϕ, [SurrealMinusOne] ) 
+zero(::SurrealFinite) = SurrealZero # always use the same zero
+one(::SurrealFinite)  = SurrealOne  # always use the same one
+zero(::Type{T}) where T<:Surreal = SurrealZero # use the fast version, not Julia's default with conversion
+one(::Type{T}) where T<:Surreal  = SurrealOne  # use the fast version, not Julia's default with conversion
+# ↑ = one(SurrealFinite)  # this causes an error???
+# ↓ = -one(SurrealFinite)  
 
 
 const check_collision_flag = false # set this to be true to do a (slow) diagnostic check of hash collisions
@@ -122,6 +143,7 @@ function clearcache()
     global ExistingSurreals 
     global ExistingConversions 
     global ExistingCanonicals 
+    global ExistingCanonicalsC
     global ExistingLEQ
     global ExistingLEQ1
     global ExistingLEQ2
@@ -132,20 +154,17 @@ function clearcache()
     global ExistingSums2
     global ExistingNegations
     global ExistingFloors    
+    global ExistingIntegers  
+    global ExistingCanonicalIntegers  
     global Count
     global CountUncached
 
     # can't really empty this cache, or it breaks things, and doesn't reduce costs much anyway
     # empty!(ExistingSurreals)
-    # ExistingSurreals[ hash(SurrealZero) ] = SurrealZero
-    # ExistingSurreals[ hash(SurrealOne) ] = SurrealOne
-    # ExistingSurreals[ hash(SurrealMinusOne) ] = SurrealMinusOne
-    # ExistingSurreals[ hash(SurrealTwo) ] = SurrealTwo
-    # ExistingSurreals[ hash(SurrealThree) ] = SurrealThree
-    # ExistingSurreals[ hash(SurrealMinusTwo) ] = SurrealMinusTwo
     
     empty!(ExistingConversions)
     empty!(ExistingCanonicals)
+    empty!(ExistingCanonicalsC)
     empty!(ExistingLEQ)
     empty!(ExistingLEQ1)
     empty!(ExistingLEQ2)
@@ -156,6 +175,8 @@ function clearcache()
     empty!(ExistingSums2)
     empty!(ExistingNegations)
     empty!(ExistingFloors)
+    empty!(ExistingIntegers)
+    empty!(ExistingCanonicalIntegers)
     
     reset!(Count)
     reset!(CountUncached)
@@ -214,6 +235,8 @@ function convert(::Type{SurrealFinite}, n::Int )
     end
     hr = hash(result)
     ExistingCanonicals[Rational(n)] = hr 
+    # ExistingIntegers[hr] = true
+    # ExistingFloors[hr] = n
     return result 
     # should check to make sure abs(n) is not too big, i.e., causes too much recursion
 end 
@@ -243,6 +266,8 @@ function convert(::Type{SurrealFinite}, r::Rational )
     end  
     hr = hash(result)
     ExistingCanonicals[r] = hr 
+    # ExistingIntegers[hr] = isinteger(r)
+    # ExistingFloors[hr] = floor(r)
     return result
 end
 function convert(::Type{SurrealFinite}, f::Float64 ) 
@@ -355,21 +380,6 @@ end
 # promote all numbers to surreals for calculations
 promote_rule(::Type{T}, ::Type{SurrealFinite}) where {T<:Real} = SurrealFinite
 
-# const ϕ = SVector{0,SurrealFinite}()
-const ϕ = Array{SurrealFinite,1}(undef,0) # empty array of SurrealFinites
-const ∅ = ϕ
-
-const SurrealZero = SurrealFinite("0", ϕ, ϕ ) 
-const SurrealOne  = SurrealFinite("1", [ zero(SurrealFinite) ], ϕ ) 
-const SurrealMinusOne  = SurrealFinite("-1", ϕ, [ zero(SurrealFinite) ] ) 
-const SurrealTwo  = SurrealFinite("2", [SurrealOne], ϕ ) 
-const SurrealThree  = SurrealFinite("3", [SurrealTwo], ϕ )  
-const SurrealMinusTwo  = SurrealFinite("-2", ϕ, [SurrealMinusOne] ) 
-zero(::SurrealFinite) = SurrealZero # always use the same zero
-one(::SurrealFinite)  = SurrealOne  # always use the same one
-# ↑ = one(SurrealFinite)  # this causes an error???
-# ↓ = -one(SurrealFinite)  
-
 # relations: the latest version uses the fact that letf and right sets are sorted
 function leq_without_cache(x::SurrealFinite, y::SurrealFinite)
     # slightly misnamed -- it can use the cache for recursed calculations, just not at the top level
@@ -390,6 +400,35 @@ function leq_0(x::SurrealFinite, y::SurrealFinite)
     global ExistingLEQ
     hx = hash(x) 
     hy = hash(y)
+    if !haskey(ExistingLEQ, hx)
+        ExistingLEQ[hx] = Dict{UInt64,Bool}()
+    end         
+    if !haskey(ExistingLEQ[hx], hy)
+        ExistingLEQ[hx][hy] = leq_without_cache(x, y)
+    end 
+    return ExistingLEQ[hx][hy]
+end
+function leq_01(x::SurrealFinite, y::SurrealFinite)
+    # simple direct cache
+    global Count
+    Count['≤'] += 1
+    global ExistingLEQ
+    hx = hash(x) 
+    hy = hash(y)
+    if haskey(ExistingLEQ, hx) && haskey(ExistingLEQ[hx], hy)
+        return ExistingLEQ[hx][hy]
+    end
+
+    # start by checking integer approximations
+    if haskey(ExistingFloors, hx) && haskey(ExistingFloors, hy)
+        if ExistingFloors[hx] < ExistingFloors[hy]
+            return true
+        elseif ExistingFloors[hx] > ExistingFloors[hy]
+            return false
+        end
+    end
+
+    # if floors aren't already calculated, or fx==fy, then do a more accurate comparison, and only cache these cases
     if !haskey(ExistingLEQ, hx)
         ExistingLEQ[hx] = Dict{UInt64,Bool}()
     end         
@@ -458,7 +497,7 @@ function leq_2(x::SurrealFinite, y::SurrealFinite)
     end 
     return ExistingLEQ[hx][hy]
 end
-leq(x::SurrealFinite, y::SurrealFinite) = leq_1(x,y)
+leq(x::SurrealFinite, y::SurrealFinite) = leq_01(x,y)
 
 # using SparseArrays doesn't seem to work as there is a massive hit to create a big enough sparse array even though empty
 # const ExistingLEQ1 = spzeros(Bool, 2^16, 2^16)
@@ -658,24 +697,8 @@ function -(x::SurrealFinite)
     return result
 end
 
-# somewhat incomplete (for reasons described), slightly a cheat, and potentially very slow
-function /(x::SurrealFinite, y::SurrealFinite)
-    xr = convert(Rational, x)
-    yr = convert(Rational, y) 
-    if y ≅ zero(y)
-        error(InexactError)
-    elseif y ≅ 2
-        return x * convert(SurrealFinite,  1 // 2)
-    elseif isinteger(y) && ispow2(yr.num)
-        return x * convert(SurrealFinite,  1 // yr) 
-    elseif isinteger(xr.num/yr)
-        return convert(SurrealFinite,  (xr.num/yr) // xr.den  ) 
-    else
-        error(InexactError)        
-    end
-end
-
 # # binary operators
+
 # function non_hierarchical_cache_sum(x::SurrealFinite, y::SurrealFinite)
 #     # this is used only to test whether the hierarchical cache actually improved performance
 #     global ExistingSurreals 
@@ -841,6 +864,24 @@ end
 #end 
 *(x::SurrealFinite, Y::Array{SurrealFinite}) = [ x*s for s in Y ]
 *(X::Array{SurrealFinite}, y::SurrealFinite) = y*X
+
+
+# somewhat incomplete (for reasons described), slightly a cheat, and potentially very slow
+function /(x::SurrealFinite, y::SurrealFinite)
+    xr = convert(Rational, x)
+    yr = convert(Rational, y) 
+    if y ≅ zero(y)
+        error(InexactError)
+    elseif y ≅ 2
+        return x * convert(SurrealFinite,  1 // 2)
+    elseif isinteger(y) && ispow2(yr.num)
+        return x * convert(SurrealFinite,  1 // yr) 
+    elseif isinteger(xr.num/yr)
+        return convert(SurrealFinite,  (xr.num/yr) // xr.den  ) 
+    else
+        error(InexactError)        
+    end
+end
 
 
 #####################################################3
@@ -1227,7 +1268,45 @@ julia> pf( canonicalise( convert(SurrealFinite, 1) - convert(SurrealFinite, 1) )
 ``` 
 """
 canonicalise(s::SurrealFinite) = convert(SurrealFinite, convert(Rational, s))
-iscanonical(s::SurrealFinite) = canonicalise(s) == s
+function iscanonical_old(s::SurrealFinite) 
+    global ExistingCanonicalsC
+    hs = hash(s)
+    if !haskey(ExistingCanonicalsC, hs)
+        ExistingCanonicalsC[hs] = canonicalise(s) == s
+    end
+    return ExistingCanonicalsC[hs]
+end
+function iscanonical(s::SurrealFinite)
+    global ExistingCanonicalsC
+    global SurrealZero
+    hs = hash(s)
+    if !haskey(ExistingCanonicalsC, hs)
+        if iscanonicalinteger(s)
+            ExistingCanonicalsC[hs] = true
+        elseif isinteger(s)
+            ExistingCanonicalsC[hs] = false
+        elseif length(s.L)>1 || length(s.R)>1
+            ExistingCanonicalsC[hs] = false
+        elseif length(s.L)==0 || length(s.R)==0
+            ExistingCanonicalsC[hs] = false
+        elseif s.L[1] < SurrealZero && s.R[1] > SurrealZero
+            ExistingCanonicalsC[hs] = false
+        elseif iscanonical(s.L[1]) && iscanonical(s.R[1]) 
+            # s.L[1] -- s -- s.R[1] must occur in a sequence with same difference between them
+            # m1 = s - s.L[1]
+            # m2 = s.R[1] - s
+            # or we could do s+s = s.L[1] + s.R[1]
+            if s + s ≅ s.L[1] + s.R[1]
+                ExistingCanonicalsC[hs] = true
+            else
+                ExistingCanonicalsC[hs] = false
+            end
+        else
+            ExistingCanonicalsC[hs] = false
+        end
+    end
+    return ExistingCanonicalsC[hs]
+end
 
 function unique2!( X::Array{SurrealFinite} )
     # our own unique that is based on ≅
@@ -1244,17 +1323,22 @@ end
 ###### standard math routines ##############################
 
 sign(x::SurrealFinite) = x<zero(x) ? -one(x) : x>zero(x) ? one(x) : zero(x)
-# abs(x::SurrealFinite) = x<zero(x) ? -x : x
+# abs(x::SurrealFinite) = x<zero(x) ? -x : x 
 
 # subtraction is much slower than comparison, so got rid of old versions
 # these aren't purely surreal arithmetic, but everything could be, just would be slower
 # N.B. returns canonical form of floor
 function floor(T::Type, s::SurrealFinite)
-     if haskey(ExistingFloors, hash(s))
-         return convert(T, ExistingFloors[ hash(s) ])
-     elseif s < zero(s)
-        if s >= -one(s)
-            return -one(T)
+    global ExistingFloors
+    global SurrealOne
+    global SurrealTwo
+    global SurrealMinusOne
+    global SurrealMinusTwo
+    if haskey(ExistingFloors, hash(s))
+        return convert(T, ExistingFloors[ hash(s) ])
+    elseif s < zero(s)
+        if s >= SurrealMinusOne
+            return convert(T, SurrealMinusOne)
         elseif s >= SurrealMinusTwo
             return convert(T, SurrealMinusTwo)
         else
@@ -1278,7 +1362,7 @@ function floor(T::Type, s::SurrealFinite)
             ExistingFloors[ hash(s) ] = a
             return convert(T, a) 
         end
-    elseif s < one(s) 
+    elseif s < SurrealOne
         ExistingFloors[ hash(s) ] = 0
         return zero(T)
     elseif s < SurrealTwo
@@ -1350,10 +1434,60 @@ function mod(s::SurrealFinite, n::SurrealFinite)
     end
 end
 
-function isinteger(s::SurrealFinite)
-    if s ≅ floor(s)
+function iscanonicalinteger(s::SurrealFinite)
+    global ExistingCanonicalInteger
+    global ExistingInteger
+    global SurrealZero
+    
+    hs = hash( s )
+    if haskey(ExistingCanonicalIntegers, hs)
+        return ExistingCanonicalIntegers[hs]
+    elseif iszero(s)
+        ExistingCanonicalIntegers[ hs ] = true
+        ExistingIntegers[ hs ] = true
+    elseif isempty(s.L) && length(s.R)==1 && iscanonicalinteger(s.R[1]) && s.R[1] <= SurrealZero
+        ExistingCanonicalIntegers[ hs ] = true
+        ExistingIntegers[ hs ] = true
+    elseif isempty(s.R) && length(s.L)==1 && iscanonicalinteger(s.L[1]) && s.L[1] >= SurrealZero
+        ExistingCanonicalIntegers[ hs ] = true
+        ExistingIntegers[ hs ] = true
+    else
+        ExistingCanonicalIntegers[ hs ] = false
+    end
+    return ExistingCanonicalIntegers[ hs ]
+end
+function isinteger_old(s::SurrealFinite)
+    global ExistingInteger
+
+    hs = hash( s )
+    if haskey(ExistingIntegers, hs)
+        return ExistingIntegers[hs]
+    elseif iscanonicalinteger(s)
+        return true
+    elseif s ≅ floor(s)
+        ExistingIntegers[ hs ] = true
         return true
     else
+        ExistingIntegers[ hs ] = false
+        return false
+    end
+end
+function isinteger(s::SurrealFinite)
+    global ExistingInteger
+
+    hs = hash( s )
+    if haskey(ExistingIntegers, hs)
+        return ExistingIntegers[hs]
+    elseif iscanonicalinteger(s)
+        return true
+    elseif length(s.L)==0 || length(s.R)==0
+        ExistingIntegers[ hs ] = true
+        return true
+    elseif s.L[end] + SurrealOne < s.R[1] # if the gap is more than 1, then an integer will always fit
+        ExistingIntegers[ hs ] = true
+        return true
+    else
+        ExistingIntegers[ hs ] = false
         return false
     end
 end

@@ -13,10 +13,11 @@ export Surreal, SurrealFinite, SurrealShort, SurrealDyadic, SurrealIndex
 export SurrealZero, SurrealOne, SurrealMinusOne, SurrealTwo, SurrealMinusTwo, SurrealThree, ϕ  
 
 # eventually these will be removed, but they are convenient for testing
-export ExistingSurreals, ExistingConversions, ExistingCanonicals, ExistingProducts,
+export ExistingSurreals, ExistingConversions, ExistingCanonicals, ExistingCanonicalsC, 
+        ExistingProducts,
         ExistingSums, ExistingSums2, ExistingNegations, 
         ExistingEQ, ExistingLEQ, ExistingLEQ1, ExistingLEQ2, # ExistingGT,
-        ExistingFloors,
+        ExistingFloors, ExistingIntegers, ExistingCanonicalIntegers,
         Count, CountUncached
 export clearcache, cache_stats, cache_stats_summary, cache_stats_LEQcount
 
@@ -29,7 +30,7 @@ export ∅, ϕ, <=, zero, one, ==, ≅, ≇, <, -, +, *, ≀, ↑, ↓, dag_add,
     generation, canonicalise, iscanonical, parents, isancestor, ≺, ≻, ⪯, ⪰, 
     unique2!, 
     sign, round, floor, ceil, trunc, mod, 
-    isinteger, isinf, isnan, isfinite, isodd, iseven, isdivisible, isless, isequal, leq, 
+    isinteger, iscanonicalinteger, isinf, isnan, isfinite, isodd, iseven, isdivisible, isless, isequal, leq, 
     nodes, edges, paths, tree_nodes, breadth, width, surrealDAG,
     uniqueness, uniqueness_max, uniqueness_failure,
     equivtozero

@@ -228,8 +228,8 @@ V = [-6.25, -4.0, -3.25, -2.5, -2.0, -1.625, -1.0, -0.25, 0.0, 1.0, 7.0, 0.5, 1.
         @test trunc( sv ) ≅ trunc( v )
         @test isinteger( sv ) == isinteger( v )
     end
-    @test_throws ErrorException floor( convert(SurrealFinite, 10000) )
-    @test_throws ErrorException floor( convert(SurrealFinite, -10000) )
+    # @test_throws ErrorException floor( convert(SurrealFinite, 10000) ) # caching integers and their floors means this is easy
+    # @test_throws ErrorException floor( convert(SurrealFinite, -10000) )  # caching integers and their floors means this is easy
  
     # @test floor2(zero(SurrealFinite)) ≅ 0.0
     # @test floor2(one(SurrealFinite)) ≅ 1.0
@@ -264,6 +264,32 @@ V = [-6.25, -4.0, -3.25, -2.5, -2.0, -1.625, -1.0, -0.25, 0.0, 1.0, 7.0, 0.5, 1.
     @test isinteger(x41) == true
     @test isinteger( convert(SurrealFinite,-4) ) == true
     @test isinteger( convert(SurrealFinite,-1//4) ) == false
+    @test isinteger(x00) == true
+    @test isinteger( SurrealFinite("", ϕ, [x3]) )
+    @test isinteger( SurrealFinite("", [dali(1), dali(2)], [dali(5), dali(6)]) )
+    @test !isinteger( SurrealFinite("", [dali(1), dali(2)], [dali(3)]) )
+
+    @test iscanonicalinteger(x0) == true
+    @test iscanonicalinteger(x22) == false
+    @test iscanonicalinteger(s1) == false
+    @test iscanonicalinteger(x43) == false
+    @test iscanonicalinteger(x41) == true
+    @test iscanonicalinteger( convert(SurrealFinite,-4) ) == true
+    @test iscanonicalinteger( convert(SurrealFinite,-1//4) ) == false
+    @test iscanonicalinteger(x00) == false
+    @test iscanonicalinteger(x00) == false
+    @test iscanonicalinteger( SurrealFinite("", ϕ, [x3])) == false
+
+    @test !iscanonical(x22)
+    @test !iscanonical(x00)
+    @test !iscanonical(x5)
+    @test !iscanonical(x43)
+    @test !iscanonical(SurrealFinite("", ϕ, [x3]))
+    @test iscanonical(x21)
+    @test iscanonical(x111)
+    @test iscanonical(x0)
+    @test iscanonical(x3)
+    @test iscanonical(s1)
 
     @test iseven(x0) == true
     @test iseven(x22) == true
@@ -285,8 +311,6 @@ end
     @test canonicalise(x43) ≅ convert(SurrealFinite,4)
     @test canonicalise(x43) != convert(SurrealFinite,2)*convert(SurrealFinite,2)
     @test canonicalise(x43) ≅ convert(SurrealFinite,2)*convert(SurrealFinite,2)
-    @test !iscanonical(x22)
-    @test iscanonical(x21)
 end
 
 g3 = SurrealFinite( [ 7//16 ], [ 15//16 ] )
@@ -453,7 +477,7 @@ x32 = convert(SurrealFinite, 3/4) + convert(SurrealFinite, 3/4)
   
     @test uniqueness_max(U) == 1 # this test causes an error if we do say 2*4, without the caching in +
 end
- 
+
 d33 = dali(33//2)
 @testset "memory allocation and caching" begin
     # @test Base.summarysize(  ) == 943
@@ -496,14 +520,14 @@ d33 = dali(33//2)
     @test ExistingSurreals[ hash(m) ] !== 4
 end
 
-
+c1 = dali(1) + dali(3)
+c2 = dali(2) + dali(2)
 @testset "new identity test" begin
     # it shouldn't matter how a surreal was calculated, if it is the same, it should be the same OBJECT
     # most obviously this happens with the additional of canonical, non-negative, integers, which is closed
-    c1 = dali(1) + dali(3)
-    c2 = dali(2) + dali(2)
     @test c1 == c2
     @test c1 === c2
-
 end
+
+
 
