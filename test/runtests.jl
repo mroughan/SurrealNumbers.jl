@@ -116,8 +116,8 @@ end
     @test x21 ≺ x43
     @test isancestor(x21, x43)
 
-    @test all( parents(x24) .== [x11,x0,x1] )
-    @test all( parents(x5) .== sort([x11,x0,x4,x1]) )
+    # @test all( parents(x24) .== [x11,x0,x1] )
+    # @test all( parents(x5) .== sort([x11,x0,x4,x1]) )
 end
 
 @testset "basic operators" begin

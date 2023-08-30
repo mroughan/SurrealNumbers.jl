@@ -6,43 +6,59 @@ mutable struct SurrealFinite <: Surreal
     shorthand::String 
     L::Vector{SurrealFinite}  
     R::Vector{SurrealFinite}
+    maxL::Union{SurrealFinite,Missing}
+    minR::Union{SurrealFinite,Missing}
     h::UInt64 # hash value, this is only set the first time the hash function is called
     # constructor should check that L < R
-    function SurrealFinite(shorthand::String, L::Vector{SurrealFinite}, R::Vector{SurrealFinite}, h::UInt64)
+    function SurrealFinite(shorthand::String, L::Vector{SurrealFinite}, R::Vector{SurrealFinite}, 
+                            maxL::Union{SurrealFinite,Missing}, minR::Union{SurrealFinite,Missing}, h::UInt64)
         global Count
         global ExistingSurreals 
         Count['c'] += 1 
         if length(L) > 1
             L = sort( unique(L) )
+            maxL = L[end]
+            # L = unique(L)
+            # maxL = maximum(L)
+        elseif length(L) == 1
+            maxL = L[1]
+        else 
+            maxL = missing
         end 
         if length(R) > 1
             R = sort( unique(R) )
+            minR = R[1]
+            # R = unique(R)
+            # minR = minimum(R)
+        elseif length(R) == 1
+            minR = R[1]
+        else
+            minR = missing
         end 
         # println("L = $L, R = $R") 
         # use the fact they are sorted to not do a complete comparison for <=
         # also means that == is much easier than if they were unsorted
-        if isempty(L) || isempty(R) || L[end] < R[1]
+        if isempty(L) || isempty(R) || maxL < minR
             h = hash(L, R)
             # tmp = new(shorthand, L, R, 0)
             # h_tmp = hash(tmp) # can't have hash value as an input, has to be calculated
             if !haskey(ExistingSurreals, h)
                 # make sure every surreal we have calculated a hash for is registered
-                ExistingSurreals[h] = new(shorthand, L, R, h)
+                ExistingSurreals[h] = new(shorthand, L, R, maxL, minR, h)
             else
                 # if this version somehow got created separately, then reuse the existing version
                 #  but that is a no-op in the current version
             end
             return ExistingSurreals[h]
         else 
-            error("Surreal number must have L < R (currently the extreme values are $(L[end]) and $(R[1]) )") 
+            error("Surreal number must have L < R (currently the extreme values are $(maxL) and $(minR) )") 
         end  
     end 
 end
 SurrealFinite(shorthand::String, L::AbstractArray, R::AbstractArray ) =
-    SurrealFinite( shorthand, convert(Vector{SurrealFinite},L), convert(Vector{SurrealFinite},R), zero(UInt64))
-SurrealFinite(L::AbstractArray, R::AbstractArray ) =
-    SurrealFinite( "", convert(Vector{SurrealFinite},L), convert(Vector{SurrealFinite},R), zero(UInt64))
-≀(L::AbstractArray, R::AbstractArray) = SurrealFinite(L::AbstractArray, R::AbstractArray )
+    SurrealFinite( shorthand, convert(Vector{SurrealFinite},L), convert(Vector{SurrealFinite},R), missing, missing, zero(UInt64))
+SurrealFinite( L::AbstractArray, R::AbstractArray ) = SurrealFinite( "", L, R)
+≀(L::AbstractArray, R::AbstractArray) = SurrealFinite( L, R )
 
 const SurrealShort  = SurrealFinite 
 const SurrealDyadic = SurrealFinite 
@@ -386,9 +402,9 @@ function leq_without_cache(x::SurrealFinite, y::SurrealFinite)
     # slightly misnamed -- it can use the cache for recursed calculations, just not at the top level
     global CountUncached
     CountUncached['≤'] += 1
-    if !isempty(x.L) && leq(y, x.L[end])
+    if !isempty(x.L) && leq(y, x.maxL)
         return false
-    elseif !isempty(y.R) && leq(y.R[1], x)
+    elseif !isempty(y.R) && leq(y.minR, x)
         return false
     else
         return true
@@ -1506,7 +1522,7 @@ function isinteger(s::SurrealFinite)
     elseif length(s.L)==0 || length(s.R)==0
         ExistingIntegers[ hs ] = true
         return true
-    elseif s.L[end] + SurrealOne < s.R[1] # if the gap is more than 1, then an integer will always fit
+    elseif s.maxL + SurrealOne < s.minR # if the gap is more than 1, then an integer will always fit
         ExistingIntegers[ hs ] = true
         return true
     else
