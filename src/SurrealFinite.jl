@@ -113,6 +113,8 @@ const ExistingLEQ       = SwissDict{UInt64, SwissDict{UInt64,Bool}}() # small im
 const ExistingLEQ1      = SwissDict{UInt64, SwissDict{UInt64,Bool}}() # small improvement from SwissDict, particullary on mem use
 const ExistingLEQ2      = SwissDict{UInt64, SwissDict{UInt64,Int64}}() # small improvement from SwissDict, particullary on mem use
 const ExistingLEQ3      = SwissDict{Tuple{UInt64, UInt64},Bool}() # flat version is nearly twice as big???
+const ExistingLEQ4      = SwissDict{UInt64, Set{UInt64}}() # store LEQ/GT in least significant bit
+const ExistingLEQ5      = SwissDict{UInt64, SwissDict{UInt64,Nothing}}() # store LEQ/GT in least significant bit
 const ExistingEQ        = Dict{UInt64, Dict{UInt64,Bool}}() 
 const ExistingProducts  = Dict{UInt64, Dict{UInt64,UInt64}}()
 # const ExistingSums      = Dict{UInt64, Dict{UInt64,UInt64}}() 
@@ -164,6 +166,9 @@ function clearcache()
     global ExistingLEQ
     global ExistingLEQ1
     global ExistingLEQ2
+    global ExistingLEQ3
+    global ExistingLEQ4
+    global ExistingLEQ5
     # global ExistingGT
     global ExistingEQ
     global ExistingProducts
@@ -185,6 +190,9 @@ function clearcache()
     empty!(ExistingLEQ)
     empty!(ExistingLEQ1)
     empty!(ExistingLEQ2)
+    empty!(ExistingLEQ3)
+    empty!(ExistingLEQ4)
+    empty!(ExistingLEQ5)
     # empty!(ExistingGT)
     empty!(ExistingEQ)
     empty!(ExistingProducts)
@@ -526,7 +534,56 @@ function leq_2(x::SurrealFinite, y::SurrealFinite)
     end 
     return ExistingLEQ[hx][hy]
 end
-leq(x::SurrealFinite, y::SurrealFinite) = leq_0(x,y)
+function leq_4(x::SurrealFinite, y::SurrealFinite)
+    # use 2-layer nest Dict/Set with least sig bit of object in set providing T/F
+    global Count
+    Count['≤'] += 1
+    global ExistingLEQ4
+    hx = hash(x) 
+    hy = hash(y)
+    if !haskey(ExistingLEQ4, hx)
+        ExistingLEQ4[hx] = Set{UInt64}()
+    end
+    if hy in ExistingLEQ4[hx]
+        result = true
+    elseif hy+1 in ExistingLEQ4[hx]
+        result = false
+    else
+        result = leq_without_cache(x, y)
+        if result
+            push!( ExistingLEQ4[hx], hy )   
+        else
+            push!( ExistingLEQ4[hx], hy+1 ) # could introduce yet another sort of hash collision :(, but with low probability
+        end
+    end
+    return result
+end
+function leq_5(x::SurrealFinite, y::SurrealFinite)
+    # use 2-layer nest Dict/Set with least sig bit of object in set providing T/F
+    global Count
+    Count['≤'] += 1
+    global ExistingLEQ5
+    hx = hash(x) 
+    hy = hash(y)
+    if !haskey(ExistingLEQ5, hx)
+        ExistingLEQ5[hx] = Dict{UInt64, Nothing}()
+    end
+    if haskey( ExistingLEQ5[hx], hy)
+        result = true
+    elseif haskey(ExistingLEQ5[hx], hy+1)
+        result = false
+    else
+        result = leq_without_cache(x, y)
+        if result
+            ExistingLEQ5[hx][hy] = nothing  
+        else
+            ExistingLEQ5[hx][hy+1] = nothing # could introduce yet another sort of hash collision :(, but with low probability
+        end
+    end
+    return result
+end
+
+leq(x::SurrealFinite, y::SurrealFinite) = leq_5(x,y)
 
 # using SparseArrays doesn't seem to work as there is a massive hit to create a big enough sparse array even though empty
 # const ExistingLEQ1 = spzeros(Bool, 2^16, 2^16)
