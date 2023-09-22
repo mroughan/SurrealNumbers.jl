@@ -15,11 +15,12 @@ export SurrealZero, SurrealOne, SurrealMinusOne, SurrealTwo, SurrealMinusTwo, Su
 # eventually these will be removed, but they are convenient for testing
 export ExistingSurreals, ExistingConversions, ExistingCanonicals, ExistingCanonicalsC, 
         ExistingProducts,
-        ExistingSums, ExistingSums2, ExistingNegations, 
+        ExistingSums, ExistingSums2, ExistingSums3,  ExistingSums4,
+        ExistingNegations, 
         ExistingEQ, ExistingLEQ, ExistingLEQ1, ExistingLEQ2, ExistingLEQ3, ExistingLEQ4, ExistingLEQ5, # ExistingGT,
         ExistingFloors, ExistingIntegers, ExistingCanonicalIntegers,
-        Count, CountUncached
-export clearcache, cache_stats, cache_stats_summary, cache_stats_LEQcount
+        Count, CountUncached, RecursionDepth
+export clearcache, cache_stats, cache_stats_summary, cache_stats_LEQcount, cache_hit_percent
 
 # export SurrealAlt2  
 # export ExistingSurrealsAlt2, ExistingProductsAlt2, ExistingSumsAlt2

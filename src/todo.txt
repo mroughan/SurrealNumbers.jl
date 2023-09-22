@@ -1,32 +1,27 @@
 
 
--- hash is in very rare cases potentially not unique
-   -- so sort order might be undefined in rare cases
-   -- if it is unique, then we can compare exact equality by directly
-      comparing hashes, instead of checking recursively
+-- cache LRU removal of elements, or some other deletion mechanism
+   -- need to keep track of time, and hence recentness, and remove
+   -- probably need to create a function to update a cache element that does this
 
-
--- 
-
-
-
-
-
+-- still technically possible to have hash collisions if 
+      h(L1) == h(L2)   &&   h(R1) == h(R2) (and if the lengths match as well)
+   which isn't impossible, but extremely unlikely with 64 bit hashes but if that was true then
+   we automatically get h(L1,R1)==h(L2,R2), which is what we want to avoid ...
+ 
+   alternative is to test ==, but have to do so without 
+     - constructing the surreal
+     - relying on deterministic ordering (e.g., L1 == L2) because of equal value cases
+         -- maybe could do a foreach equiv test
+     - and must be fast 
 
 
 +++++++++++++++=
 
-- maybe need to
-    calculate hash when constructing surreal
-    put the surreal into the cache during construction
-      and thus avoid ever doubling up???
-
-
-- put "values" into surreals in the same way as hashes,
+- maybe??? put "values" into surreals in the same way as hashes,
      - but for surreals resulting from computations this should be easy 
      - only for arbitrarily created will it be harder
-     - instead of "convert" (which should just read the value, create
-       a "value" function to calculate
+     - instead of "convert" (which should just read the value, create a "value" function to calculate)
        
 reverse direction of the arrows
 
@@ -70,7 +65,6 @@ numbers seem to have
 at least this is true for 2x3, which is the first place to see
 repeated values
     check for other cases
- 
 
 box function from Conway
 

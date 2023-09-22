@@ -1,3 +1,4 @@
+const HashType = UInt64
 mutable struct SurrealFinite <: Surreal
     # mutable means I can set the hash value when I need it, instead of
     #   (i) always having to calculate it recursively
@@ -8,13 +9,15 @@ mutable struct SurrealFinite <: Surreal
     R::Vector{SurrealFinite}
     maxL::Union{SurrealFinite,Missing}
     minR::Union{SurrealFinite,Missing}
-    h::UInt64 # hash value, this is only set the first time the hash function is called
+    h::HashType # hash value, this is only set the first time the hash function is called
     # constructor should check that L < R
     function SurrealFinite(shorthand::String, L::Vector{SurrealFinite}, R::Vector{SurrealFinite}, 
-                            maxL::Union{SurrealFinite,Missing}, minR::Union{SurrealFinite,Missing}, h::UInt64)
+                            maxL::Union{SurrealFinite,Missing}, minR::Union{SurrealFinite,Missing}, h::HashType)
         global Count
+        global CountUncached
         global ExistingSurreals 
-        Count['c'] += 1 
+        Count['n'] += 1 
+        inc_depth()
         if length(L) > 1
             L = sort( unique(L) )
             maxL = L[end]
@@ -35,20 +38,32 @@ mutable struct SurrealFinite <: Surreal
         else
             minR = missing
         end 
-        # println("L = $L, R = $R") 
+        # println("L = $L, R = $R")
         # use the fact they are sorted to not do a complete comparison for <=
         # also means that == is much easier than if they were unsorted
         if isempty(L) || isempty(R) || maxL < minR
             h = hash(L, R)
             # tmp = new(shorthand, L, R, 0)
             # h_tmp = hash(tmp) # can't have hash value as an input, has to be calculated
+            while haskey(ExistingSurreals, h) &&  
+                (!quick_compare(ExistingSurreals[h].L, L) || 
+                 !quick_compare(ExistingSurreals[h].R, R))
+                # linear probing for a free slot in the Cache
+                # ideally would compare the actual surreals, but the surreal hasn't been constructed yet
+                # and a comparison of L (or R) won't work because it is order dependent, and we aren'T
+                # deterministically sorting equal valued surreals
+                Count['c'] += 1
+                h += 1
+                # hard to test this because collisions happen so rarely -- need a means to cause one
+            end
             if !haskey(ExistingSurreals, h)
                 # make sure every surreal we have calculated a hash for is registered
+                CountUncached['n'] += 1
                 ExistingSurreals[h] = new(shorthand, L, R, maxL, minR, h)
             else
-                # if this version somehow got created separately, then reuse the existing version
-                #  but that is a no-op in the current version
+                # if this version got created separately, then reuse the existing version so this is a no op           
             end
+            dec_depth()
             return ExistingSurreals[h]
         else 
             error("Surreal number must have L < R (currently the extreme values are $(maxL) and $(minR) )") 
@@ -56,13 +71,32 @@ mutable struct SurrealFinite <: Surreal
     end 
 end
 SurrealFinite(shorthand::String, L::AbstractArray, R::AbstractArray ) =
-    SurrealFinite( shorthand, convert(Vector{SurrealFinite},L), convert(Vector{SurrealFinite},R), missing, missing, zero(UInt64))
+    SurrealFinite( shorthand, convert(Vector{SurrealFinite},L), convert(Vector{SurrealFinite},R), missing, missing, zero(HashType))
 SurrealFinite( L::AbstractArray, R::AbstractArray ) = SurrealFinite( "", L, R)
 ≀(L::AbstractArray, R::AbstractArray) = SurrealFinite( L, R )
 
+function quick_compare(A1::Vector{SurrealFinite}, A2::Vector{SurrealFinite})
+    # try to do a quick comparison of two sets of surreals to see if they are equal
+    # could create a == for vectors of surreals, but this is trying to work without a nest
+    # so it can be called in a constructor
+    if length(A1) != length(A2)
+        return false
+    elseif hash(A1) != hash(A2)
+        return false
+    else
+        S1 = sort(A1, by=x->hash(x)) # sort just by hash values for unique ordering
+        S2 = sort(A2, by=x->hash(x)) # sort just by hash values for unique ordering
+        for (i,s) in enumerate(S1)
+            if hash(s) != hash(S2[i]) # hash values of components will be unique
+                return false
+            end
+        end
+        return true
+    end 
+end 
+
 const SurrealShort  = SurrealFinite 
 const SurrealDyadic = SurrealFinite 
- 
 
 function hash(x::SurrealFinite)
     if x.h == 0
@@ -75,11 +109,11 @@ function hash(x::SurrealFinite)
 end
 
 function hash( L::Vector{SurrealFinite}, R::Vector{SurrealFinite})
-    return hash(L, zero(UInt64) ) * hash(R, one(UInt64) )
+    return hash(L, zero(HashType) ) * hash(R, one(HashType) )
 end
-hash(x::SurrealFinite, h::Integer) = hash(x, convert(UInt64, h) )
+hash(x::SurrealFinite, h::Integer) = hash(x, convert(HashType, h) )
 function hash(X::Vector{SurrealFinite}) # effectively depth first???
-    H = hash(zero(UInt64))
+    H = hash(zero(HashType))
     for x in X
         H ⊻= hash(x) # order should not be important, so don't do hash(x,H)
     end
@@ -104,29 +138,54 @@ hash(X::Vector{SurrealFinite}, h::UInt64) = hash( hash(X), h )
 # originally had things like 
 #     ExistingProducts = Dict{SurrealFinite, Dict{SurrealFinite,SurrealFinite}}()
 # but seem simpler to have an extra level of redirect to ensure fixed size, but maybe that is misguided?
-const ExistingSurreals  = Dict{UInt64, SurrealFinite}()
-const ExistingConversions = Dict{UInt64,Rational}()
-const ExistingCanonicals = Dict{Rational,UInt64}()
-const ExistingCanonicalsC = Dict{UInt64,Bool}()
-# const ExistingLEQ       = Dict{UInt64, Dict{UInt64,Bool}}() 
-const ExistingLEQ       = SwissDict{UInt64, SwissDict{UInt64,Bool}}() # small improvement from SwissDict, particullary on mem use
-const ExistingLEQ1      = SwissDict{UInt64, SwissDict{UInt64,Bool}}() # small improvement from SwissDict, particullary on mem use
-const ExistingLEQ2      = SwissDict{UInt64, SwissDict{UInt64,Int64}}() # small improvement from SwissDict, particullary on mem use
-const ExistingLEQ3      = SwissDict{Tuple{UInt64, UInt64},Bool}() # flat version is nearly twice as big???
-const ExistingLEQ4      = SwissDict{UInt64, Set{UInt64}}() # store LEQ/GT in least significant bit
-const ExistingLEQ5      = SwissDict{UInt64, SwissDict{UInt64,Nothing}}() # store LEQ/GT in least significant bit
-const ExistingEQ        = Dict{UInt64, Dict{UInt64,Bool}}() 
-const ExistingProducts  = Dict{UInt64, Dict{UInt64,UInt64}}()
-# const ExistingSums      = Dict{UInt64, Dict{UInt64,UInt64}}() 
-const ExistingSums      = SwissDict{UInt64, SwissDict{UInt64,UInt64}}() # small improvement obtained from SwissDict
-const ExistingSums2     = SwissDict{UInt64, UInt64}() # flat version, not used at the moment
-const ExistingNegations = Dict{UInt64, UInt64}() 
-const ExistingFloors    = Dict{UInt64, Int64}() 
-const ExistingIntegers    = Dict{UInt64, Bool}() 
-const ExistingCanonicalIntegers    = Dict{UInt64, Bool}() 
-const Count         = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
-const CountUncached = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'c'=>0, '='=>0, '≤'=>0)
+const ExistingSurreals  = Dict{HashType, SurrealFinite}()
+const ExistingConversions = Dict{HashType,Rational}()
+const ExistingCanonicals = Dict{Rational,HashType}()
+const ExistingCanonicalsC = Dict{HashType,Bool}()
+# const ExistingLEQ       = Dict{HashType, Dict{HashType,Bool}}() 
+const ExistingLEQ       = SwissDict{HashType, SwissDict{HashType,Bool}}() # small improvement from SwissDict, particullary on mem use
+const ExistingLEQ1      = SwissDict{HashType, SwissDict{HashType,Bool}}() # small improvement from SwissDict, particullary on mem use
+const ExistingLEQ2      = SwissDict{HashType, SwissDict{HashType,Int64}}() # small improvement from SwissDict, particullary on mem use
+const ExistingLEQ3      = SwissDict{Tuple{HashType, HashType},Bool}() # flat version is nearly twice as big???
+const ExistingLEQ4      = SwissDict{HashType, Set{HashType}}() # store LEQ/GT in least significant bit
+const ExistingLEQ5      = SwissDict{HashType, SwissDict{HashType,Nothing}}() # store LEQ/GT in least significant bit
+const ExistingEQ        = Dict{HashType, Dict{HashType,Bool}}() 
+const ExistingProducts  = Dict{HashType, Dict{HashType,HashType}}()
+# const ExistingSums      = Dict{HashType, Dict{HashType,HashType}}() 
+const ExistingSums      = SwissDict{HashType, SwissDict{HashType,HashType}}() # small improvement obtained from SwissDict
+const ExistingSums2     = SwissDict{HashType, HashType}() # flat version, not used at the moment
+const ExistingSums3     = SwissDict{SurrealFinite, SwissDict{SurrealFinite,SurrealFinite}}() # for testing redirection
+const ExistingSums4     = SwissDict{SurrealFinite, SwissDict{SurrealFinite,HashType}}() # for testing redirection
+const ExistingNegations = Dict{HashType, HashType}() 
+const ExistingFloors    = Dict{HashType, HashType}() 
+const ExistingIntegers    = Dict{HashType, Bool}() 
+const ExistingCanonicalIntegers    = Dict{HashType, Bool}() 
 
+const Count         = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'n'=>0, 'c'=>0, '='=>0, '≤'=>0)
+const CountUncached = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'n'=>0, 'c'=>0, '='=>0, '≤'=>0)
+            # note that "uncached also excludes trivial cases like 0*x
+function cache_hit_percent()
+    global Count
+    global CountUncached
+    for k in keys(Count)
+        hit_rate = (Count[k] - CountUncached[k]) / Count[k]
+        println( " Hit % for operation $(k) is ", 100*hit_rate)
+    end
+end   
+
+const RecursionDepth = Dict{String, Integer}("current_depth"=>0, "max_depth"=>0)
+    # depth should never be <0, but use signed int for debugging
+function inc_depth()
+    global RecursionDepth
+    RecursionDepth["current_depth"] += 1
+    if RecursionDepth["current_depth"] > RecursionDepth["max_depth"]
+        RecursionDepth["max_depth"] = RecursionDepth["current_depth"]
+    end 
+end
+function dec_depth()
+    global RecursionDepth
+    RecursionDepth["current_depth"] -= 1
+end 
 
 # const ϕ = SVector{0,SurrealFinite}()
 const ϕ = Array{SurrealFinite,1}(undef,0) # empty array of SurrealFinites
@@ -174,12 +233,15 @@ function clearcache()
     global ExistingProducts
     global ExistingSums
     global ExistingSums2
+    global ExistingSums3
+    global ExistingSums4
     global ExistingNegations
     global ExistingFloors    
     global ExistingIntegers  
     global ExistingCanonicalIntegers  
     global Count
     global CountUncached
+    global RecursionDepth
 
     # can't really empty this cache, or it breaks things, and doesn't reduce costs much anyway
     # empty!(ExistingSurreals)
@@ -198,6 +260,8 @@ function clearcache()
     empty!(ExistingProducts)
     empty!(ExistingSums)
     empty!(ExistingSums2)
+    empty!(ExistingSums3)
+    empty!(ExistingSums4)
     empty!(ExistingNegations)
     empty!(ExistingFloors)
     empty!(ExistingIntegers)
@@ -205,6 +269,7 @@ function clearcache()
     
     reset!(Count)
     reset!(CountUncached)
+    reset!(RecursionDepth)
     return 1
 end
 
@@ -260,8 +325,10 @@ function convert(::Type{SurrealFinite}, n::Int )
     end
     hr = hash(result)
     ExistingCanonicals[Rational(n)] = hr 
-    # ExistingIntegers[hr] = true
-    # ExistingFloors[hr] = n
+    # these would save time later, but seem like cheating
+    #   ExistingIntegers[hr] = true
+    #   ExistingFloors[hr] = n
+    #
     return result 
     # should check to make sure abs(n) is not too big, i.e., causes too much recursion
 end 
@@ -291,8 +358,10 @@ function convert(::Type{SurrealFinite}, r::Rational )
     end  
     hr = hash(result)
     ExistingCanonicals[r] = hr 
-    # ExistingIntegers[hr] = isinteger(r)
-    # ExistingFloors[hr] = floor(r)
+    # these would save time later, but seem like cheating
+    #   ExistingIntegers[hr] = isinteger(r)
+    #   ExistingFloors[hr] = floor(r)
+    # 
     return result
 end
 function convert(::Type{SurrealFinite}, f::Float64 ) 
@@ -329,31 +398,57 @@ end
 dali(x) = convert(SurrealFinite, x)
 SurrealFinite(x) = convert(SurrealFinite, x)
 
+function convert(::Type{T}, s::SurrealFinite ) where T <: Integer
+    global ExistingConversions
+    h = hash(s)
+    if haskey(ExistingConversions, h)
+        return convert(T, ExistingConversions[h])
+    elseif iszero(s)
+        result = 0
+    elseif equivtozero(s)
+        result = 0
+    elseif s < 0 
+        result = -convert(T, -s)
+    elseif isinteger(s) # implicitly > 0
+        f = floor(s) # this returns a canonical form of the integer
+        result = convert(T, f.maxL) + 1
+        # recursive dive through all left sets might not fast for big values, except these will each be quick
+        # and all prior isinteger and floors will already be calculated by first recursive calls to these fns
+    else    
+        throw( InexactError( :convert, T, s) )
+    end
+    ExistingConversions[h] = convert(Rational, result)
+    # ExistingConversions[hash(-s)] = -result 
+    return result
+end 
+
 function convert(::Type{Rational}, s::SurrealFinite ) 
     global ExistingConversions
     h = hash(s)
     if haskey(ExistingConversions, h)
         return ExistingConversions[h]
     else 
-        if s ≅ zero(s)
+        if equivtozero(s)
             result = 0 // 1
         elseif s ≅ one(s)
             result = 1 // 1
         elseif s < zero(s)
             result = -convert(Rational, -s)
-        elseif (sf = floor(Integer, s)) ≅ s
-            result = Rational( sf )
-        else # 0 < x < 1
+        elseif isinteger(s)
+            result = Rational( convert(Integer, s )  )
+        else
             # do a binary search from top down, first valid is the simplest
-            xl = isempty(s.L) ? convert(SurrealFinite, sf)   : maximum(s.L)
-            xr = isempty(s.R) ? convert(SurrealFinite, sf+1) : minimum(s.R) 
+            sf = floor(s)
+            xl = isempty(s.L) ? sf   : s.maxL
+            xr = isempty(s.R) ? sf+1 : s.minR 
             not_end = true
             k = 0
-            a = sf 
-            b = sf+1
+            a = convert( Integer, sf )
+            b = a + 1
             while not_end && k < 24 # 24 is arbitrary, but it would be painful to go lower
                 k += 1
-                d = (b+a) // 2
+                d = (b+a) / 2 # a and b are real numbers, so we can do division easily
+                              # but also d will be the value we return, so must be a Rational
                 # print("k=$k, a=$a, b=$b, d=$d \n")
                 
                 c = convert(SurrealFinite,  d)
@@ -365,19 +460,22 @@ function convert(::Type{Rational}, s::SurrealFinite )
                 elseif c >= xr
                     b = d
                 else
-                    error("this case should not happen")
+                    error("this case should never happen")
                 end 
+            end
+            if k >= 24
+                error("number's exponent too large to convert (ie exponent <= -24)")
             end
         end 
     end 
     ExistingConversions[h] = result
+    # ExistingConversions[hash(-s)] = -result 
     return result
 end
 
 
 # some catch alls
 convert(::Type{T}, s::SurrealFinite ) where {T <: AbstractFloat} = convert(T, convert(Rational, s) )
-convert(::Type{T}, s::SurrealFinite ) where {T <: Integer} = convert(T, convert(Rational, s) )
 convert(::Type{Rational{T}}, s::SurrealFinite ) where {T <: Integer} = convert(Rational{T}, convert(Rational, s) )
 AbstractFloat(x::SurrealFinite) = convert(AbstractFloat, x)
 # Int64(x::SurrealFinite) = convert(Int64, x)
@@ -426,7 +524,7 @@ function leq_0(x::SurrealFinite, y::SurrealFinite)
     hx = hash(x) 
     hy = hash(y)
     if !haskey(ExistingLEQ, hx)
-        ExistingLEQ[hx] = Dict{UInt64,Bool}()
+        ExistingLEQ[hx] = Dict{HashType,Bool}()
     end         
     if !haskey(ExistingLEQ[hx], hy)
         ExistingLEQ[hx][hy] = leq_without_cache(x, y)
@@ -467,7 +565,7 @@ function leq_01(x::SurrealFinite, y::SurrealFinite)
 
     # if floors aren't already calculated, or fx==fy, then do a more accurate comparison, and only cache these cases
     if !haskey(ExistingLEQ, hx)
-        ExistingLEQ[hx] = Dict{UInt64,Bool}()
+        ExistingLEQ[hx] = Dict{HashType,Bool}()
     end         
     if !haskey(ExistingLEQ[hx], hy)
         ExistingLEQ[hx][hy] = leq_without_cache(x, y)
@@ -487,10 +585,10 @@ function leq_1(x::SurrealFinite, y::SurrealFinite)
         return ExistingLEQ1[hx][hy]
     end
     if !haskey(ExistingLEQ, hx)
-        ExistingLEQ[hx] = Dict{UInt64,Bool}()
+        ExistingLEQ[hx] = Dict{HashType,Bool}()
     end
     if !haskey(ExistingLEQ1, hx)
-        ExistingLEQ1[hx] = Dict{UInt64,Bool}()
+        ExistingLEQ1[hx] = Dict{HashType,Bool}()
     end
     if !haskey(ExistingLEQ[hx], hy)
         ExistingLEQ[hx][hy] = leq_without_cache(x, y)
@@ -518,10 +616,10 @@ function leq_2(x::SurrealFinite, y::SurrealFinite)
         end
     end
     if !haskey(ExistingLEQ, hx)
-        ExistingLEQ[hx] = Dict{UInt64,Bool}()
+        ExistingLEQ[hx] = Dict{HashType,Bool}()
     end         
     if !haskey(ExistingLEQ2, hx)
-        ExistingLEQ1[hx] = Dict{UInt64,Int}()
+        ExistingLEQ1[hx] = Dict{HashType,Int}()
     end
     if !haskey(ExistingLEQ[hx], hy)
         ExistingLEQ[hx][hy] = leq_without_cache(x, y)
@@ -542,7 +640,7 @@ function leq_4(x::SurrealFinite, y::SurrealFinite)
     hx = hash(x) 
     hy = hash(y)
     if !haskey(ExistingLEQ4, hx)
-        ExistingLEQ4[hx] = Set{UInt64}()
+        ExistingLEQ4[hx] = Set{HashType}()
     end
     if hy in ExistingLEQ4[hx]
         result = true
@@ -566,7 +664,7 @@ function leq_5(x::SurrealFinite, y::SurrealFinite)
     hx = hash(x) 
     hy = hash(y)
     if !haskey(ExistingLEQ5, hx)
-        ExistingLEQ5[hx] = Dict{UInt64, Nothing}()
+        ExistingLEQ5[hx] = Dict{HashType, Nothing}()
     end
     if haskey( ExistingLEQ5[hx], hy)
         result = true
@@ -583,15 +681,15 @@ function leq_5(x::SurrealFinite, y::SurrealFinite)
     return result
 end
 
-leq(x::SurrealFinite, y::SurrealFinite) = leq_5(x,y)
+leq(x::SurrealFinite, y::SurrealFinite) = (inc_depth(); b=leq_5(x,y); dec_depth(); return b)
 
 # using SparseArrays doesn't seem to work as there is a massive hit to create a big enough sparse array even though empty
 # const ExistingLEQ1 = spzeros(Bool, 2^16, 2^16)
 # const ExistingGT1  = spzeros(Bool, 2^16, 2^16)
 
 # using sets is slower, and uses more memory ????
-# const ExistingLEQ2 = Dict{UInt64, Set{UInt64}}()
-# const ExistingGT = Dict{UInt64, Set{UInt64}}()
+# const ExistingLEQ2 = Dict{HashType, Set{HashType}}()
+# const ExistingGT = Dict{HashType, Set{HashType}}()
 # function leq2(x::SurrealFinite, y::SurrealFinite)
 #     global Count
 #     Count['≤'] += 1
@@ -600,10 +698,10 @@ leq(x::SurrealFinite, y::SurrealFinite) = leq_5(x,y)
 #     hx = hash(x)
 #     hy = hash(y)
 #     if !haskey(ExistingLEQ2, hx)
-#         ExistingLEQ2[hx] = Set{UInt64}()
+#         ExistingLEQ2[hx] = Set{HashType}()
 #     end         
 #     if !haskey(ExistingGT, hx)
-#         ExistingGT[hx] = Set{UInt64}()
+#         ExistingGT[hx] = Set{HashType}()
 #     end
 #     if in(hy, ExistingLEQ2[hx] )
 #         return true
@@ -662,10 +760,11 @@ leq(x::SurrealFinite, y::SurrealFinite) = leq_5(x,y)
 #                                         all(x.R .== y.R)
 # 
 function equals(x::SurrealFinite, y::SurrealFinite)
+    global ExistingEQ
     global Count
     global CountUncached
     Count['='] += 1
-    global ExistingEQ
+    inc_depth()
     hx = hash(x)
     hy = hash(y)
     # if hx == hy
@@ -674,10 +773,10 @@ function equals(x::SurrealFinite, y::SurrealFinite)
     #    return false
     # end 
     if !haskey(ExistingEQ, hx)
-        ExistingEQ[hx] = Dict{UInt64,Bool}()
+        ExistingEQ[hx] = Dict{HashType,Bool}()
     end         
     # if !haskey(ExistingEQ, hy)
-    #     ExistingEQ[hy] = Dict{UInt64,Bool}() # it may be commutative, but when =, it doesn't matter
+    #     ExistingEQ[hy] = Dict{HashType,Bool}() # it may be commutative, but when =, it doesn't matter
     # end
     if !haskey(ExistingEQ[hx], hy)
         CountUncached['='] += 1
@@ -692,6 +791,7 @@ function equals(x::SurrealFinite, y::SurrealFinite)
                 if !equals(x.L[i], y.L[i])
                     ExistingEQ[hx][hy] = false
                     # ExistingEQ[hy][hx] = false
+                    dec_depth()
                     return ExistingEQ[hx][hy]
                 end
             end
@@ -699,17 +799,19 @@ function equals(x::SurrealFinite, y::SurrealFinite)
                 if !equals(x.R[i], y.R[i])
                     ExistingEQ[hx][hy] = false 
                     # ExistingEQ[hy][hx] = false
+                    dec_depth()
                     return ExistingEQ[hx][hy]                    
                 end 
             end 
             ExistingEQ[hx][hy] = true
             if !haskey(ExistingLEQ, hx)
-                ExistingLEQ[hx] = Dict{UInt64,Bool}()
+                ExistingLEQ[hx] = Dict{HashType,Bool}()
             end         
             ExistingLEQ[hx][hy] = true # we get this for free, seems like lookup in LEQ would save memory, but doesn't save time :(
             # ExistingEQ[hy][hx] = true
         end
     end 
+    dec_depth()
     return ExistingEQ[hx][hy]
 end
 ==(x::SurrealFinite, y::SurrealFinite) = x===y || equals(x, y)
@@ -756,10 +858,12 @@ function -(x::SurrealFinite)
     global Count
     global CountUncached
     Count['-'] += 1
+    inc_depth()
     hx = hash(x) # build the dictionary in terms of hashs, because it is used quite a bit
     if iszero(x) 
         result = x
     elseif haskey(ExistingNegations, hx)
+        dec_depth()
         return ExistingSurreals[ ExistingNegations[hx] ]
     elseif isempty(x.shorthand)
         result = SurrealFinite("", -x.R, -x.L )
@@ -780,6 +884,7 @@ function -(x::SurrealFinite)
     ExistingNegations[hx] = hr
     ExistingNegations[hr] = hx
     CountUncached['-'] += 1
+    dec_depth()
     return result
 end
 
@@ -829,17 +934,22 @@ function +(x::SurrealFinite, y::SurrealFinite)
     global check_collision_flag
     commutative = false # set to true to store y+x, everytime we calculate x+y
     Count['+'] += 1
+    inc_depth()
     hx = hash(x) # build the dictionary in terms of hashs, we retain some control over them
     hy = hash(y) # which has been useful, but at some point, should probably drop the indirection
 
     if haskey(ExistingSums, hx) && haskey(ExistingSums[hx], hy)
+        dec_depth()
         return ExistingSurreals[ ExistingSums[hx][hy] ]
     elseif !commutative && haskey(ExistingSums, hy) && haskey(ExistingSums[hy], hx)
-       return ExistingSurreals[ ExistingSums[hy][hx] ]
+        dec_depth()
+        return ExistingSurreals[ ExistingSums[hy][hx] ]
     elseif iszero(x)
-        result = y   
+        dec_depth()
+        return y
     elseif iszero(y)
-        result = x
+        dec_depth()
+        return x
     else 
         shorthand = "($(x.shorthand) + $(y.shorthand))"
         # trying to create the sum in close to sorted order didn't help - just wasted an extra op.
@@ -876,15 +986,21 @@ function +(x::SurrealFinite, y::SurrealFinite)
     # end
 
     if !haskey(ExistingSums, hx)
-        ExistingSums[hx] = Dict{UInt64,UInt64}()
+        ExistingSums[hx] = Dict{HashType,HashType}()
+        # ExistingSums3[x] = Dict{SurrealFinite,SurrealFinite}()
+        # ExistingSums4[x] = Dict{SurrealFinite,HashType}()
     end
     ExistingSums[hx][hy] = hr
+    # ExistingSums3[x][y] = result
+    # ExistingSums4[x][y] = hr
+     
     if commutative
         if !haskey(ExistingSums, hy)
-            ExistingSums[hy] = Dict{UInt64,UInt64}() 
+            ExistingSums[hy] = Dict{HashType,HashType}() 
         end
         ExistingSums[hy][hx] = hr
     end
+    dec_depth()
     return result
 end
 
@@ -903,17 +1019,22 @@ function *(x::SurrealFinite, y::SurrealFinite)
     global Count
     global CountUncached
     Count['*'] += 1 
+    inc_depth()
     hx = hash(x)
     hy = hash(y)
 
     if haskey(ExistingProducts, hx) && haskey(ExistingProducts[hx], hy)
+        dec_depth()
         return ExistingSurreals[ ExistingProducts[hx][hy] ]
     elseif iszero(x) || iszero(y) 
-        result = SurrealZero
+        dec_depth()
+        return SurrealZero
     elseif x == SurrealOne 
-        result = y 
+        dec_depth()
+        return y 
     elseif y == SurrealOne
-        result = x
+        dec_depth()
+        return x
     else
         # tmp1 = vec([s*y + x*t - s*t for s in x.L, t in y.L])
         # tmp2 = vec([s*y + x*t - s*t for s in x.R, t in y.R])
@@ -931,10 +1052,10 @@ function *(x::SurrealFinite, y::SurrealFinite)
         result = SurrealFinite(shorthand, L, R)
     end
     if !haskey(ExistingProducts, hx)
-        ExistingProducts[hx] = Dict{UInt64,UInt64}()
+        ExistingProducts[hx] = Dict{HashType,HashType}()
     end
     if !haskey(ExistingProducts, hy)
-        ExistingProducts[hy] = Dict{UInt64,UInt64}()
+        ExistingProducts[hy] = Dict{HashType,HashType}()
     end 
     hr = hash(result)
     # if haskey(ExistingSurreals, hr)
@@ -945,6 +1066,7 @@ function *(x::SurrealFinite, y::SurrealFinite)
     ExistingProducts[hx][hy] = hr
     ExistingProducts[hy][hx] = hr
     CountUncached['*'] += 1 
+    dec_depth()
     return result
 end
 #function subtimes( x, y, X::Array{SurrealFinite}, Y::Array{SurrealFinite} )
@@ -962,12 +1084,13 @@ end
 *(X::Array{SurrealFinite}, y::SurrealFinite) = y*X
 
 
-# somewhat incomplete (for reasons described), slightly a cheat, and potentially very slow
+# somewhat incomplete (for reasons described), its a cheat, and potentially very, very slow
+# but it can handle some obvious cases like dividing by 2
 function /(x::SurrealFinite, y::SurrealFinite)
     xr = convert(Rational, x)
     yr = convert(Rational, y) 
     if y ≅ zero(y)
-        error(InexactError)
+        error(InexactError(:/, "x/y", "inexact division") )
     elseif y ≅ 2
         return x * convert(SurrealFinite,  1 // 2)
     elseif isinteger(y) && ispow2(yr.num)
@@ -975,7 +1098,7 @@ function /(x::SurrealFinite, y::SurrealFinite)
     elseif isinteger(xr.num/yr)
         return convert(SurrealFinite,  (xr.num/yr) // xr.den  ) 
     else
-        error(InexactError)        
+        error(InexactError(:/, "x/y", "inexact division"))        
     end
 end
 
@@ -1363,7 +1486,16 @@ julia> pf( canonicalise( convert(SurrealFinite, 1) - convert(SurrealFinite, 1) )
 { ϕ | ϕ }
 ``` 
 """
-canonicalise(s::SurrealFinite) = convert(SurrealFinite, convert(Rational, s))
+function canonicalise(s::SurrealFinite) 
+    # should have a better, more direct approach
+    if isinteger(s)
+        convert(SurrealFinite, convert(Int64, s))
+        # following should work, but don't want to intefere with floor, which should use this
+        # a = SurrealFinite("floor($(s.shorthand))", [ floor(s.maxL) ],  ∅)
+    else
+        convert(SurrealFinite, convert(Rational, s))
+    end
+end
 function iscanonical_old(s::SurrealFinite) 
     global ExistingCanonicalsC
     hs = hash(s)
@@ -1422,20 +1554,23 @@ sign(x::SurrealFinite) = x<zero(x) ? -one(x) : x>zero(x) ? one(x) : zero(x)
 # abs(x::SurrealFinite) = x<zero(x) ? -x : x 
 
 # subtraction is much slower than comparison, so got rid of old versions
-# these aren't purely surreal arithmetic, but everything could be, just would be slower
 # N.B. returns canonical form of floor
-function floor(T::Type, s::SurrealFinite)
+function floor_0(T::Type, s::SurrealFinite)
     global ExistingFloors
+    global ExistingSurreals
+    global SurrealZero
     global SurrealOne
     global SurrealTwo
     global SurrealMinusOne
     global SurrealMinusTwo
     if haskey(ExistingFloors, hash(s))
-        return convert(T, ExistingFloors[ hash(s) ])
-    elseif s < zero(s)
+        return convert(T, ExistingSurreals[ ExistingFloors[ hash(s) ] ])
+    elseif s < SurrealZero
         if s >= SurrealMinusOne
+            ExistingFloors[ hash(s) ] = hash(SurrealMinusOne)
             return convert(T, SurrealMinusOne)
         elseif s >= SurrealMinusTwo
+            ExistingFloors[ hash(s) ] = hash(SurrealMinusTwo)
             return convert(T, SurrealMinusTwo)
         else
             k = 1
@@ -1448,21 +1583,22 @@ function floor(T::Type, s::SurrealFinite)
             a = -2^(k+1)
             b = -2^k
             for i=1:k
-                d = (a+b) / 2
-                if s < d
+                d = (a+b) / 2  # this is real number arithmetic to avoid dividing by 2 in surreals
+                if s < d       # implicit conversions to surreals to keep everything canonical
                     b = d
                 else
                     a = d
                 end
             end
-            ExistingFloors[ hash(s) ] = a
+            a = dali(a)
+            ExistingFloors[ hash(s) ] = hash(a)
             return convert(T, a) 
         end
     elseif s < SurrealOne
-        ExistingFloors[ hash(s) ] = 0
+        ExistingFloors[ hash(s) ] = hash(SurrealZero)
         return zero(T)
     elseif s < SurrealTwo
-        ExistingFloors[ hash(s) ] = 1
+        ExistingFloors[ hash(s) ] = hash(SurrealOne)
         return one(T)
     else
         # start with geometric search to bound the number
@@ -1477,17 +1613,62 @@ function floor(T::Type, s::SurrealFinite)
         a = 2^k
         b = 2^(k+1)
         for i=1:k
-            d = (a+b) / 2
-            if s < d
+            d = (a+b) / 2  # this is real number arithmetic to avoid dividing by 2 in surreals
+            if s < d       # implicit conversions to surreals to keep everything canonical
                 b = d
             else
                 a = d
             end
         end
-        ExistingFloors[ hash(s) ] = a
+        a = dali(a) # a wasn't implicitly converted yet
+        ExistingFloors[ hash(s) ] = hash(a)
         return convert(T, a)
     end
 end
+function floor_1(T::Type, s::SurrealFinite)
+    global ExistingFloors
+    global ExistingSurreals
+    global SurrealZero
+    global SurrealOne
+    global SurrealTwo
+    global SurrealMinusOne
+    global SurrealMinusTwo
+    if haskey(ExistingFloors, hash(s))
+        return convert(T, ExistingSurreals[ ExistingFloors[ hash(s) ] ])
+    elseif s >= SurrealZero
+        if  s < SurrealOne
+            ExistingFloors[ hash(s) ] = hash(SurrealZero)
+            return zero(T)
+        elseif s < SurrealTwo
+            ExistingFloors[ hash(s) ] = hash(SurrealOne)
+            return one(T)
+        else # could do a special case for canonical integers maybe? 
+            if isinteger(s) # can include this in the new version only -- old version of isinteger used floor
+                #   println("   floor of an integer $s")
+                # a = canonicalise(s), can't use canonicalise because it converts, which uses floor
+                a = SurrealFinite("floor($(s.shorthand))", [ floor(s.maxL) ],  ∅)
+            else
+                # only the max of the left integers matters, and we take the floor of that
+                #   println("   floor of a non integer $s")
+                a = floor( s.maxL )
+            end
+            ExistingFloors[ hash(s) ] = hash(a)
+            return convert(T, a)
+        end
+    elseif s >= SurrealMinusOne # negative s is implicit
+        ExistingFloors[ hash(s) ] = hash(SurrealMinusOne)
+        return convert(T, SurrealMinusOne)
+    elseif s >= SurrealMinusTwo # negative s is implicit
+        ExistingFloors[ hash(s) ] = hash(SurrealMinusTwo)
+        return convert(T, SurrealMinusTwo)
+    else # negative s is implicit
+        a = - ceil( -s )
+        ExistingFloors[ hash(s) ] = hash(a)
+        return convert(T, a)
+    end
+end
+
+floor(T::Type, s::SurrealFinite) = floor_1(T, s)
 floor(s::SurrealFinite) = floor(SurrealFinite, s)
 function ceil(T::Type, s::SurrealFinite)
     if isinteger(s)
@@ -1570,22 +1751,28 @@ function isinteger_old(s::SurrealFinite)
 end
 function isinteger(s::SurrealFinite)
     global ExistingInteger
+    global SurrealOne
 
     hs = hash( s )
     if haskey(ExistingIntegers, hs)
         return ExistingIntegers[hs]
     elseif iscanonicalinteger(s)
-        return true
+        result = true
     elseif length(s.L)==0 || length(s.R)==0
-        ExistingIntegers[ hs ] = true
-        return true
+        result = true
     elseif s.maxL + SurrealOne < s.minR # if the gap is more than 1, then an integer will always fit
-        ExistingIntegers[ hs ] = true
-        return true
+        result = true
+    elseif isinteger(s.maxL) || isinteger(s.minR) 
+        # gap is <= 1, so they can't be either side of an integer in this case
+        result = false
+    elseif floor(s.maxL) < floor(s.minR)
+        # the left and right parts are on either side of an integer, and we can't use floor on s but on its components is OK?
+        result = true  
     else
-        ExistingIntegers[ hs ] = false
-        return false
+        result = false
     end
+    ExistingIntegers[ hs ] = result
+    return result
 end
 
 isdivisible(s::SurrealFinite, n::SurrealFinite) = isinteger(s) ? mod(s,n) ≅ zero(s) : false 
@@ -1845,10 +2032,10 @@ end
 decrement!(d::Dict{S, T}, k::S ) where {T<:Real, S<:Any} = increment!( d, k, one(T))
 
 function uniqueness(s::SurrealFinite,
-                    P::Dict{UInt64, UInt64},
-                    Q::Dict{UInt64, SurrealFinite},
-                    U::Dict{UInt64, Int64},
-                    V::Dict{UInt64, SurrealFinite} )
+                    P::Dict{HashType, HashType},
+                    Q::Dict{HashType, SurrealFinite},
+                    U::Dict{HashType, Int64},
+                    V::Dict{HashType, SurrealFinite} )
     h = hash(s)
     increment!(U, h)
     @static if VERSION < v"0.7.0"
@@ -1872,12 +2059,12 @@ function uniqueness(s::SurrealFinite,
     return (P, Q, U, V ) 
 end 
 uniqueness(s::SurrealFinite) = uniqueness(s,
-                                          Dict{UInt64, UInt64}(),
-                                          Dict{UInt64, SurrealFinite}(),
-                                          Dict{UInt64, Int64}(),
-                                          Dict{UInt64, SurrealFinite}() )
-uniqueness_max( U::Dict{UInt64, Int64} ) = maximum( values(U) )
-function uniqueness_failure(  U::Dict{UInt64, Int64}, V::Dict{UInt64, SurrealFinite} )
+                                          Dict{HashType, HashType}(),
+                                          Dict{HashType, SurrealFinite}(),
+                                          Dict{HashType, Int64}(),
+                                          Dict{HashType, SurrealFinite}() )
+uniqueness_max( U::Dict{HashType, Int64} ) = maximum( values(U) )
+function uniqueness_failure(  U::Dict{HashType, Int64}, V::Dict{HashType, SurrealFinite} )
     
     @static if VERSION < v"1.0.0"
         U2 = filter( (k,v) -> v>1 , U) # not Julia 1.0 compliant

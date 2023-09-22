@@ -73,12 +73,12 @@ for i=1:n
 
     c_plus[i] = Count['+']
     c_times[i] = Count['*']
-    c_created[i] = Count['c']
+    c_created[i] = Count['n']
     c_equals[i] = Count['=']
     c_leq[i] = Count['≤']
     cu_plus[i] = CountUncached['+']
     cu_times[i] = CountUncached['*']
-    cu_created[i] = CountUncached['c'] # not used at the moment
+    cu_created[i] = CountUncached['n'] # not used at the moment
     cu_equals[i] = CountUncached['=']
     cu_leq[i] = CountUncached['≤']
 end

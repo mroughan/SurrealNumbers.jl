@@ -56,6 +56,8 @@ print("s2 = ")
 pf(s2)
 println()
 
+s7 = SurrealFinite("", [dali(6.875)], [dali(7.25)])
+
 println("x41 = ", x41, ", x42 = ", x42, ", x43 = ", x43)
 
 pf(x43)
@@ -63,6 +65,7 @@ println()
  
 spf(x43)
 println()
+convert(Rational, x4) # caused errors at one point
 
 pf( dali(3) * dali(3) ) # this caused hash violations at one point, because not all equal-valued surreals were being deterministically sorted
 
@@ -212,6 +215,9 @@ V = [-6.25, -4.0, -3.25, -2.5, -2.0, -1.625, -1.0, -0.25, 0.0, 1.0, 7.0, 0.5, 1.
     @test floor(x4) ≇ x4
     @test floor(-x4) ≇ -x4
     @test floor(-x4) == zero(x4)
+    @test floor( dali(6.75) + 1/2) ≅ 7
+    @test floor( s7 ) == 7
+
     for v in V
         println("    testing value v = $v")
         sv = convert(SurrealFinite, v)
@@ -268,6 +274,8 @@ V = [-6.25, -4.0, -3.25, -2.5, -2.0, -1.625, -1.0, -0.25, 0.0, 1.0, 7.0, 0.5, 1.
     @test isinteger( SurrealFinite("", ϕ, [x3]) )
     @test isinteger( SurrealFinite("", [dali(1), dali(2)], [dali(5), dali(6)]) )
     @test !isinteger( SurrealFinite("", [dali(1), dali(2)], [dali(3)]) )
+    @test isinteger( s7 )
+    @test isinteger( dali(13//2) + 1/2 )
 
     @test iscanonicalinteger(x0) == true
     @test iscanonicalinteger(x22) == false
@@ -500,8 +508,9 @@ d33 = dali(33//2)
 
     m = dali(2) * dali(2)
     # @test Count['≤'] == 21
-    @test Count['='] == 2
-    @test Count['c'] == 10
+    @test Count['='] == 3
+    @test Count['c'] == 0
+    @test Count['n'] == 10
     @test Count['*'] == 4
     @test Count['+'] == 16
     @test Count['-'] == 2
@@ -509,8 +518,9 @@ d33 = dali(33//2)
     # @test CountUncached['≤'] == 15
     @test CountUncached['='] == 1
     @test CountUncached['c'] == 0
-    @test CountUncached['*'] == 3
-    @test CountUncached['+'] == 12
+    @test CountUncached['n'] == 0 # zero because we don't empty ExistingSurreals cache
+    @test CountUncached['*'] == 1
+    @test CountUncached['+'] == 7
     @test CountUncached['-'] == 2
 
     hx = hash( dali(2) )
