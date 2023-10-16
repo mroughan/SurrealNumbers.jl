@@ -159,7 +159,7 @@ const ExistingSums4     = SwissDict{SurrealFinite, SwissDict{SurrealFinite,HashT
 const ExistingNegations = Dict{HashType, HashType}() 
 const ExistingFloors    = Dict{HashType, HashType}() 
 const ExistingIntegers    = Dict{HashType, Bool}() 
-const ExistingCanonicalIntegers    = Dict{HashType, Bool}() 
+const ExistingCanonicalIntegers  = Dict{HashType, Bool}() 
 
 const Count         = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'n'=>0, 'c'=>0, '='=>0, '≤'=>0)
 const CountUncached = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'n'=>0, 'c'=>0, '='=>0, '≤'=>0)
@@ -242,6 +242,7 @@ function clearcache()
     global Count
     global CountUncached
     global RecursionDepth
+    global ExistingSurrealDAGstats
 
     # can't really empty this cache, or it breaks things, and doesn't reduce costs much anyway
     # empty!(ExistingSurreals)
@@ -266,6 +267,7 @@ function clearcache()
     empty!(ExistingFloors)
     empty!(ExistingIntegers)
     empty!(ExistingCanonicalIntegers)
+    empty!(ExistingSurrealDAGstats)
     
     reset!(Count)
     reset!(CountUncached)
@@ -720,14 +722,13 @@ leq(x::SurrealFinite, y::SurrealFinite) = (inc_depth(); b=leq_5(x,y); dec_depth(
 
 <=(x::SurrealFinite, y::SurrealFinite) = leq(x, y)
 <(x::SurrealFinite, y::SurrealFinite) = !(y<=x)
+#### can't us ≡ because it is used for ===
 # ===(x::SurrealFinite, y::SurrealFinite) = x<=y && y<x # causes an error
-#   === is 'egal', and hardcoded for mutables to test they are same object in memory
+#     === is 'egal', and hardcoded for mutables to test they are same object in memory
 ≅(x::SurrealFinite, y::SurrealFinite) = x<=y && y<=x
 ≅(x::Real, y::Real) = ≅(promote(x,y)...)
 ≇(x::SurrealFinite, y::SurrealFinite) = !( x ≅ y ) 
 ≇(x::Real, y::Real) = ≇(promote(x,y)...)
-
-#### prolly should have used ≡ not ≅, but hey
 
 
 # sort( X::Array{SurrealFinite} ) = sort( X, lt = (x,y) -> x == y ? hash(x)<hash(y) : x<y )
@@ -1457,20 +1458,23 @@ surreal2dot(x::SurrealFinite; direction::String="forward") = surreal2dot(stdout,
 ## Arguments
 * `x::SurrealFinite`: the number to operate on
      
-## Examples
+##
 ```jldoctest
 julia> generation( convert(SurrealFinite, 1) )
 1
 ``` 
 """
-function generation(x::SurrealFinite)
-    if x==zero(x)
-        return 0
-    else
-        return max( maximum( generation.( [x.L; 0]) ),
-                    maximum( generation.( [x.R; 0]) )) + 1
-    end
-end 
+generation(s::SurrealFinite) = dag_stats(s).generation
+# function generation(x::SurrealFinite)
+    #
+    # old version, based on definition could be very slow as doesn't cache
+    # if iszero(x)
+    #     return 0
+    # else
+    #     return max( maximum( generation.( [x.L; 0]) ),
+    #                 maximum( generation.( [x.R; 0]) )) + 1
+    # end
+# end 
 
 """ 
     canonicalise(s::SurrealFinite)
@@ -1823,7 +1827,9 @@ struct SurrealDAGstats <: SurrealStats
     maxval::Rational
     n_zeros::Int64 # number of nodes with value zero: only calculate if V switch is true
     max_width::Int64
+    gap::Float64 # diff between MaxL and minR as a value, noting that it could be Inf, so use Floats
 end
+const ExistingSurrealDAGstats = Dict{HashType, SurrealDAGstats}()
 
 mutable struct SurrealDegreeDist <: SurrealStats
     s::SurrealFinite
@@ -1951,6 +1957,7 @@ function dag_stats( s::SurrealFinite, processed_list::Dict{SurrealFinite,Surreal
         longest_path = LP ? [zero(s)] : ϕ # important this be \phi and not an arbitrary empty array
         paths = 1
         value = 0 
+        gap = 0.0
         minval = 0  
         maxval = 0 
         n_zeros = V ? 1 : 0
@@ -1964,6 +1971,17 @@ function dag_stats( s::SurrealFinite, processed_list::Dict{SurrealFinite,Surreal
         longest_path = LP ? [zero(s)] : ϕ
         paths = 0 
         value = V ? convert(Rational, s) : 0
+        if V
+            if ismissing(s.minR)
+                gap = Inf
+            elseif ismissing(s.maxL)
+                gap = -Inf
+            else
+                gap = convert(Rational, s.minR) - convert(Rational, s.maxL)
+            end
+        else    
+            gap = NaN
+        end
         minval = value 
         maxval = value
         n_zeros = V ? Int64(value == 0) : 0
@@ -1990,7 +2008,7 @@ function dag_stats( s::SurrealFinite, processed_list::Dict{SurrealFinite,Surreal
         generation += 1 
         longest_path = LP ? [longest_path; s] : ϕ
     end  
-    stats = SurrealDAGstats(nodes, tree_nodes, edges, generation, longest_path, paths, value, minval, maxval, n_zeros, max_width) 
+    stats = SurrealDAGstats(nodes, tree_nodes, edges, generation, longest_path, paths, value, minval, maxval, n_zeros, max_width, gap) 
     processed_list[s] = stats # could make this a reverse list, ...
     return ( stats, processed_list )  
 end 

@@ -18,7 +18,7 @@ export ExistingSurreals, ExistingConversions, ExistingCanonicals, ExistingCanoni
         ExistingSums, ExistingSums2, ExistingSums3,  ExistingSums4,
         ExistingNegations, 
         ExistingEQ, ExistingLEQ, ExistingLEQ1, ExistingLEQ2, ExistingLEQ3, ExistingLEQ4, ExistingLEQ5, # ExistingGT,
-        ExistingFloors, ExistingIntegers, ExistingCanonicalIntegers,
+        ExistingFloors, ExistingIntegers, ExistingCanonicalIntegers, ExistingSurrealDAGstats,
         Count, CountUncached, RecursionDepth
 export clearcache, cache_stats, cache_stats_summary, cache_stats_LEQcount, cache_hit_percent
 
