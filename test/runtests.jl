@@ -135,7 +135,7 @@ end
     @test x0*x1 ≅ x0
 
     @test x4*x0 ≅ x0 # this case broke things before
-
+    dag_stats(dali(-2))
     @test x11/one(x11) ≅ -x1
     @test x22 / x22 ≅ one(x22)
     @test x22/x1 ≅ x22
@@ -433,16 +433,23 @@ P2 = filter( ((k,v),) -> v==0xa09c3927cec6b030, P )
  
 x32 = convert(SurrealFinite, 3/4) + convert(SurrealFinite, 3/4)
 @testset "DAG statistics" begin
-    @test dag_stats(x1) == SurrealDAGstats(2,2,1,1,ϕ,1,1,0,1,1,1,Inf)
-    @test dag_stats(x41) == SurrealDAGstats(5,5,4,4,ϕ,1,4,0,4,1,1,Inf)
-    @test dag_stats(x43) == SurrealDAGstats(11,21,14,6,ϕ,5,4,-1,4,2,2,Inf)
-    @test dag_stats(x00) == SurrealDAGstats(4,5,4,2,ϕ,2,0,-1,1,2,2,2.0) 
-    @test dag_stats(x5) == SurrealDAGstats(5,12,9,3,ϕ,6,1//2,-1,1,1,4,1.0)
-    @test dag_stats(s2) == SurrealDAGstats(4,7,5,3,ϕ,3,3//4,0,1,1,2,0.5)    
-    @test dag_stats(x6) == SurrealDAGstats(45,2574,82,12,ϕ,625,6,-3,7,4,3,Inf) 
-    @test dag_stats(x1, Dict{SurrealFinite,SurrealDAGstats}())[2] == Dict(x0=>SurrealDAGstats(1,1,0,0,ϕ,1,0,0,0,1,0,0.0),
-                                                                          x1=>SurrealDAGstats(2,2,1,1,ϕ,1,1,0,1,1,1,Inf)    )
-    @test dag_stats( dali(-2) ) == SurrealDAGstats(3, 3, 2, 2, ∅, 1, -2//1, -2//1, 0//1, 1, 1, -Inf)
+    empty!( ExistingSurrealDAGstats )
+    tmp = dali.([0, 1])
+    @test dag_stats(x1; V=false)  == SurrealDAGstats(2,2,1,1,ϕ,1,0,0,0,0,1,0,0,   false, false)
+    @test dag_stats(x1; )         == SurrealDAGstats(2,2,1,1,ϕ,1,1,0,1,1,1,1,Inf, false, true)
+    @test dag_stats(x1; LP=true)  == SurrealDAGstats(2,2,1,1,tmp,1,1,0,1,1,1,1,Inf, true,  true)
+    @test dag_stats(x1; LP=false) == SurrealDAGstats(2,2,1,1,tmp,1,1,0,1,1,1,1,Inf, true,  true)
+    @test dag_stats(x41) == SurrealDAGstats(5, 5, 4, 4, ϕ, 1,    4,  0, 4, 1, 1, 4,   Inf, false, true)
+    @test dag_stats(x00) == SurrealDAGstats(4, 5, 4, 2, ϕ, 2,    0, -1, 1, 2, 2, 2.0 ,  2, false, true) 
+    @test dag_stats(s2)  == SurrealDAGstats(4, 7, 5, 3, ϕ, 3, 3//4,  0, 1, 1, 2, 1.0, 0.5, false, true)    
+    @test dag_stats(x5)  == SurrealDAGstats(5,12, 9, 3, ϕ, 6, 1//2, -1, 1, 1, 4, 2.0, 1.0, false, true)
+    
+    @test dag_stats(x43) == SurrealDAGstats(11,21,14,6,ϕ,5,4,-1,4,2,2, 5, Inf, false, true)
+    @test dag_stats(x6)  == SurrealDAGstats(45,2574,82,12,ϕ,625,6,-3,7,4,3,10,Inf, false, true) 
+    
+    @test dag_stats(x1, Dict{HashType,SurrealDAGstats}())[2] == Dict(hash(x0)=>SurrealDAGstats(1,1,0,0,ϕ,1,0,0,0,1,0,0,0.0, false, true),
+                                                                     hash(x1)=>SurrealDAGstats(2,2,1,1,ϕ,1,1,0,1,1,1,1,Inf, false, true)    )
+    @test dag_stats( dali(-2) ) == SurrealDAGstats(3, 3, 2, 2, ∅, 1, -2//1, -2//1, 0//1, 1, 1, 2, -Inf, false, true)
 
     @test dag_stats(x43).nodes == 11
     @test dag_stats(x43).nodes == nodes(x43)
@@ -456,7 +463,8 @@ x32 = convert(SurrealFinite, 3/4) + convert(SurrealFinite, 3/4)
     @test dag_stats(x43).minval == -1
     @test dag_stats(x43).maxval == 4
     @test dag_stats(x43).n_zeros == 2
-    @test dag_stats(x43).max_width == 2
+    @test dag_stats(x43).breadth == 5
+    @test dag_stats(x43).max_parents == 2
     @test generation(x0) == 0
     
     @test generation(x1) == 1
@@ -486,6 +494,9 @@ x32 = convert(SurrealFinite, 3/4) + convert(SurrealFinite, 3/4)
     @test dag_stats(x41; LP=true).longest_path == convert.(SurrealFinite, [0, 1, 2, 3, 4])
   
     @test uniqueness_max(U) == 1 # this test causes an error if we do say 2*4, without the caching in +
+
+    # final test that caching isn't messing up
+    @test dag_stats(x1; ) == SurrealDAGstats(2,2,1,1,tmp,1,1,0,1,1,1,1,Inf, true, true)
 end
 
 d33 = dali(33//2)

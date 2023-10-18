@@ -1823,11 +1823,15 @@ struct SurrealDAGstats <: SurrealStats
     longest_path::Array{SurrealFinite,1} 
     paths::BigInt # number of paths from source to sink
     value::Rational
-    minval::Rational 
-    maxval::Rational
-    n_zeros::Int64 # number of nodes with value zero: only calculate if V switch is true
-    max_width::Int64
+    minval::Rational  # max value(ancestor)
+    maxval::Rational  # min value(ancestor)
+    n_zeros::Int64 # number of nodes with value zero: only calculate if V switch is true; use as measure of leafs of tree
+    max_parents::Int64
+    # max_width::Rational # max value(P) - min value(P)
+    breadth::Rational # maxval - minval
     gap::Float64 # diff between MaxL and minR as a value, noting that it could be Inf, so use Floats
+    LP::Bool # was this calculated with LP=true?
+    V::Bool # was this calculated with V=true?
 end
 const ExistingSurrealDAGstats = Dict{HashType, SurrealDAGstats}()
 
@@ -1948,8 +1952,12 @@ end
 #    LP=true means keep track of a longest path
 #    V =true means keep track of values
 # have these as switches, because they are expensive to calculate on large DAGs
-function dag_stats( s::SurrealFinite, processed_list::Dict{SurrealFinite,SurrealDAGstats}; LP=false, V=true) 
-    if s == zero(s)    
+function dag_stats( s::SurrealFinite, processed_list::Dict{HashType,SurrealDAGstats}; first_call=false, LP=false, V=true) 
+# function dag_stats( s::SurrealFinite; LP=false, V=true) 
+    h = hash(s)
+    if haskey(ExistingSurrealDAGstats, h) && ExistingSurrealDAGstats[h].V>=V && ExistingSurrealDAGstats[h].LP>=LP && first_call
+        return ( ExistingSurrealDAGstats[h], processed_list )
+    elseif iszero(s)   
         nodes = 1  
         tree_nodes = 1
         edges = 0
@@ -1961,7 +1969,9 @@ function dag_stats( s::SurrealFinite, processed_list::Dict{SurrealFinite,Surreal
         minval = 0  
         maxval = 0 
         n_zeros = V ? 1 : 0
-        max_width = 0
+        max_parents = 0
+        # max_width = 0
+        breadth = 0  
     else
         P = parents(s) 
         nodes = 1
@@ -1979,51 +1989,58 @@ function dag_stats( s::SurrealFinite, processed_list::Dict{SurrealFinite,Surreal
             else
                 gap = convert(Rational, s.minR) - convert(Rational, s.maxL)
             end
-        else    
-            gap = NaN
+        else
+            gap = 0.0 # indicates was never calculated
         end
         minval = value 
         maxval = value
         n_zeros = V ? Int64(value == 0) : 0
-        max_width = length(P)
-        for p in P 
-             if !haskey(processed_list, p)
-                (stats,l) = dag_stats(p, processed_list; LP=LP, V=V) 
+        max_parents = length(P)
+        for p in P
+            # println(" $p")
+            if !haskey( processed_list, hash(p) )
+                stats,~ = dag_stats(p, processed_list; LP=LP, V=V) # ugly at the moment
+                # println("    in $p")
                 nodes += stats.nodes 
                 edges += stats.edges 
-                minval = min(minval, stats.minval)
-                maxval = max(maxval, stats.maxval)
-                n_zeros += stats.n_zeros
-                max_width = max(max_width, stats.max_width)
+                n_zeros += stats.n_zeros 
+                # max_width = max(max_width, stats.max_width)
             else
-                stats = processed_list[p]
-            end 
+                stats = processed_list[hash(p)]
+            end
+            max_parents = max(max_parents, stats.max_parents)
+            minval = min(minval, stats.minval)
+            maxval = max(maxval, stats.maxval)
             if stats.generation > generation
                 generation = stats.generation 
                 longest_path = LP ? copy(stats.longest_path) : ϕ
-            end  
+            end
             tree_nodes += stats.tree_nodes
             paths += stats.paths
         end
+        breadth =  maxval - minval 
         generation += 1 
         longest_path = LP ? [longest_path; s] : ϕ
     end  
-    stats = SurrealDAGstats(nodes, tree_nodes, edges, generation, longest_path, paths, value, minval, maxval, n_zeros, max_width, gap) 
-    processed_list[s] = stats # could make this a reverse list, ...
+    stats = SurrealDAGstats(nodes, tree_nodes, edges, generation, longest_path, paths, value, minval, maxval, n_zeros, max_parents, breadth, gap, LP, V) 
+    processed_list[h] = stats
+    if first_call
+        ExistingSurrealDAGstats[h] = stats
+    end
     return ( stats, processed_list )  
+    # return stats
 end 
-dag_stats(s::SurrealFinite; LP=false, V=true) = dag_stats(s, Dict{SurrealFinite,SurrealDAGstats}(); LP=LP, V=V)[1] 
+dag_stats(s::SurrealFinite; LP=false, V=true) = dag_stats(s, Dict{HashType,SurrealDAGstats}(); first_call=true, LP=LP, V=V)[1] 
 nodes(s::SurrealFinite) = dag_stats(s).nodes 
 edges(s::SurrealFinite) = dag_stats(s).edges
 paths(s::SurrealFinite) = dag_stats(s).paths
 tree_nodes(s::SurrealFinite) = dag_stats(s).tree_nodes 
-function breadth(s::SurrealFinite) 
-    d = dag_stats(s)
-    return d.maxval - d.minval
-end
+breadth(s::SurrealFinite) = dag_stats(s).breadth
+
 function width(s::SurrealFinite) 
     # not yet defined exactly what I mean here --
     #    maybe maximum number of nodes for a fixed generation?
+    #    maybe max(P) - min(P) for any ancestor
     0
 end
 
