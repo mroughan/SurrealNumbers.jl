@@ -26,10 +26,9 @@ stats.
 + random_surreals_sim_plot5.jl     -- summaries of random_surreals_comp2.jl, showing various features as function of parameters
 + random_surreals_sim_hash_plot.jl -- hash function plots
 
+NB there are a lot of output files, so they are omitted, so
 
-NB
-
-+ output data should go in a directory ```Data/``` that needs creation
-+ output plots should go in a directory called ```Plot/``` which needs creation
++ output data should go in a directory ```Data/``` that needs creation (with subdirs ```Raw/``` and ```Compiled/```)
++ output plots should go in a directory called ```Plot/s``` which needs creation
 
 
