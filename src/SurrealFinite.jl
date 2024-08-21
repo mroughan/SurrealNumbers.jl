@@ -445,14 +445,18 @@ function convert(::Type{Rational}, s::SurrealFinite )
             xr = isempty(s.R) ? sf+1 : s.minR 
             not_end = true
             k = 0
-            a = convert( Integer, sf )
+            a = Rational(convert( Integer, sf )) # make sure the arithmetic below is Rational, not FP, otherwise can get gaps
             b = a + 1
-            while not_end && k < 24 # 24 is arbitrary, but it would be painful to go lower
+            d = 0
+            max_k = 32 # arbitrary, but it would be painful to go lower
+            while not_end && k < max_k 
                 k += 1
                 d = (b+a) / 2 # a and b are real numbers, so we can do division easily
                               # but also d will be the value we return, so must be a Rational
                 # print("k=$k, a=$a, b=$b, d=$d \n")
                 
+                # α=0.9, λ=3.5, n=1000, g_0=1, seed 6, is a difficult case
+
                 c = convert(SurrealFinite,  d)
                 if xl < c < xr
                     result = Rational( d )
@@ -465,8 +469,8 @@ function convert(::Type{Rational}, s::SurrealFinite )
                     error("this case should never happen")
                 end 
             end
-            if k >= 24
-                error("number's exponent too large to convert (ie exponent <= -24)")
+            if k >= max_k
+                error("number's exponent too large to convert (ie exponent <= -$(max_k)) and a=$a, b=$b, d=$d")
             end
         end 
     end 

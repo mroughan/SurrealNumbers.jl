@@ -3,5 +3,12 @@
 *.jl.mem
 
 *~
+#*#
+todo.txt
 
 random/
+Data/
+Data.bak/
+Data.bak2/
+Plots/
+NotUsed/
