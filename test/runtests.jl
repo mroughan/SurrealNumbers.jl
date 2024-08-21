@@ -371,7 +371,7 @@ end
     @test 1//2 + x1 ≇ 2.5
 end
 
-out_dir = "Data"
+out_dir = "TestData"
 a4 = convert(SurrealFinite, 13//16)
 a5 = convert(SurrealFinite, -2//16)
 s = "{ {{{{{|0}|{0|}}|{{0|}|}}|{{{0|}|}|}}|{{{{0|}|}|}|}} | }"    # from http://goodmath.scientopia.org/2006/08/21/arithmetic-with-surreal-numbers/
