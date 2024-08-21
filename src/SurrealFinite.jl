@@ -1,4 +1,3 @@
-const HashType = UInt64
 mutable struct SurrealFinite <: Surreal
     # mutable means I can set the hash value when I need it, instead of
     #   (i) always having to calculate it recursively

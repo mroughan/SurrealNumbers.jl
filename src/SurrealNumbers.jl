@@ -39,7 +39,9 @@ export ∅, ϕ, <=, zero, one, ==, ≅, ≇, <, -, +, *, ≀, ↑, ↓, dag_add,
 export SurrealStats, SurrealDAGstats, SurrealDegreeDist, dag_stats, degree_stats, print_degree_stats, degree_dist
 
 abstract type Surreal <: Real end 
- 
+const HashType = UInt64
+export HashType
+
 @static if VERSION < v"0.7.0"
     const stdout = STDOUT
 end 
