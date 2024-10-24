@@ -199,6 +199,7 @@ V = [-6.25, -4.0, -3.25, -2.5, -2.0, -1.625, -1.0, -0.25, 0.0, 1.0, 7.0, 0.5, 1.
     @test sign(x1) == x1
     @test sign(x4) == -one(x4)
     @test sign(-x4) == one(x4)
+    # prolly should have more test cases here 
 
     @test round(x22) ≅ x22 
     @test round(x23) ≅ x23
@@ -233,6 +234,8 @@ V = [-6.25, -4.0, -3.25, -2.5, -2.0, -1.625, -1.0, -0.25, 0.0, 1.0, 7.0, 0.5, 1.
 
         @test trunc( sv ) ≅ trunc( v )
         @test isinteger( sv ) == isinteger( v )
+
+        @test sign( sv ) == sign(v)
     end
     # @test_throws ErrorException floor( convert(SurrealFinite, 10000) ) # caching integers and their floors means this is easy
     # @test_throws ErrorException floor( convert(SurrealFinite, -10000) )  # caching integers and their floors means this is easy

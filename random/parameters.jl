@@ -21,8 +21,8 @@ Nseeds = 30
 s0 = 0 # start seed number is (s0+1)
 
 parent_dist = "P"
-split_dist = "U"
-# split_dist = "B"
+# split_dist = "U"
+split_dist = "B"
 distributions = "$(parent_dist)-$(split_dist)"
 
 # parameters for determining convergence

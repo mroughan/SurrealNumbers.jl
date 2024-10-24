@@ -159,6 +159,7 @@ const ExistingNegations = Dict{HashType, HashType}()
 const ExistingFloors    = Dict{HashType, HashType}() 
 const ExistingIntegers    = Dict{HashType, Bool}() 
 const ExistingCanonicalIntegers  = Dict{HashType, Bool}() 
+const ExistingSigns  = Dict{HashType, SurrealFinite}() # don't bother with redirect here as only contains -1,0, or 1
 
 const Count         = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'n'=>0, 'c'=>0, '='=>0, '≤'=>0)
 const CountUncached = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'n'=>0, 'c'=>0, '='=>0, '≤'=>0)
@@ -238,6 +239,7 @@ function clearcache()
     global ExistingFloors    
     global ExistingIntegers  
     global ExistingCanonicalIntegers  
+    global ExistingSigns
     global Count
     global CountUncached
     global RecursionDepth
@@ -266,6 +268,7 @@ function clearcache()
     empty!(ExistingFloors)
     empty!(ExistingIntegers)
     empty!(ExistingCanonicalIntegers)
+    empty!(ExistingSigns)    
     empty!(ExistingSurrealDAGstats)
     
     reset!(Count)
@@ -1557,8 +1560,54 @@ end
 
 ###### standard math routines ##############################
 
-sign(x::SurrealFinite) = x<zero(x) ? -one(x) : x>zero(x) ? one(x) : zero(x)
+# sgn: 
+#    version 0 just uses inequalities directly
+#    version 1 uses a recursive definition avoiding inequalities
+sign_0(x::SurrealFinite) = x<zero(x) ? -one(x) : x>zero(x) ? one(x) : zero(x)
+function sign_1(x::SurrealFinite)
+    if iszero(x)
+        return x
+    end
+
+    if ismissing(x.maxL)
+        if sign(x.minR) == -one(x) || sign(x.minR) == zero(x)
+            return -one(x)
+        else
+            return zero(x)
+        end
+    else
+        s_L = sign(x.maxL)
+    end
+
+    if ismissing(x.minR)
+        if sign(x.maxL) == one(x) || sign(x.maxL) == zero(x)
+            return one(x)
+        else
+            return zero(x)
+        end
+    else
+        s_R = sign(x.minR)
+    end
+    
+    if s_L == -one(x) && (s_R == -one(x) || s_R == zero(x))
+        return -one(x)
+    elseif (s_L == zero(x) || s_L == one(x)) && s_R == one(x)
+        return one(x)
+    elseif s_L == -one(x) && s_R == one(x)
+        return zero(x)
+    else
+        error("this case should not happen: $x")
+    end
+end
+function sign(x::SurrealFinite)
+    if haskey(ExistingSigns, hash(x))
+        return ExistingSigns[ hash(x) ]
+    else
+        return sign_0(x)
+    end
+end 
 # abs(x::SurrealFinite) = x<zero(x) ? -x : x 
+
 
 # subtraction is much slower than comparison, so got rid of old versions
 # N.B. returns canonical form of floor

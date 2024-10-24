@@ -36,6 +36,9 @@ export ∅, ϕ, <=, zero, one, ==, ≅, ≇, <, -, +, *, ≀, ↑, ↓, dag_add,
     uniqueness, uniqueness_max, uniqueness_failure,
     equivtozero
 
+# for testing    
+export sign_0, sign_1
+
 export SurrealStats, SurrealDAGstats, SurrealDegreeDist, dag_stats, degree_stats, print_degree_stats, degree_dist
 
 abstract type Surreal <: Real end 
