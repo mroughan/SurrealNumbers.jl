@@ -110,7 +110,7 @@ end
 function hash( L::Vector{SurrealFinite}, R::Vector{SurrealFinite})
     return hash(L, zero(HashType) ) * hash(R, one(HashType) )
 end
-hash(x::SurrealFinite, h::Integer) = hash(x, convert(HashType, h) )
+hash(x::SurrealFinite, h::UInt) = hash(x.h, h)
 function hash(X::Vector{SurrealFinite}) # effectively depth first???
     H = hash(zero(HashType))
     for x in X
