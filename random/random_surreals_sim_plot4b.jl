@@ -121,8 +121,8 @@ for k in ["Generation","Nodes","Edges","Log2_Denominator"]
         # Plots.plot!(p1[k],  x2, exp(-λ).* λ.^x2 ./ factorial.(x2); label="Poisson parents")
         p_geom1 = 1 - y[1]
         p_geom2 = 1 - y2[1]
-        Plots.plot!(p1[k],  x2, (1 - p_geom1).* p_geom1.^x2; linestyle=:dot, label="Geoemtric approx (Uniform)")
-        Plots.plot!(p1[k],  x2, (1 - p_geom2).* p_geom2.^x2; linestyle=:dot, label="Geoemtric approx (Binomial)")
+        Plots.plot!(p1[k],  x2, (1 - p_geom1).* p_geom1.^x2; linestyle=:dot, label="Geometric approx (Uniform)")
+        Plots.plot!(p1[k],  x2, (1 - p_geom2).* p_geom2.^x2; linestyle=:dot, label="Geometric approx (Binomial)")
         Plots.plot!(p1[k],  [0.0, maximum(x2)], [f(λ), f(λ)]; linestyle=:dash, label=L"Lower bound for $k=0$")
     end
 

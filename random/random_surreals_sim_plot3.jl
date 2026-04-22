@@ -71,7 +71,7 @@ for (i,stat) in enumerate(["Mean"; "Max"])
             Plots.plot!( p2[i], [k-1; k-1], [0; stop_state] ; label="", linestyle=:dot, linewidth=2*lw)
         end
 
-        Plots.plot!( p2[i]; xlim=(0,m-1), ylim=(0,Inf), legend=:outerright )
+        Plots.plot!( p2[i]; xlim=(0,m-1), ylim=(0,Inf), legend=:outertopright )
     end 
 
 end 
