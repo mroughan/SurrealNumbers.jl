@@ -4,7 +4,7 @@ using Documenter
 DocMeta.setdocmeta!(SurrealNumbers, :DocTestSetup, :(using SurrealNumbers); recursive=true)
 
 makedocs(;
-    modules=[Polylogarithms],
+    modules=[SurrealNumbers],
     authors="Matthew Roughan <matthew.roughan@adelaide.edu.au>",
     sitename="SurrealNumbers.jl",
     format=Documenter.HTML(;
