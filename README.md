@@ -1,10 +1,6 @@
 # SurrealNumbers
 
-[![Build Status](https://travis-ci.org/mroughan/SurrealNumbers.jl.svg?branch=master)](https://travis-ci.org/mroughan/SurrealNumbers.jl)
-
-[![Coverage Status](https://coveralls.io/repos/github/mroughan/SurrealNumbers.jl/badge.svg?branch=master)](https://coveralls.io/github/mroughan/SurrealNumbers.jl?branch=master)
-
-[![codecov.io](http://codecov.io/github/mroughan/SurrealNumbers.jl/coverage.svg?branch=master)](http://codecov.io/github/mroughan/SurrealNumbers.jl?branch=master)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://mroughan.github.io/SurrealNumbers.jl/stable)
 
 
 ## Intro 
@@ -22,6 +18,9 @@ do in Matlab but "easy" to do in Julia. It might also be helpful, I
 hope, for someone trying to learn about Surreal numbers. I certainly
 did learn a lot about them that would have been easily brushed to the
 side if I had only gone through the theorems.
+
+Detailed documentation for all the functions etc is at [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://mroughan.github.io/SurrealNumbers.jl/stable).
+
 
 ## Background: the Surreal Numbers
 

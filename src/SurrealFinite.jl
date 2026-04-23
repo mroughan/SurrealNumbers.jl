@@ -1343,10 +1343,10 @@ julia> surreal2dag(convert(SurrealFinite, 0))
 digraph "0.0" {
    node_1 [shape=none,margin=0,label=
          <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
-         <TR><TD COLSPAN="2">0</TD></TR>
-         <TR><TD PORT="L"> ∅ </TD><TD PORT="R"> ∅ </TD></TR>
+         <TR><TD  CELLPADDING="5pt" COLSPAN="2"><o>0</o></TD></TR>
+         <TR><TD PORT="L"> Ø </TD><TD PORT="R"> Ø </TD></TR>
          </TABLE>>,
-         ]; 
+         ];
 }
 1
 ```
@@ -1415,11 +1415,11 @@ julia> surreal2dot(convert(SurrealFinite, 1))
 digraph "1.0" {
    node_1 [shape=none,margin=0,label=
          <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
-         <TR><TD COLSPAN="2">1</TD></TR>
-         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD PORT="0,1"> 0 </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> ϕ </TD></TR>
+         <TR><TD  CELLPADDING="5pt" COLSPAN="2"><o>1</o></TD></TR>
+         <TR><TD PORT="L"> <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0"><TR><TD CELLPADDING="1pt" PORT="0,1"> <o>0</o> </TD> &nbsp; </TR></TABLE> </TD><TD PORT="R"> Ø </TD></TR>
          </TABLE>>,
          ];
-   node_1:"0,1" -> node_2;
+   node_1:"0,1" -> node_2 [color="red3", dir=forward];
    node_2 [shape=none,margin=0,label=<<B>0</B>>]
 }
 2
@@ -1550,10 +1550,8 @@ generation(s::SurrealFinite) = dag_stats(s).generation
      
 ## Examples 
 ```jldoctest
-julia> convert(SurrealFinite, 1) - convert(SurrealFinite, 1)
-{ { ϕ | { ϕ | ϕ } } | { { ϕ | ϕ } | ϕ } }
 julia> pf( canonicalise( convert(SurrealFinite, 1) - convert(SurrealFinite, 1) ) )
-{ ϕ | ϕ }
+{ ∅ | ∅ }
 ``` 
 """
 function canonicalise(s::SurrealFinite) 
