@@ -1,0 +1,68 @@
+major changes
+
+ - hash function
+
+   + rewritten to be simpler -- not much performance change, but
+          code is cleaner.
+
+   + hash moved to be performed on creation, and all surreals created
+     are then cached, but be careful not to empty this cache as the
+     existing surreal variables don't go away
+
+   + Also modified hashes to work with Julia 1.13, where the default
+     hash seed is changing from zero(UInt) to a random value, which
+     will make the one-arg method produce different results each
+     session, but I want hashes to return predictable results because
+     otherwise nothing is comparable between sessions, and we don't
+     need hash randomness, eg this is not a crypto library.
+	
+   + initial hashes are in very rare cases potentially not unique, so
+     use linear probing to find a unique code. Now have added
+     collision measure into the Counts, to allow checking for how
+     often this is used.
+
+ - changed <= and == to use caches similar to other ops
+      	  didn't do this originally as it worked badly on
+      	  construction, causing a loop in logic, but have cleaned this
+      	  up, hopefully and massive performance improvements
+
+ - added a few new functions, e.g., equivtozero, ...
+
+ - changed DAGstats to add new statistics, (eg gap) and a new bit to
+        compute degree distributions
+
+ - added an "uncached" set of counters so can look at how well
+        cache is working
+
+ - modified counters to work on more ops, and to return cached
+        and uncached hits
+
+ - fixed < so it wasn't doing a redundant comparison
+
+ - added caches for functions like isinteger
+
+ - added functions like iscanonicalinteger, moving towards a
+   direct check for canonical
+
+ - added code to find out recursion depth (which should be related to stack size)
+    -- at the moment, just another crude global dictionary
+    -- seems OK, but is tracking 'key' functions, not actual stack depth
+
+ - test memory size when not using indirection
+
+ - floor is now engineering around the default that it returns the
+   same type (SurrealFinite), and caches in this form, but floor was
+   interwoven with other bits and pieces, so had to make lots of
+   changes throughout. Moreover, isinteger used to use floor, but newer
+   version is more direct, so can use it inside floor
+
+ - fixed an error in the value-calculation (conversion to Rational)
+   function, where floating point numbers were being used in
+   comparisons, leading to FP errors in small enough numbers that
+   cause the search to fail to converge. make sure in such routines to
+   use Rational numbers, corresponding exactly to Dyadics
+
+ - alternative version of sign function added that is recursive
+
+
+      

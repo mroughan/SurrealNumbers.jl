@@ -2,7 +2,7 @@
 
 julia_version = "1.12.6"
 manifest_format = "2.1"
-project_hash = "603b22b8514a3a3a545fba3a7b2bb6c61709e583"
+project_hash = "8a817b8efc971fc9c9e3d90df3be2eafdc58a82e"
 
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
@@ -77,12 +77,6 @@ version = "1.11.0"
 [[deps.StyledStrings]]
 uuid = "f489334b-da3d-4c2e-b8f0-e476e12c162b"
 version = "1.11.0"
-
-[[deps.SurrealNumbers]]
-deps = ["DataStructures"]
-git-tree-sha1 = "5a87a1cd74efeaf86c7fa04bf8cbc7639d46c80a"
-uuid = "58abba7c-3f8b-5571-af36-87c463197a71"
-version = "0.2.0"
 
 [[deps.TOML]]
 deps = ["Dates"]

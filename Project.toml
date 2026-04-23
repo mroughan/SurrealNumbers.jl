@@ -10,3 +10,5 @@ DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 julia = "1.10"
 DataStructures = "0.18"
 
+[workspace]
+projects = ["test", "docs", "examples", "performance_testing", "random"]
