@@ -5,7 +5,7 @@ CurrentModule = SurrealNumbers
 ```@contents
 ```
 
-# Polylogarithms
+# SurrealNumbers
 
 ```@index
 ```

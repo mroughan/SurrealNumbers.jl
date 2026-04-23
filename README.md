@@ -19,9 +19,6 @@ hope, for someone trying to learn about Surreal numbers. I certainly
 did learn a lot about them that would have been easily brushed to the
 side if I had only gone through the theorems.
 
-Detailed documentation for all the functions etc is at [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://mroughan.github.io/SurrealNumbers.jl/stable).
-
-
 ## Background: the Surreal Numbers
 
 Surreal numbers aren't numbers as we are taught, but they have many of
@@ -40,7 +37,7 @@ first surreal number (usually denoted zero, because it will turn out
 to be the additive identity) is $\{ | \}$, where I will use this
  bracket and pipe notation to denote $x = \{ X_L | X_R\}$. Also, to
  make the empty spaces clearer (and the coding more efficient) I have
- defined $ ∅ = \{ \} $ the empty set. 
+ defined $∅ = \{ \}$ the empty set. 
 
 Then on the "first day" a new generation of surreals can be created in
 terms of the initial case. On the second day we create a new generation
