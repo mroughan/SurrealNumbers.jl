@@ -1,3 +1,9 @@
+const DEBUG = 0
+# DEBUG = 1 measures recursion depth
+# DEBUG = 2 reports what is happening in some cases
+# DEBUG = 5 super heavy reporting -- don't expect good performance
+
+
 mutable struct SurrealFinite <: Surreal
     # mutable means I can set the hash value when I need it, instead of
     #   (i) always having to calculate it recursively
@@ -57,6 +63,8 @@ mutable struct SurrealFinite <: Surreal
             end
             if !haskey(ExistingSurreals, h)
                 # make sure every surreal we have calculated a hash for is registered
+                # using linear probing, but note that hashes are no longer deterministic in the sense
+                # that nowe they depend on what has already happened, ie what previous surreals are created
                 CountUncached['n'] += 1
                 ExistingSurreals[h] = new(shorthand, L, R, maxL, minR, h)
             else
@@ -65,6 +73,7 @@ mutable struct SurrealFinite <: Surreal
             dec_depth()
             return ExistingSurreals[h]
         else 
+            dec_depth()
             error("Surreal number must have L < R (currently the extreme values are $(maxL) and $(minR) )") 
         end  
     end 
@@ -74,6 +83,24 @@ SurrealFinite(shorthand::String, L::AbstractArray, R::AbstractArray ) =
 SurrealFinite( L::AbstractArray, R::AbstractArray ) = SurrealFinite( "", L, R)
 ≀(L::AbstractArray, R::AbstractArray) = SurrealFinite( L, R )
 
+# to be used in constructor, once I am happy with it
+function extreme_sort( L::Vector{SurrealFinite})
+    if length(L) > 1
+        newL = sort( unique(L) )
+        minL = L[1]
+        maxL = L[end]
+    elseif length(L) == 1
+        newL = L
+        maxL = L[1]
+        minL = L[1]
+    else 
+        newL = []
+        maxL = missing
+        minL = missing
+    end 
+    return minL, maxL, newL
+end
+ 
 function quick_compare(A1::Vector{SurrealFinite}, A2::Vector{SurrealFinite})
     # try to do a quick comparison of two sets of surreals to see if they are equal
     # could create a == for vectors of surreals, but this is trying to work without a nest
@@ -99,7 +126,7 @@ const SurrealDyadic = SurrealFinite
 
 function hash(x::SurrealFinite)
     if x.h == 0
-        x.h = hash(x.L, zero(UInt64) ) * hash(x.R, one(UInt64) )
+        x.h = hash(x.L, zero(HashType) ) * hash(x.R, one(HashType) )
         # this branch is only used on construction, in fact, not even there now
         # note we don't include shorthand or hash in calculation of hash
         #    -- they former doesn't matter, the latter would be circular
@@ -118,7 +145,7 @@ function hash(X::Vector{SurrealFinite}) # effectively depth first???
     end
     return H
 end
-hash(X::Vector{SurrealFinite}, h::UInt64) = hash( hash(X), h )
+hash(X::Vector{SurrealFinite}, h::HashType) = hash( hash(X), h )
 # function hash_old(X::Vector{SurrealFinite}, h::UInt64) # effectively breadth first???
 #     if isempty(X)
 #         hash(zero(UInt64), h) 
@@ -148,6 +175,7 @@ const ExistingLEQ2      = SwissDict{HashType, SwissDict{HashType,Int64}}() # sma
 const ExistingLEQ3      = SwissDict{Tuple{HashType, HashType},Bool}() # flat version is nearly twice as big???
 const ExistingLEQ4      = SwissDict{HashType, Set{HashType}}() # store LEQ/GT in least significant bit
 const ExistingLEQ5      = SwissDict{HashType, SwissDict{HashType,Nothing}}() # store LEQ/GT in least significant bit
+const ExistingSigns     = SwissDict{HashType, SurrealFinite}() # don't bother with redirect here as only contains -1,0, or 1
 const ExistingEQ        = Dict{HashType, Dict{HashType,Bool}}() 
 const ExistingProducts  = Dict{HashType, Dict{HashType,HashType}}()
 # const ExistingSums      = Dict{HashType, Dict{HashType,HashType}}() 
@@ -159,11 +187,41 @@ const ExistingNegations = Dict{HashType, HashType}()
 const ExistingFloors    = Dict{HashType, HashType}() 
 const ExistingIntegers    = Dict{HashType, Bool}() 
 const ExistingCanonicalIntegers  = Dict{HashType, Bool}() 
-const ExistingSigns  = Dict{HashType, SurrealFinite}() # don't bother with redirect here as only contains -1,0, or 1
 
-const Count         = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'n'=>0, 'c'=>0, '='=>0, '≤'=>0)
-const CountUncached = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'n'=>0, 'c'=>0, '='=>0, '≤'=>0)
+# structure to hold stats on a surreal form
+abstract type SurrealStats end
+struct SurrealDAGstats <: SurrealStats
+    nodes::Int64 # nodes in its DAG
+    tree_nodes::Int64 # nodes in a tree-based representation of the graph
+    edges::Int64 # edges in its DAG
+    generation::Int32 # generation/birthday of the surreal, i.e., shortest path to root at zero
+    longest_path::Array{SurrealFinite,1} 
+    paths::BigInt # number of paths from source to sink
+    value::Rational
+    minval::Rational  # max value(ancestor)
+    maxval::Rational  # min value(ancestor)
+    n_zeros::Int64 # number of nodes with value zero: only calculate if V switch is true; use as measure of leafs of tree
+    max_parents::Int64
+    # max_width::Rational # max value(P) - min value(P)
+    breadth::Rational # maxval - minval
+    gap::Float64 # diff between MaxL and minR as a value, noting that it could be Inf, so use Floats
+    LP::Bool # was this calculated with LP=true?
+    V::Bool # was this calculated with V=true?
+end
+const ExistingSurrealDAGstats = Dict{HashType, SurrealDAGstats}()
+
+const HashList = [ExistingSurreals, ExistingConversions, ExistingCanonicals, ExistingCanonicalsC, 
+                  ExistingLEQ, ExistingLEQ1, ExistingLEQ2, ExistingLEQ3, ExistingLEQ4, ExistingLEQ5, ExistingEQ,
+                  ExistingProducts, 
+                  ExistingSums, ExistingSums2, ExistingSums3, ExistingSums4, ExistingNegations,
+                  ExistingFloors, ExistingIntegers, ExistingCanonicalIntegers, ExistingSigns,
+                  ExistingSurrealDAGstats]
+
+const Count         = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'n'=>0, 'c'=>0, '='=>0, '≤'=>0, '±'=>0)
+const CountUncached = Dict{Char, Integer}('+'=>0, '*'=>0, '-'=>0, 'n'=>0, 'c'=>0, '='=>0, '≤'=>0, '±'=>0)
             # note that "uncached also excludes trivial cases like 0*x
+
+
 function cache_hit_percent()
     global Count
     global CountUncached
@@ -176,15 +234,19 @@ end
 const RecursionDepth = Dict{String, Integer}("current_depth"=>0, "max_depth"=>0)
     # depth should never be <0, but use signed int for debugging
 function inc_depth()
-    global RecursionDepth
-    RecursionDepth["current_depth"] += 1
-    if RecursionDepth["current_depth"] > RecursionDepth["max_depth"]
-        RecursionDepth["max_depth"] = RecursionDepth["current_depth"]
-    end 
+    if DEBUG >= 1
+        global RecursionDepth
+        RecursionDepth["current_depth"] += 1
+        if RecursionDepth["current_depth"] > RecursionDepth["max_depth"]
+            RecursionDepth["max_depth"] = RecursionDepth["current_depth"]
+        end 
+    end
 end
 function dec_depth()
-    global RecursionDepth
-    RecursionDepth["current_depth"] -= 1
+    if DEBUG >= 1
+        global RecursionDepth
+        RecursionDepth["current_depth"] -= 1
+    end
 end 
 
 # const ϕ = SVector{0,SurrealFinite}()
@@ -217,60 +279,12 @@ function reset!(d::Dict)
     end
 end 
 
-function clearcache() 
-    global ExistingSurreals 
-    global ExistingConversions 
-    global ExistingCanonicals 
-    global ExistingCanonicalsC
-    global ExistingLEQ
-    global ExistingLEQ1
-    global ExistingLEQ2
-    global ExistingLEQ3
-    global ExistingLEQ4
-    global ExistingLEQ5
-    # global ExistingGT
-    global ExistingEQ
-    global ExistingProducts
-    global ExistingSums
-    global ExistingSums2
-    global ExistingSums3
-    global ExistingSums4
-    global ExistingNegations
-    global ExistingFloors    
-    global ExistingIntegers  
-    global ExistingCanonicalIntegers  
-    global ExistingSigns
-    global Count
-    global CountUncached
-    global RecursionDepth
-    global ExistingSurrealDAGstats
+function clearcache( ; H = HashList ) 
+    # can't empty ExistingSurreals, or it breaks things, and doesn't reduce costs much anyway
+    for C in filter(x -> x!=ExistingSurreals, H)
+        empty!(C)
+    end
 
-    # can't really empty this cache, or it breaks things, and doesn't reduce costs much anyway
-    # empty!(ExistingSurreals)
-    
-    empty!(ExistingConversions)
-    empty!(ExistingCanonicals)
-    empty!(ExistingCanonicalsC)
-    empty!(ExistingLEQ)
-    empty!(ExistingLEQ1)
-    empty!(ExistingLEQ2)
-    empty!(ExistingLEQ3)
-    empty!(ExistingLEQ4)
-    empty!(ExistingLEQ5)
-    # empty!(ExistingGT)
-    empty!(ExistingEQ)
-    empty!(ExistingProducts)
-    empty!(ExistingSums)
-    empty!(ExistingSums2)
-    empty!(ExistingSums3)
-    empty!(ExistingSums4)
-    empty!(ExistingNegations)
-    empty!(ExistingFloors)
-    empty!(ExistingIntegers)
-    empty!(ExistingCanonicalIntegers)
-    empty!(ExistingSigns)    
-    empty!(ExistingSurrealDAGstats)
-    
     reset!(Count)
     reset!(CountUncached)
     reset!(RecursionDepth)
@@ -281,6 +295,13 @@ function cache_stats_summary( )
     # this function is really just a reminder of how to do this
     df = Main.varinfo( SurrealNumbers, r"Existing*" )
     return df
+end 
+
+function cache_stats_summary2( ; H = HashList )
+    # this function is really just a reminder of how to do this
+    for C in H
+        println(" cache $C has $(length(C)) elements")
+    end
 end 
 
 function cache_stats( C::AbstractDict{S, T} ) where {T <: Any, S <: Number}
@@ -308,8 +329,11 @@ function cache_stats_LEQcount( )
     end
     k = findall(y .> 0)
     return x[k], y[k]
-end 
+end
 
+##
+## type conversion stuff, which is doing stuff like evaluting
+##
 
 function convert(::Type{SurrealFinite}, n::Int )  
     global ExistingSurreals 
@@ -368,7 +392,7 @@ function convert(::Type{SurrealFinite}, r::Rational )
     # 
     return result
 end
-function convert(::Type{SurrealFinite}, f::Float64 ) 
+function convert(::Type{SurrealFinite}, f::AbstractFloat ) 
     if isinteger(f) 
         return convert(SurrealFinite, convert(Int64,f) )
     elseif isfinite(f)
@@ -399,8 +423,11 @@ function convert(::Type{SurrealFinite}, f::Float64 )
         end
     end 
 end 
-dali(x) = convert(SurrealFinite, x)
-SurrealFinite(x) = convert(SurrealFinite, x)
+dali(x::Real) = convert(SurrealFinite, x)
+SurrealFinite(x::Real) = convert(SurrealFinite, x)
+
+# OK, this does strings, but I no longer remember how
+SurrealFinite(x::AbstractString) = convert(SurrealFinite, x)
 
 function convert(::Type{T}, s::SurrealFinite ) where T <: Integer
     global ExistingConversions
@@ -511,7 +538,7 @@ end
 # promote all numbers to surreals for calculations
 promote_rule(::Type{T}, ::Type{SurrealFinite}) where {T<:Real} = SurrealFinite
 
-# relations: the latest version uses the fact that letf and right sets are sorted
+# relations: the latest version uses the fact that left and right sets are sorted
 function leq_without_cache(x::SurrealFinite, y::SurrealFinite)
     # slightly misnamed -- it can use the cache for recursed calculations, just not at the top level
     global CountUncached
@@ -689,7 +716,23 @@ function leq_5(x::SurrealFinite, y::SurrealFinite)
     return result
 end
 
-leq(x::SurrealFinite, y::SurrealFinite) = (inc_depth(); b=leq_5(x,y); dec_depth(); return b)
+function leq(x::SurrealFinite, y::SurrealFinite)
+    inc_depth() 
+        if DEBUG >=5
+        calling_seq = Array{Symbol,1}(undef,7)
+        calling_seq[1] = StackTraces.stacktrace()[1].func
+        calling_seq[2] = StackTraces.stacktrace()[2].func
+        calling_seq[3] = StackTraces.stacktrace()[3].func
+        calling_seq[4] = StackTraces.stacktrace()[4].func
+        calling_seq[5] = StackTraces.stacktrace()[5].func
+        calling_seq[6] = StackTraces.stacktrace()[6].func
+        calling_seq[7] = StackTraces.stacktrace()[7].func
+        println("  debug: $x>=$y, called seq is $(calling_seq)")
+    end
+    b=leq_5(x,y)
+    dec_depth()
+    return b
+end 
 
 # using SparseArrays doesn't seem to work as there is a massive hit to create a big enough sparse array even though empty
 # const ExistingLEQ1 = spzeros(Bool, 2^16, 2^16)
@@ -728,7 +771,7 @@ leq(x::SurrealFinite, y::SurrealFinite) = (inc_depth(); b=leq_5(x,y); dec_depth(
 
 <=(x::SurrealFinite, y::SurrealFinite) = leq(x, y)
 <(x::SurrealFinite, y::SurrealFinite) = !(y<=x)
-#### can't us ≡ because it is used for ===
+#### can't use ≡ because it is used for ===
 # ===(x::SurrealFinite, y::SurrealFinite) = x<=y && y<x # causes an error
 #     === is 'egal', and hardcoded for mutables to test they are same object in memory
 ≅(x::SurrealFinite, y::SurrealFinite) = x<=y && y<=x
@@ -817,13 +860,16 @@ function equals(x::SurrealFinite, y::SurrealFinite)
             ExistingLEQ[hx][hy] = true # we get this for free, seems like lookup in LEQ would save memory, but doesn't save time :(
             # ExistingEQ[hy][hx] = true
         end
-    end 
+    end
     dec_depth()
     return ExistingEQ[hx][hy]
 end
 ==(x::SurrealFinite, y::SurrealFinite) = x===y || equals(x, y)
 iszero(x::SurrealFinite) = isempty(x.L) && isempty(x.R) # tests for canonical zero 
 equivtozero(x::SurrealFinite) = x ≅ zero(x)             # tests equiv to zero 
+
+isone(x::SurrealFinite) = x === SurrealOne # maybe make this a structural question, instead of comparing to static?
+isminusone(x::SurrealFinite) = x === SurrealMinusOne # maybe make this a structural question, instead of comparing to static?
 
 # comparisons between sets (i.e., arrays) are all-to-all, so
 #   (1) don't have to be the same size
@@ -1168,6 +1214,20 @@ function convert(::Type{SurrealFinite}, s::AbstractString )
         s = replace(s, r"phi|\\phi|ϕ|∅|\{\}" => "") # replace phi or \phi with empty set
     end
     # println("     s1 = $s")
+
+    # # # if its just a number, like "1", the convert directly
+    # r_integer = r"^\s*([+-]?\d+)\s*$"
+    # r_rational = r"^\s*([+-]?\d+\s*//\s*\d+)\s*$"
+    # # r_float = r""
+    # if occursin(r_integer, s)
+    #     return SurrealFinite( parse(Int, s) )
+    # elseif occursin(r_rational, s)
+    #     return SurrealFinite( parse(Rational{Int64}, s) )
+    # # elseif 
+
+    # end
+
+    # otherwise 
     not_end = true
     basic_number = r"\{([^{}|]*)\|([^{|}]*)\}"
     while not_end
@@ -1562,51 +1622,144 @@ end
 
 # sgn: 
 #    version 0 just uses inequalities directly
-#    version 1 uses a recursive definition avoiding inequalities
+#    version 1 and 2 uses a recursive definition avoiding inequalities
+#    version c uses conversion to reals
 sign_0(x::SurrealFinite) = x<zero(x) ? -one(x) : x>zero(x) ? one(x) : zero(x)
-function sign_1(x::SurrealFinite)
-    if iszero(x)
-        return x
-    end
 
+function sign_c(x::SurrealFinite) # do the conversion to a real, and then calculate
+    v = convert(Rational, x)
+    return dali( sign( v ))
+end
+
+function sign_1(x::SurrealFinite)
+    # implicitly (because of call from sign()) we know x!=0, so both sets can't be empty
     if ismissing(x.maxL)
-        if sign(x.minR) == -one(x) || sign(x.minR) == zero(x)
-            return -one(x)
+        tmp = sign(x.minR; version=sign_1)
+        if isminusone(tmp) || iszero(tmp)
+            return SurrealMinusOne
         else
             return zero(x)
         end
     else
-        s_L = sign(x.maxL)
+        s_L = sign(x.maxL; version=sign_1)
     end
 
     if ismissing(x.minR)
-        if sign(x.maxL) == one(x) || sign(x.maxL) == zero(x)
+        if isone(s_L) || iszero(s_L)
             return one(x)
         else
             return zero(x)
         end
     else
-        s_R = sign(x.minR)
+        s_R = sign(x.minR; version=sign_1)
     end
     
-    if s_L == -one(x) && (s_R == -one(x) || s_R == zero(x))
-        return -one(x)
-    elseif (s_L == zero(x) || s_L == one(x)) && s_R == one(x)
+    if isminusone(s_L) && ( isminusone(s_R) || iszero(s_R) )
+        return SurrealMinusOne
+    elseif ( iszero(s_L) || isone(s_L) ) && isone(s_R )
         return one(x)
-    elseif s_L == -one(x) && s_R == one(x)
+    elseif isminusone(s_L) && isone(s_R)
         return zero(x)
     else
         error("this case should not happen: $x")
     end
 end
-function sign(x::SurrealFinite)
-    if haskey(ExistingSigns, hash(x))
-        return ExistingSigns[ hash(x) ]
+
+function sign_2(x::SurrealFinite) # same as sign_1, but optimised
+    # implicitly (because of call from sign()) we know x!=0, so both sets can't be empty
+    if ismissing(x.maxL)
+        tmp = sign(x.minR; version=sign_2)
+        if isminusone(tmp)  || iszero(tmp)
+            return SurrealMinusOne
+        else
+            return zero(x)
+        end
     else
-        return sign_0(x)
+        s_L = sign(x.maxL; version=sign_2)
+        if iszero(s_L) || isone(s_L)
+            return one(x) # implicitly we assume s_R == one(x) or missing
+        end
+    end
+
+    if ismissing(x.minR)
+        # implicitly assumed s_L == -1, because of earlier check
+        return zero(x)
+    else
+        s_R = sign(x.minR; version=sign_2)
+    end
+
+    # implicitly assumed s_L == -1, because of earlier check
+    if isminusone(s_R) || iszero(s_R)
+        return SurrealMinusOne
+    elseif isone(s_R)
+        return zero(x)
+    else
+        error("this case should not happen: $x")
+    end
+end
+
+function sign(x::SurrealFinite; version=sign_2)
+    global Count
+    global CountUncached
+    Count['±'] += 1
+    if DEBUG >=2
+        calling_seq = Array{Symbol,1}(undef,3)
+        calling_seq[1] = StackTraces.stacktrace()[1].func
+        calling_seq[2] = StackTraces.stacktrace()[2].func
+        calling_seq[3] = StackTraces.stacktrace()[3].func
+        println("  debug:  called seq is $(calling_seq)  on $x, type=$(typeof(x))")
+    end
+    inc_depth() 
+    if iszero(x) || isminusone(x) || isone(x)
+        dec_depth() 
+        return x
+    end
+    h = hash(x)
+    if !haskey(ExistingSigns, h)
+        CountUncached['±'] += 1
+        ExistingSigns[ h ] = version(x)
+    end
+    dec_depth()
+    return ExistingSigns[ h ]
+end 
+
+function sign_uncached(x::SurrealFinite; version=sign_2) 
+    # version doesn't really do anything here, but its because this is a version of sign_2
+    if iszero(x) || isminusone(x) || isone(x)
+        return x
+    end
+    
+    if ismissing(x.maxL)
+        tmp = sign_uncached(x.minR)
+        if isminusone(tmp)  || iszero(tmp)
+        else
+            return zero(x)
+        end
+    else
+        s_L = sign_uncached(x.maxL)
+        if iszero(s_L) || isone(s_L)
+            return one(x) # implicitly we assume s_R == one(x) or missing
+        end
+    end
+
+    if ismissing(x.minR)
+        # implicitly assumed s_L == -1, because of earlier check
+        return zero(x)
+    else
+        s_R = sign_uncached(x.minR)
+    end
+
+    # implicitly assumed s_L == -1, because of earlier check
+    if isminusone(s_R) || iszero(s_R)
+        return SurrealMinusOne
+    elseif isone(s_R)
+        return zero(x)
+    else
+        error("this case should not happen: $x")
     end
 end 
-# abs(x::SurrealFinite) = x<zero(x) ? -x : x 
+ 
+abs(x::SurrealFinite) = isminusone(sign(x)) ? -x : x 
 
 
 # subtraction is much slower than comparison, so got rid of old versions
@@ -1864,29 +2017,8 @@ isancestor(s::SurrealFinite, t::SurrealFinite) = s ⪯ t && s!=t
 ############################################
 
 # extra analysis functions
-abstract type SurrealStats end
 
-# structure to hold stats on a surreal form
-struct SurrealDAGstats <: SurrealStats
-    nodes::Int64 # nodes in its DAG
-    tree_nodes::Int64 # nodes in a tree-based representation of the graph
-    edges::Int64 # edges in its DAG
-    generation::Int32 # generation/birthday of the surreal, i.e., shortest path to root at zero
-    longest_path::Array{SurrealFinite,1} 
-    paths::BigInt # number of paths from source to sink
-    value::Rational
-    minval::Rational  # max value(ancestor)
-    maxval::Rational  # min value(ancestor)
-    n_zeros::Int64 # number of nodes with value zero: only calculate if V switch is true; use as measure of leafs of tree
-    max_parents::Int64
-    # max_width::Rational # max value(P) - min value(P)
-    breadth::Rational # maxval - minval
-    gap::Float64 # diff between MaxL and minR as a value, noting that it could be Inf, so use Floats
-    LP::Bool # was this calculated with LP=true?
-    V::Bool # was this calculated with V=true?
-end
-const ExistingSurrealDAGstats = Dict{HashType, SurrealDAGstats}()
-
+# see start for DAGstats definition
 mutable struct SurrealDegreeDist <: SurrealStats
     s::SurrealFinite
     nodes::Int64
@@ -1964,6 +2096,7 @@ function print_degree_stats( stats )
 #        println("   $(ExistingSurreals[x]): $(stats.out_degree[x])")         
 #    end
 end
+
 function degree_dist( stats )
     in_degrees = [ stats.in_degree[x] for x in keys(stats.in_degree)]
     out_degrees = [ stats.out_degree[x] for x in keys(stats.in_degree)]

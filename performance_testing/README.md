@@ -7,3 +7,9 @@ code. Mostly these are used for testing potential speed-up mods.
 
 Some other performance measurements take place in '''examples'''.
 
++++++++++++++++++++++++
+
+TestData comes from "random"
+	 -- copied because files in random are in git
+
+

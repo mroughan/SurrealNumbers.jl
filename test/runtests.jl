@@ -134,6 +134,11 @@ end
     @test x1*x1 ≅ x1
     @test x0*x1 ≅ x0
 
+    # some identities
+    @test -x4 == dali(-1) * x4
+    @test iszero( dali(0) * x4)
+    @test x4 == dali(1) * x4
+
     @test x4*x0 ≅ x0 # this case broke things before
     dag_stats(dali(-2))
     @test x11/one(x11) ≅ -x1
@@ -199,6 +204,26 @@ V = [-6.25, -4.0, -3.25, -2.5, -2.0, -1.625, -1.0, -0.25, 0.0, 1.0, 7.0, 0.5, 1.
     @test sign(x1) == x1
     @test sign(x4) == -one(x4)
     @test sign(-x4) == one(x4)
+
+    @test sign(x0; version=sign_1) == x0
+    @test sign(x1; version=sign_1) == x1
+    @test sign(x4; version=sign_1) == -one(x4)
+    @test sign(-x4; version=sign_1) == one(x4)
+
+    @test sign(x0; version=sign_2) == x0
+    @test sign(x1; version=sign_2) == x1
+    @test sign(x4; version=sign_2) == -one(x4)
+    @test sign(-x4; version=sign_2) == one(x4)
+
+    @test sign(x0; version=sign_c) == x0
+    @test sign(x1; version=sign_c) == x1
+    @test sign(x4; version=sign_c) == -one(x4)
+    @test sign(-x4; version=sign_c) == one(x4)
+
+    @test sign_uncached(x0; version=sign_1) == x0
+    @test sign_uncached(x1; version=sign_1) == x1
+    @test sign_uncached(x4; version=sign_1) == -one(x4)
+    @test sign_uncached(-x4; version=sign_1) == one(x4)
     # prolly should have more test cases here 
 
     @test round(x22) ≅ x22 
@@ -236,6 +261,11 @@ V = [-6.25, -4.0, -3.25, -2.5, -2.0, -1.625, -1.0, -0.25, 0.0, 1.0, 7.0, 0.5, 1.
         @test isinteger( sv ) == isinteger( v )
 
         @test sign( sv ) == sign(v)
+        @test sign( sv ; version=sign_1 ) == sign(v)
+        @test sign( sv ; version=sign_2 ) == sign(v)
+        @test sign_uncached( sv ; version=sign_1 ) == sign(v)
+
+        @test abs( sv ) == abs(v)
     end
     # @test_throws ErrorException floor( convert(SurrealFinite, 10000) ) # caching integers and their floors means this is easy
     # @test_throws ErrorException floor( convert(SurrealFinite, -10000) )  # caching integers and their floors means this is easy
