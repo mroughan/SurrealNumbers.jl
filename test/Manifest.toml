@@ -1,8 +1,8 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.13.0-beta3"
+julia_version = "1.12.6"
 manifest_format = "2.1"
-project_hash = "6aa400170ee5d5ca363db128804b1c24be3b26e6"
+project_hash = "603b22b8514a3a3a545fba3a7b2bb6c61709e583"
 
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
@@ -11,7 +11,6 @@ version = "1.11.0"
 [[deps.Compat]]
 deps = ["TOML", "UUIDs"]
 git-tree-sha1 = "9d8a54ce4b17aa5bdce0ea5c34bc5e7c340d16ad"
-registries = "General"
 uuid = "34da2185-b29b-5c13-b0c7-acf172513d20"
 version = "4.18.1"
 
@@ -25,7 +24,6 @@ version = "4.18.1"
 [[deps.DataStructures]]
 deps = ["Compat", "InteractiveUtils", "OrderedCollections"]
 git-tree-sha1 = "3dbd312d370723b6bb43ba9d02fc36abade4518d"
-registries = "General"
 uuid = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 version = "0.18.15"
 
@@ -55,7 +53,6 @@ version = "1.11.0"
 
 [[deps.OrderedCollections]]
 git-tree-sha1 = "05868e21324cede2207c6f0f466b4bfef6d5e7ee"
-registries = "General"
 uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 version = "1.8.1"
 
@@ -71,7 +68,7 @@ version = "1.11.0"
 
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
-version = "1.0.0"
+version = "0.7.0"
 
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
@@ -83,8 +80,8 @@ version = "1.11.0"
 
 [[deps.SurrealNumbers]]
 deps = ["DataStructures"]
-path = "/home/matt/Dropbox/src/Julia/SurrealNumbers"
-uuid = "fd883f9a-d946-4304-80b3-f288c1989028"
+git-tree-sha1 = "5a87a1cd74efeaf86c7fa04bf8cbc7639d46c80a"
+uuid = "58abba7c-3f8b-5571-af36-87c463197a71"
 version = "0.2.0"
 
 [[deps.TOML]]
