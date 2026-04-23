@@ -1,14 +1,16 @@
 name = "SurrealNumbers"
 uuid = "58abba7c-3f8b-5571-af36-87c463197a71"
-authors = ["Matthew Roughan <matthew.roughan@adelaide.edu.au>"]
 version = "0.2.0"
-
-[deps]
-DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
-
-[compat]
-julia = "1.10"
-DataStructures = "0.18"
+authors = ["Matthew Roughan <matthew.roughan@adelaide.edu.au>"]
 
 [workspace]
 projects = ["test", "docs", "examples", "performance_testing", "random"]
+
+[deps]
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
+DocumenterTools = "35a29f4d-8980-5a13-9543-d66fff28ecb8"
+
+[compat]
+DataStructures = "0.18"
+DocumenterTools = "0.1.21"
+julia = "1.10"

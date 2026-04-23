@@ -202,7 +202,7 @@ The dyadic rational numbers are those that have a denominator that is
 an exact power of 2, that is, numbers of the form (note seems that
 GitHub doesn't let me use Mathjax to interpret maths). 
 
-     \[ x = \frac{ n }{ 2^k } \]
+\[ x = \frac{ n }{ 2^k } \]
 
 It turns out that every dyadic has a finite representation as a
 surreal, and every finite surreal represents a dyadic. The easiest way
@@ -250,7 +250,7 @@ read suggests that this is because this is a core operation, that
 might cause problems if a user broke it. From what I can tell, $===$
 tests that the things being tested are the same object, i.e. ,the same
 piece of memory. That doesn't seem like something we want to mess
-with. 
+with.  
 
  + https://docs.julialang.org/en/stable/devdocs/functions/#Builtins-1
  + https://discourse.julialang.org/t/overload-for-custom-type/4898
@@ -265,9 +265,9 @@ could define it in several ways, but the standard is
 
 + integers n => $n+1 = \{ n | \}$
 
-+ dyadic fraction => $ x = \frac{ n }{ 2^k } $ (for n odd) becomes
++ dyadic fraction => $x = \frac{ n }{ 2^k }$ (for n odd) becomes
 
-     \[  \{ x - 1/2^{k} | x + 1/2^{k} \} \]
+$$\{ x - 1/2^{k} | x + 1/2^{k} \}$$
 
 + negative number => use the identity that $-x = \{-X_R | -X_L\}$
 
