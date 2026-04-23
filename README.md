@@ -199,10 +199,9 @@ is often as the hash is used to speed up other operations.
 ### Dyadic numbers
 
 The dyadic rational numbers are those that have a denominator that is
-an exact power of 2, that is, numbers of the form (note seems that
-GitHub doesn't let me use Mathjax to interpret maths). 
+an exact power of 2, ie in the form: 
 
-\[ x = \frac{ n }{ 2^k } \]
+$$x = \frac{ n }{ 2^k }.$$
 
 It turns out that every dyadic has a finite representation as a
 surreal, and every finite surreal represents a dyadic. The easiest way
@@ -497,7 +496,7 @@ recursively.  Generation comes from Knuth's story where it's called
 the "birth day" of the surreal. Generation can be thought of as a
 function $g(\cdot)$
 
-     \[ g(x) = \sup_{y \in X_L \cup X_R} \big[ g(y) + 1 \big] \]
+$$g(x) = \sup_{y \in X_L \cup X_R} \big[ g(y) + 1 \big].$$
 
 Implicitly, generation is the tree *depth*, if viewed as the recursive
 tree shown above. 
