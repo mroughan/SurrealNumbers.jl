@@ -11,6 +11,6 @@ DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 DocumenterTools = "35a29f4d-8980-5a13-9543-d66fff28ecb8"
 
 [compat]
-DataStructures = "0.18"
+DataStructures = "0.18, 0.19"
 DocumenterTools = "0.1.21"
 julia = "1.10"
