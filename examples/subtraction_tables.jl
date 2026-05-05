@@ -1,9 +1,12 @@
-using IndexedTables
+# using IndexedTables
+using DataFrames
 using FileIO
 using SurrealNumbers 
-using CSVFiles # needed in julia v1.1.0
+using CSV
+# using CSVFiles # needed in julia v1.1.0
 out_dir = "Data" 
 fig_dir = "Figs" 
+include("write_machine_details.jl")
 
 # subtraction table
 x = convert.(SurrealFinite, [0, 1/2, 1, 2])
@@ -48,10 +51,10 @@ i = 0
 for i=1:n 
     println(ns1[i], " - ", ns2[i])
     t[i] = Inf
-    b = 0
-    g = 0
-    mem = 0
-    val = 0 
+    global b = 0
+    global g = 0
+    global mem = 0
+    global val = 0 
     for j=1:m[i]
         clearcache()
         val, time, b, g, mem = @timed convert(SurrealFinite, ns1[i]) - convert(SurrealFinite, ns2[i])
@@ -65,24 +68,22 @@ for i=1:n
     c_times[i] = Count['*']
     c_created[i] = Count['c'] 
     c_equals[i] = Count['=']
-    c_leq[i] = Count['≦'] 
+    c_leq[i] = Count['≤']
 end
 s = dag_stats.( x )
 no = [s[i].nodes for i=1:length(s)]
 ed = [s[i].edges for i=1:length(s)]
 p = [s[i].paths for i=1:length(s)]
-mw = [s[i].max_width for i=1:length(s)]
+# mw = [s[i].max_width for i=1:length(s)]
 d = (ed .+ 1) ./ no
 g = [s[i].generation for i=1:length(s)]
 t = t./m[1:n]
 bytes = bytes
 
-t1 = table((i=0:n-1,
-               n1=ns1, 
+t1 = DataFrame(n1=ns1, 
                n2=ns2,
                nodes=no,
                edges=ed,
-               max_width=mw,
                paths=p,
                density=d,
                generation=g,
@@ -92,11 +93,11 @@ t1 = table((i=0:n-1,
                prods=c_times,
                created=c_created,
                equals=c_equals,
-               leq=c_leq);
-           pkey = [:i])
+               leq=c_leq
+               )
 
-save(joinpath(@__DIR__, out_dir, "subtraction_tables.csv"), t1)
-
+output_file = joinpath(@__DIR__, out_dir, "subtraction_tables_$(VERSION).csv")
+CSV.write(output_file, t1)
 
 # examples with diagrams
 a21 = convert(SurrealFinite, 1) - convert(SurrealFinite, 1)
@@ -163,3 +164,6 @@ run(`dot -Tsvg -O $file`)
 
  
  
+
+machine_file = joinpath(@__DIR__, out_dir, "subtraction_tables_$(VERSION).machine")
+write_machine_details(machine_file)

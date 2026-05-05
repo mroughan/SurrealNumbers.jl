@@ -1,4 +1,5 @@
-using IndexedTables
+# using IndexedTables
+using DataFrames
 @static if VERSION < v"0.7.0"
 else
     using Printf # @sprintf moved here from 0.6 -> 1.0
@@ -6,9 +7,11 @@ end
 using FileIO
 using LatexPrint
 using SurrealNumbers
-using CSVFiles # earlier Julia version seem to need this explicitly
+# using CSVFiles # earlier Julia version seem to need this explicitly
+using CSV
 out_dir = "Data"
 fig_dir = "Figs"
+include("write_machine_details.jl")
 
 convert.(SurrealFinite, 1:12)
 convert(SurrealFinite, 1) * convert(SurrealFinite, 2)
@@ -91,7 +94,7 @@ for i=1:n
 end
 no = [s[i].nodes for i=1:length(s)]
 ed = [s[i].edges for i=1:length(s)] 
-mw = [s[i].max_width for i=1:length(s)]
+# mw = [s[i].max_width for i=1:length(s)]
 nz = [s[i].n_zeros for i=1:length(s)]
 p = [s[i].paths for i=1:length(s)]
 d = (ed.+1) ./ no
@@ -102,32 +105,58 @@ maxv = [s[i].maxval for i=1:length(s)]
 minv = [s[i].minval for i=1:length(s)]
 
 
-t1 = table((i=0:n-1,
-                   calc=examples,
-                   generation=g,
-                   nodes=no,
-                   edges=ed,
-                   max_width=mw,
-                   minval=minv,    # not calculating values
-                   maxval=maxv,    # not calculating values
-                   n_zeros=nz,     # not calculating values
-                   paths=float.(p),
-                   density=d,
-                   time=t,
-                   bytes=bytes,
-                   depth=depth,
-                   created=c_created,
-                   adds=c_plus,
-                   adds_new=cu_plus,
-                   prods=c_times,
-                   prods_new=cu_times,
-                   equals=c_equals,
-                   equals_new=cu_equals,
-                   leq=c_leq,
-                   leq_new=cu_leq);
-               pkey = [:i])
+# t1 = table((i=0:n-1,
+#                    calc=examples,
+#                    generation=g,
+#                    nodes=no,
+#                    edges=ed,
+#                    # max_width=mw,
+#                    minval=minv,    # not calculating values
+#                    maxval=maxv,    # not calculating values
+#                    n_zeros=nz,     # not calculating values
+#                    paths=float.(p),
+#                    density=d,
+#                    time=t,
+#                    bytes=bytes,
+#                    depth=depth,
+#                    created=c_created,
+#                    adds=c_plus,
+#                    adds_new=cu_plus,
+#                    prods=c_times,
+#                    prods_new=cu_times,
+#                    equals=c_equals,
+#                    equals_new=cu_equals,
+#                    leq=c_leq,
+#                    leq_new=cu_leq);
+#                pkey = [:i])
 
-save(joinpath(@__DIR__, out_dir, "challenging_examples_$(VERSION).csv"), t1)
+# save(joinpath(@__DIR__, out_dir, "challenging_examples_$(VERSION).csv"), t1)
+
+t1 = DataFrame(calc=examples,
+               generation=g,
+               nodes=no,
+               edges=ed,
+               # max_width=mw,
+               minval=minv,    # not calculating values
+               maxval=maxv,    # not calculating values
+               n_zeros=nz,     # not calculating values
+               paths=float.(p),
+               density=d,
+               time=t,
+               bytes=bytes,
+               depth=depth,
+               created=c_created,
+               adds=c_plus,
+               adds_new=cu_plus,
+               prods=c_times,
+               prods_new=cu_times,
+               equals=c_equals,
+               equals_new=cu_equals,
+               leq=c_leq,
+               leq_new=cu_leq
+)
+output_file = joinpath(@__DIR__, out_dir, "challenging_examples_$(VERSION).csv")
+CSV.write(output_file, t1)
 
 A = Array{Any}(undef, n+1, 10);
 A[1,:] = ["calculation" "generation" "nodes" "edges" "serialisation" "time (s)" "≤"  "+" "x" "depth"]
@@ -175,12 +204,13 @@ A[2:n+1,9] = c_times
 A[2:n+1,10] = depth
 
 
+tex_file = joinpath(@__DIR__, out_dir, "challenging_examples_table_$(VERSION).tex")
+FID = open(tex_file, "w")
 set_align("r")
-
-file = joinpath(@__DIR__, out_dir, "challenging_examples_table_$(VERSION).tex")
-FID = open(file, "w")
 L = latex_form(A)
 println(FID, L)
 close(FID)
 
 
+machine_file = joinpath(@__DIR__, out_dir, "challenging_examples_table_$(VERSION).machine")
+write_machine_details(machine_file)
