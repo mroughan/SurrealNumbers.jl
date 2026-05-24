@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the associated article."
+title: "SurrealNumbers.jl"
+abstract: "Julia package implementing arithmetic on Conway's surreal numbers, including visualisation tools and experimental functionality."
+type: software
+
+authors:
+  - family-names: "Roughan"
+    given-names: "Matthew"
+
+repository-code: "https://github.com/mroughan/SurrealNumbers.jl"
+url: "https://github.com/mroughan/SurrealNumbers.jl"
+license: "MIT"
+
+preferred-citation:
+  type: article
+  authors:
+    - family-names: "Roughan"
+      given-names: "Matthew"
+  title: "Practically surreal: Surreal arithmetic in Julia"
+  journal: "SoftwareX"
+  year: 2019
+  volume: 9
+  start: 293
+  end: 298
+  doi: "10.1016/j.softx.2019.03.010"
+  url: "https://www.sciencedirect.com/science/article/pii/S2352711018302152"
